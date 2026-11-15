@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /stok/
+
+Sitemap: https://lucasldiogo.github.io/sitemap.xml
