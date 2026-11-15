@@ -1,6 +1,6 @@
 # LLD Intelligence — Lucas Lima Diogo
 
-Site oficial publicado em **https://lucasldiogo.github.io/** (GitHub Pages, branch `main`).
+Site oficial publicado em **https://lucasldiogo.lldworks.com.br/** (GitHub Pages, branch `main`, domínio próprio via `CNAME`; DNS no Cloudflare, registro CNAME sem proxy apontando para `lucasldiogo.github.io`).
 
 ## Estrutura
 
