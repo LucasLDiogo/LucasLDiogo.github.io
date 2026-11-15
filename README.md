@@ -1,10 +1,29 @@
-# Lucas Lima Diogo — Inteligência Logística
+# LLD Intelligence — Lucas Lima Diogo
 
-Site pessoal publicado em **https://lucasldiogo.github.io/**
+Site oficial publicado em **https://lucasldiogo.github.io/** (GitHub Pages, branch `main`).
 
-- Página única (`index.html`) com GSAP 3.13 (ScrollTrigger, SplitText, DrawSVG, MotionPath, ScrambleText) e Lenis.
-- Retrato noir e vídeo gerados com IA (FLUX.1 Kontext + Wan 2.2) a partir da foto do LinkedIn.
-- `assets/LLD_Intelligence_Proposta_Stok_Center.pdf` — proposta completa (20 páginas).
-- Respeita `prefers-reduced-motion`; vídeo com botão de pausa.
+## Estrutura
 
-LLD Intelligence · Passo Fundo/RS
+| Caminho | Conteúdo |
+|---|---|
+| `index.html` | Home institucional: hero, problema, solução, projetos, soluções e módulos, história, método, simulador, formatos e contato |
+| `stok/` | Proposta dedicada à direção do Stok Center (fora do índice de busca) |
+| `privacidade/` | Política de privacidade e segurança dos dados |
+| `assets/` | Retrato, vídeo noir, imagem de compartilhamento (`og-lld.jpg`) e PDF da proposta |
+| `robots.txt`, `sitemap.xml` | SEO técnico |
+
+## Como publicar uma alteração
+
+O HTML é gerado por `build.py` (v3), com `style.css` e `app.js`, mantidos fora deste repositório.
+
+1. Edite o conteúdo ou o estilo no gerador.
+2. Rode `LLD_EMAIL=seu@email python3 build.py`. Sem a variável, o site mostra só WhatsApp e LinkedIn.
+3. Faça commit e push na `main`; o GitHub Pages publica em cerca de 1 minuto.
+
+## Princípios
+
+- Projetos reais descritos sem nomes de empregadores ou clientes, com selo de status.
+- Painéis e imagens ilustrativas marcados como "Ambiente demonstrativo".
+- GSAP só para revelações discretas; sem scroll hijacking; respeita `prefers-reduced-motion`.
+
+LLD Intelligence · Rio Grande do Sul
