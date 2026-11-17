@@ -72,3 +72,7 @@ dialog .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media(max-width:640px){.top .emp{display:none}main{padding:12px 10px 64px}}
+
+/* aba Plano */
+.aviso{margin-top:10px;padding:10px 12px;border-radius:10px;background:color-mix(in oklab,var(--warn) 12%,var(--card,#fff));font-size:13.5px;border:1px solid color-mix(in oklab,var(--warn) 30%,var(--card,#fff))}
+.plano-lim{margin-top:14px}.plano-lim .bar{margin-top:6px}.bar i.cheio{background:var(--bad)}

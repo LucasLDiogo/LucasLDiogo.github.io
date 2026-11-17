@@ -32,7 +32,22 @@
   const falhou = (e) => toast(e.message, true);
 
   // ---------- abas ----------
-  const CARGA = { pedidos: () => pedidos(), produtos: () => produtos(), clientes: () => clientes(), relatorios: () => relatorio(), loja: () => preencheLoja() };
+  const CARGA = { pedidos: () => pedidos(), produtos: () => produtos(), clientes: () => clientes(), relatorios: () => relatorio(), plano: () => planoTela(), loja: () => preencheLoja() };
+  // ---------- plano (assinatura e limites vindos do LLD Works Hub) ----------
+  async function planoTela() {
+    const p = await api("GET", "plano"), box = document.querySelector("#planoBox"), e = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const SIT = { ativa: ["Ativa", "ok"], cortesia: ["Cortesia", "p"], teste: ["Período de teste", "warn"], pendente: ["Pagamento pendente", "warn"], inadimplente: ["Pagamento em atraso", "bad"], cancelada: ["Cancelada", "bad"], sem_assinatura: ["Sem assinatura", "bad"], desconhecida: ["Em verificação", ""] };
+    const [st, cor] = SIT[p.status] || [p.status, ""], dt = (d) => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`;
+    const lims = Object.entries(p.nomes || {}).map(([k, nome]) => {
+      const max = Number(p.limites?.[k]) || 0, uso = Number(p.uso?.[k]) || 0, pct = max ? Math.min(100, Math.round((100 * uso) / max)) : 0;
+      return `<div class="plano-lim"><div class="row sb small"><b>${e(nome[0].toUpperCase() + nome.slice(1))}</b><span>${uso}${max ? ` de ${max}` : " · sem limite"}</span></div>${max ? `<div class="bar"><i class="${pct >= 100 ? "cheio" : ""}" style="width:${pct}%"></i></div>` : ""}</div>`;
+    }).join("");
+    box.innerHTML = `<div class="row sb"><div><p class="small mute">Plano</p><h2>${e(p.plano || (p.status === "cortesia" ? "Cortesia LLD Works" : "Plano sob medida"))}</h2></div><span class="chip ${cor}">${st}</span></div>
+      ${p.vence_em ? `<p class="small mute" style="margin-top:6px">${p.status === "teste" ? "Teste até" : "Vence em"} ${dt(p.vence_em)}</p>` : ""}
+      ${!p.liberada ? `<p class="aviso">A assinatura não está liberada: a loja online mostra “indisponível” para os seus clientes. Fale com a LLD Works para regularizar.</p>` : ""}
+      ${lims || '<p class="small mute" style="margin-top:12px">Seu plano não tem limite de uso neste produto.</p>'}
+      <p class="small mute" style="margin-top:16px">Precisa de mais? <a href="https://produtos.lldworks.com.br/#salesworks" target="_blank" rel="noopener">Fale com a LLD Works</a> para mudar de plano.</p>`;
+  }
   function aba(v) {
     if (!CARGA[v] || (v === "loja" && !admin())) v = "pedidos";
     $$(".nav button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.v === v)));

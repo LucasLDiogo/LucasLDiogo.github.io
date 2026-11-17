@@ -41,6 +41,7 @@
  <button role="tab" data-v="links" aria-selected="true">Links</button>
  <button role="tab" data-v="pagina" aria-selected="false">Aparência e perfil</button>
  <button role="tab" data-v="estat" aria-selected="false">Estatísticas</button>
+ <button role="tab" data-v="plano" aria-selected="false">Plano</button>
 </nav>
 <main>
  <div class="lay">
@@ -89,6 +90,10 @@
     <div class="kpis" id="kpis"></div>
     <div class="card" style="margin-bottom:14px"><div class="row sb"><h2>Por dia</h2><div class="leg"><span><i></i>Visitas</span><span><i class="k"></i>Cliques</span></div></div><div class="graf" id="graf" role="img" aria-label="Visitas e cliques por dia"></div><div class="row sb tiny mute" id="grafEixo"></div></div>
     <div class="grid g2"><div class="card"><h2>Links mais clicados</h2><div id="topLinks" style="margin-top:12px"></div></div><div class="card"><h2>De onde vêm as visitas</h2><div id="origens" style="margin-top:12px"></div></div></div>
+   </section>
+   <section class="view" id="v-plano" role="tabpanel">
+    <div class="head"><div><h1>Seu plano</h1><p>Situação da assinatura e quanto do plano você está usando.</p></div></div>
+    <div class="card" id="planoBox"><p class="mute">Carregando…</p></div>
    </section>
   </div>
   <aside class="cel" aria-label="Prévia da página">

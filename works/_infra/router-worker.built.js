@@ -118,18 +118,22 @@ function sair() {
 // Demonstração: <produto>-demo.lldworks.com.br abre sem senha. Produto real = conta de demonstração do Hub em modo leitura;
 // produto ainda em construção = demonstração da vitrine de produtos; PageWorks/ProWorks = exemplo real publicado.
 const DEMO_SESSAO = { e: "demo@lldworks.com.br", c: 1, cn: "LLD Works · Demonstração", cs: "demo", r: "admin", demo: true };
+// ServiceWorks tem duas demonstrações: barbearia (padrão) e pet shop; /pet e /barbearia trocam (cookie lw_demo, sem dado pessoal).
+const DEMO_PET = { e: "demo-pet@lldworks.com.br", c: 2, cn: "LLD Works · Demonstração Pet", cs: "demo-pet", r: "admin", demo: true, pet: true };
 const DEMO_EXEMPLOS = { pageworks: "https://clinica.lldworks.com.br/", proworks: "https://wellington.lldworks.com.br/" };
-const faixaDemo = (p) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="https://produtos.lldworks.com.br/#${p.slug}" style="color:#fff">Quero o meu ${esc(p.nome)}</a></div>`;
+const faixaDemo = (p, s = {}) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="https://produtos.lldworks.com.br/#${p.slug}" style="color:#fff">Quero o meu ${esc(p.nome)}</a>${p.slug === "serviceworks" ? ` · <a href="${s.pet ? "/barbearia" : "/pet"}" style="color:#fff">Ver ${s.pet ? "barbearia" : "pet shop"}</a>` : ""}</div>`;
 async function demo(req, env, url, p) {
   const path = url.pathname;
   if (path === "/entrar" || path === "/sair") return Response.redirect(url.origin + "/", 302);
+  if (p.slug === "serviceworks" && (path === "/pet" || path === "/barbearia"))
+    return new Response(null, { status: 302, headers: { Location: "/", "Cache-Control": "no-store", "Set-Cookie": `lw_demo=${path === "/pet" ? "pet" : "barbearia"}; Path=/; Secure; SameSite=Lax; Max-Age=86400` } });
   if (!BACKENDS[p.slug]?.painel) {
     if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
     if (path.includes("..")) return new Response("Inválido", { status: 400 });
     return origem(req, "portfolio/demos" + (path === "/" || path === "/index.html" ? `/${p.slug}.html` : path), path === "/" ? 0 : 300);
   }
   if (path.startsWith("/api/") && req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Demonstração em modo leitura: as alterações estão desativadas. Peça o seu acesso para testar de verdade.");
-  return produto(req, env, url, p, DEMO_SESSAO);
+  return produto(req, env, url, p, p.slug === "serviceworks" && cookie(req, "lw_demo") === "pet" ? DEMO_PET : DEMO_SESSAO);
 }
 
 // painel: true = tela própria nova (sem script embutido); corpoMax = maior envio aceito (RHWorks manda currículos).
@@ -148,7 +152,7 @@ const SL_LOJA = /^\/([a-z0-9][a-z0-9-]{2,39})\/?$/;
 const SL_RESERVADO = /^(entrar|sair|api|pub|index|admin|painel|loja|lojas|favicon|robots|salesworks|lldworks)$/;
 // A loja/vitrine "demo" é pública e o painel dela também (modo leitura): pedido ou agendamento de verdade ali
 // exporia nome e WhatsApp do visitante. Nela o fluxo inteiro funciona, menos o envio final.
-const DEMO_PUBLICO = /^\/api\/publico\/demo(\/|$)/;
+const DEMO_PUBLICO = /^\/api\/publico\/demo(-pet)?(\/|$)/;
 // AgentWorks: /c/<endereço> é o chat público (pode abrir dentro do botão no site do cliente, por isso aceita iframe);
 // /webhook/whatsapp recebe os avisos da Meta (a assinatura é conferida no Worker do produto).
 const AG_CHAT = /^\/c\/([a-z0-9][a-z0-9-]{2,39})\/?$/;
@@ -228,7 +232,7 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   if (arq !== "/" + p.entrada || r.status !== 200) return r;
   if (BACKENDS[p.slug]?.painel) { // painel próprio: sem script embutido (CSP); na demonstração, só a faixa de aviso
     const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
-    return new Response(s.demo ? (await r.text()).replace("</body>", faixaDemo(p) + "</body>") : r.body, { status: 200, headers: h });
+    return new Response(s.demo ? (await r.text()).replace("</body>", faixaDemo(p, s) + "</body>") : r.body, { status: 200, headers: h });
   }
   // Página principal: avisa o app que o login já foi feito no servidor e põe o botão Sair.
   const marca = `<script>window.LW_AUTH=${JSON.stringify({ email: s.e, cliente: s.cn || "", slug: s.cs || "", papel: s.r || "admin" }).replace(/</g, "\\u003c")}</script>`;

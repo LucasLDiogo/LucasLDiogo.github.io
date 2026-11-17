@@ -17,12 +17,14 @@
 </header>
 <nav class="nav" role="tablist" aria-label="Seções do painel">
  <button role="tab" data-v="agenda" aria-selected="true">Agenda</button>
- <button role="tab" data-v="clientes" aria-selected="false">Clientes</button>
+ <button role="tab" data-v="clientes" aria-selected="false" id="navCli">Clientes</button>
  <button role="tab" data-v="servicos" aria-selected="false">Serviços</button>
  <button role="tab" data-v="equipe" aria-selected="false">Equipe e horários</button>
  <button role="tab" data-v="folgas" aria-selected="false">Folgas e bloqueios</button>
+ <button role="tab" data-v="pacotes" aria-selected="false">Pacotes</button>
  <button role="tab" data-v="relatorios" aria-selected="false">Relatórios</button>
  <button role="tab" data-v="config" aria-selected="false">Configurações</button>
+ <button role="tab" data-v="plano" aria-selected="false">Plano</button>
 </nav>
 <main>
  <section class="view on" id="v-agenda" role="tabpanel">
@@ -41,9 +43,12 @@
  </section>
 
  <section class="view" id="v-clientes" role="tabpanel">
-  <div class="head"><div><h1>Clientes</h1><p>Quem já agendou com você, com histórico, atendimentos e faltas.</p></div>
-   <div class="row"><input id="cliBusca" type="search" placeholder="Buscar por nome ou WhatsApp" aria-label="Buscar cliente" style="width:280px"><button class="btn pri" data-act="cliNovo">+ Cliente</button></div></div>
-  <div class="card scroll"><table><thead><tr><th>Nome</th><th>WhatsApp</th><th class="n">Atendimentos</th><th class="n">Faltas</th><th>Último horário</th><th></th></tr></thead><tbody id="cliLista"></tbody></table></div>
+  <div class="head"><div><h1 id="cliH1">Clientes</h1><p id="cliSub">Quem já agendou com você, com histórico, atendimentos e faltas.</p></div>
+   <div class="row"><input id="cliBusca" type="search" placeholder="Buscar por nome ou WhatsApp" aria-label="Buscar cliente" style="width:240px">
+    <select id="cliFiltro" aria-label="Filtrar clientes" style="width:auto"><option value="">Todos</option><option value="30">Sumidos há 30+ dias</option><option value="60">Sumidos há 60+ dias</option><option value="90">Sumidos há 90+ dias</option></select>
+    <button class="btn pri" data-act="cliNovo">+ Cliente</button></div></div>
+  <p class="help" id="cliDica" hidden>Clientes que já foram atendidos, não voltaram nesse período e não têm horário marcado. Use “Chamar de volta” para mandar uma mensagem pronta no WhatsApp.</p>
+  <div class="card scroll"><table><thead><tr><th>Nome</th><th class="soPet">Pets</th><th>WhatsApp</th><th class="n">Atendimentos</th><th class="n">Faltas</th><th>Último horário</th><th></th></tr></thead><tbody id="cliLista"></tbody></table></div>
  </section>
 
  <section class="view" id="v-servicos" role="tabpanel">
@@ -59,6 +64,14 @@
  <section class="view" id="v-folgas" role="tabpanel">
   <div class="head"><div><h1>Folgas e bloqueios</h1><p>Feriado, férias, consulta médica: o horário bloqueado some da vitrine e do painel.</p></div><button class="btn pri" data-act="blqNovo">+ Bloqueio</button></div>
   <div class="card scroll"><table><thead><tr><th>De</th><th>Até</th><th>Quem</th><th>Motivo</th><th></th></tr></thead><tbody id="blqLista"></tbody></table></div>
+ </section>
+
+ <section class="view" id="v-pacotes" role="tabpanel">
+  <div class="head"><div><h1>Pacotes</h1><p>Venda sessões antecipadas (ex.: 4 banhos no mês). Cada agendamento do pacote sai com valor zero e desconta uma sessão; cancelar devolve a sessão, falta consome.</p></div>
+   <div class="row"><button class="btn" data-act="pkNovo" data-adm>+ Pacote à venda</button><button class="btn pri" data-act="venderNovo">Vender pacote</button></div></div>
+  <div class="card scroll"><h2>Pacotes à venda</h2><table style="margin-top:10px"><thead><tr><th>Pacote</th><th>Serviço</th><th class="n">Sessões</th><th class="n">Validade</th><th class="n">Preço</th><th>Situação</th><th></th></tr></thead><tbody id="pkLista"></tbody></table></div>
+  <div class="card scroll" style="margin-top:16px"><div class="row sb"><h2>Pacotes vendidos</h2><select id="pvFiltro" aria-label="Filtrar pacotes vendidos" style="width:auto"><option value="ativos">Com saldo</option><option value="">Todos</option></select></div>
+   <table style="margin-top:10px"><thead><tr><th>Cliente</th><th class="soPet">Pet</th><th>Pacote</th><th class="n">Usadas</th><th>Vence</th><th class="n">Valor</th><th>Situação</th><th></th></tr></thead><tbody id="pvLista"></tbody></table></div>
  </section>
 
  <section class="view" id="v-relatorios" role="tabpanel">
@@ -93,6 +106,11 @@
    </div>
   </form>
  </section>
+
+ <section class="view" id="v-plano" role="tabpanel">
+  <div class="head"><div><h1>Seu plano</h1><p>Situação da assinatura e quanto do plano você está usando.</p></div></div>
+  <div class="card" id="planoBox"><p class="mute">Carregando…</p></div>
+ </section>
 </main>
 
 <dialog id="dlgAg"><form method="dialog" id="fAg">
@@ -102,6 +120,9 @@
  <p class="small mute" style="margin-top:10px">Horários livres:</p><div class="slots" id="agSlots" style="margin-top:6px"></div>
  <label for="agCli">Cliente</label><input id="agCli" list="agCliLista" placeholder="Digite o nome ou WhatsApp de quem já é cliente" autocomplete="off"><datalist id="agCliLista"></datalist>
  <div class="f2" id="agNovoCli"><div><label for="agNome">Nome (cliente novo)</label><input id="agNome" maxlength="80"></div><div><label for="agWhats">WhatsApp</label><input id="agWhats" inputmode="tel" placeholder="(54) 99999-0000"></div></div>
+ <div id="agPetBox" class="soPet"><div class="f2"><div><label for="agPet">Pet</label><select id="agPet"></select></div><div id="agPetNovo"><label for="agPetNome">Nome do pet</label><input id="agPetNome" maxlength="40"></div><div id="agPetPorteBox"><label for="agPetPorte">Porte</label><select id="agPetPorte"></select></div></div></div>
+ <div class="f2"><div><label for="agPk">Pagamento</label><select id="agPk"><option value="">Avulso</option></select></div><div><label for="agRep">Repetir</label><select id="agRep"><option value="0">Não repetir</option><option value="1">Toda semana</option><option value="2">A cada 2 semanas</option><option value="3">A cada 3 semanas</option><option value="4">A cada 4 semanas</option></select></div><div><label for="agVezes">Quantas vezes</label><input id="agVezes" type="number" min="2" max="12" value="4" disabled></div></div>
+ <p class="small mute" id="agValor" style="margin-top:8px"></p>
  <label for="agObs">Observações</label><input id="agObs" maxlength="300">
  <label class="chk" style="margin-top:12px"><input type="checkbox" id="agEnc"> Encaixe (agendar mesmo se o horário estiver ocupado)</label>
  <p class="err" id="agErr" role="alert"></p>
@@ -111,6 +132,7 @@
 <dialog id="dlgEv"><form method="dialog" id="fEv">
  <div class="row sb"><h2 id="evTit"></h2><span id="evSt"></span></div>
  <p id="evInfo" class="mute" style="margin-top:6px"></p>
+ <p id="evPet" class="aviso" hidden></p>
  <div class="row" style="margin-top:14px">
   <button type="button" class="btn ok sm" data-ev="concluido">Concluído</button>
   <button type="button" class="btn sm" data-ev="faltou">Faltou</button>
@@ -118,6 +140,7 @@
   <button type="button" class="btn sm" data-ev="confirmado">Voltar para confirmado</button>
   <a class="btn sm" id="evWhats" target="_blank" rel="noopener">WhatsApp ↗</a>
  </div>
+ <div class="row" style="margin-top:8px" id="evExtras"><button type="button" class="btn sm" data-ev="usarPk" hidden>Usar pacote</button><button type="button" class="btn sm" data-ev="tirarPk" hidden>Tirar do pacote</button><button type="button" class="btn sm bad" data-ev="serie" hidden>Cancelar este e os próximos da série</button></div>
  <h3 style="margin-top:18px">Remarcar</h3>
  <div class="f2"><div><label for="evData">Dia</label><input type="date" id="evData"></div><div><label for="evHora">Hora</label><input type="time" id="evHora" step="300"></div><div><label for="evProf">Profissional</label><select id="evProf"></select></div></div>
  <label for="evObs">Observações</label><input id="evObs" maxlength="300">
@@ -131,6 +154,7 @@
  <div class="f2"><div><label for="sCat">Categoria</label><input id="sCat" maxlength="40" placeholder="Cabelo, Barba, Combos…"></div><div><label for="sDur">Duração (min)</label><input id="sDur" type="number" min="5" max="600" step="5" required></div></div>
  <div class="f2"><div><label for="sPreco">Preço (R$)</label><input id="sPreco" inputmode="decimal" required placeholder="45,00"></div><div><label for="sPromo">Preço promocional (R$)</label><input id="sPromo" inputmode="decimal" placeholder="opcional"></div><div><label for="sOrdem">Ordem na vitrine</label><input id="sOrdem" type="number" min="0" max="999"></div></div>
  <label for="sDesc">Descrição</label><input id="sDesc" maxlength="300">
+ <div id="sPortesBox" class="soPet"><h3 style="margin-top:16px">Preço e duração por porte</h3><p class="help">Deixe em branco para usar a duração e o preço acima. O porte do pet define quanto tempo a agenda fica ocupada.</p><div id="sPortes" class="portes"></div></div>
  <div class="marcas" style="margin-top:12px"><label class="chk"><input type="checkbox" id="sCombo"> Combo</label><label class="chk"><input type="checkbox" id="sAtivo"> Ativo na vitrine</label></div>
  <p class="err" id="srvErr" role="alert"></p>
  <div class="acts"><button value="x" class="btn" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
@@ -159,10 +183,53 @@
 <dialog id="dlgCli" style="width:min(640px,96vw)"><form method="dialog" id="fCli">
  <h2 id="cliTit">Cliente</h2>
  <div class="f2"><div><label for="kNome">Nome</label><input id="kNome" required maxlength="80"></div><div><label for="kWhats">WhatsApp</label><input id="kWhats" required inputmode="tel"></div></div>
- <label for="kObs">Observações (preferências, alergias, nome do pet…)</label><textarea id="kObs" maxlength="600"></textarea>
+ <label for="kObs">Observações (preferências, alergias…)</label><textarea id="kObs" maxlength="600"></textarea>
+ <div id="kPets" class="soPet"></div>
+ <div id="kPk"></div>
  <div id="kHist"></div>
  <p class="err" id="cliErr" role="alert"></p>
  <div class="acts"><a class="btn" id="kWa" target="_blank" rel="noopener">WhatsApp ↗</a><button value="x" class="btn" formnovalidate>Fechar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<dialog id="dlgPet"><form method="dialog" id="fPet">
+ <h2 id="petTit">Pet</h2>
+ <div class="f2"><div><label for="ptNome">Nome</label><input id="ptNome" required maxlength="40"></div><div><label for="ptEsp">Espécie</label><select id="ptEsp"><option value="cao">Cão</option><option value="gato">Gato</option><option value="outro">Outro</option></select></div></div>
+ <div class="f2"><div><label for="ptRaca">Raça</label><input id="ptRaca" maxlength="40" placeholder="SRD, Shih-tzu…"></div><div><label for="ptPorte">Porte</label><select id="ptPorte"></select></div><div><label for="ptPel">Pelagem</label><select id="ptPel"><option value="">—</option><option value="curta">Curta</option><option value="media">Média</option><option value="longa">Longa</option></select></div></div>
+ <div class="f2"><div><label for="ptNasc">Nascimento (mês/ano)</label><input id="ptNasc" type="month"></div></div>
+ <label for="ptObs">Cuidados (alergia, temperamento, vacinas)</label><textarea id="ptObs" maxlength="400" placeholder="Ex.: alergia a shampoo de aveia; não gosta de secador"></textarea>
+ <p class="err" id="petErr" role="alert"></p>
+ <div class="acts"><button type="button" class="btn bad" id="petDel" hidden>Desativar</button><button value="x" class="btn" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<dialog id="dlgPk"><form method="dialog" id="fPk">
+ <h2 id="pkTit">Pacote à venda</h2>
+ <label for="pkNome">Nome</label><input id="pkNome" required maxlength="80" placeholder="4 banhos no mês">
+ <div class="f2"><div><label for="pkSrv">Serviço</label><select id="pkSrv" required></select></div><div><label for="pkSes">Sessões</label><input id="pkSes" type="number" min="2" max="52" required></div></div>
+ <div class="f2"><div><label for="pkVal">Validade (dias)</label><input id="pkVal" type="number" min="7" max="365" required></div><div><label for="pkPreco">Preço do pacote (R$)</label><input id="pkPreco" inputmode="decimal" required placeholder="180,00"></div></div>
+ <label for="pkDesc">Descrição</label><input id="pkDesc" maxlength="200">
+ <label class="chk" style="margin-top:12px"><input type="checkbox" id="pkAtivo"> À venda</label>
+ <p class="small mute" id="pkConta" style="margin-top:8px"></p>
+ <p class="err" id="pkErr" role="alert"></p>
+ <div class="acts"><button value="x" class="btn" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<dialog id="dlgVender"><form method="dialog" id="fVender">
+ <h2>Vender pacote</h2>
+ <label for="vdPk">Pacote</label><select id="vdPk" required></select>
+ <label for="vdCli">Cliente</label><input id="vdCli" list="vdCliLista" placeholder="Digite o nome ou WhatsApp" autocomplete="off" required><datalist id="vdCliLista"></datalist>
+ <div class="soPet"><label for="vdPet">Pet</label><select id="vdPet"></select></div>
+ <div class="f2"><div><label for="vdIni">Começa em</label><input id="vdIni" type="date" required></div><div><label for="vdValor">Valor cobrado (R$)</label><input id="vdValor" inputmode="decimal"></div></div>
+ <p class="small mute" id="vdResumo" style="margin-top:8px"></p>
+ <p class="err" id="vdErr" role="alert"></p>
+ <div class="acts"><button value="x" class="btn" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Registrar venda</button></div>
+</form></dialog>
+
+<dialog id="dlgVaga" style="width:min(560px,96vw)"><form method="dialog">
+ <h2>Horário liberado</h2>
+ <p class="mute" id="vgInfo" style="margin-top:4px"></p>
+ <p class="help">Quem costuma fazer esse serviço e não tem nada marcado — os que estão há mais tempo sem vir aparecem primeiro. Toque para oferecer o horário no WhatsApp.</p>
+ <div id="vgLista" style="margin-top:10px"></div>
+ <div class="acts"><button value="x" class="btn">Fechar</button></div>
 </form></dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

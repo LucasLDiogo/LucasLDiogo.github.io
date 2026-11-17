@@ -50,6 +50,7 @@
  <button role="tab" data-v="clientes" aria-selected="false">Clientes</button>
  <button role="tab" data-v="relatorios" aria-selected="false">Relatórios</button>
  <button role="tab" data-v="loja" aria-selected="false" data-adm>Minha loja</button>
+ <button role="tab" data-v="plano" aria-selected="false">Plano</button>
 </nav>
 <main>
  <section class="view on" id="v-pedidos" role="tabpanel">
@@ -108,6 +109,10 @@
     <div class="row" style="justify-content:flex-end;margin-top:6px"><button class="btn pri">Salvar</button></div>
    </div>
   </form>
+ </section>
+ <section class="view" id="v-plano" role="tabpanel">
+  <div class="head"><div><h1>Seu plano</h1><p>Situação da assinatura e quanto do plano você está usando.</p></div></div>
+  <div class="card" id="planoBox"><p class="mute">Carregando…</p></div>
  </section>
 </main>
 

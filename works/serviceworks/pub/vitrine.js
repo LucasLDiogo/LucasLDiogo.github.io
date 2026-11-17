@@ -10,7 +10,12 @@
   const SEG = { barbearia: "Barbearia", salao: "Salão de beleza", clinica: "Clínica", petshop: "Pet shop", outro: "" };
   const slug = decodeURIComponent(location.pathname.split("/")[2] || "").toLowerCase();
   const BASE = `/api/publico/${encodeURIComponent(slug)}`;
-  const E = { info: null, servico: null, prof: "qualquer", dia: null, hora: null, profDoHorario: {} };
+  const E = { info: null, servico: null, prof: "qualquer", dia: null, hora: null, profDoHorario: {}, porte: null, livre: null };
+  const PORTES = [["mini", "Mini", "até 5 kg"], ["pequeno", "Pequeno", "5 a 10 kg"], ["medio", "Médio", "10 a 25 kg"], ["grande", "Grande", "25 a 45 kg"], ["gigante", "Gigante", "mais de 45 kg"]];
+  const pet = () => E.info?.empresa.segmento === "petshop";
+  // numera os passos visíveis (o passo do pet só aparece no pet shop)
+  const numerar = () => { let n = 0; $$("#fluxo .passo").forEach((p) => { if (!p.hidden) $(".n", p).textContent = ++n; }); };
+  const faixa = (s) => { const v = [s.promo_centavos ?? s.preco_centavos, ...(s.portes || []).map((p) => p.preco_centavos)], d = [s.duracao_min, ...(s.portes || []).map((p) => p.duracao_min)]; return { min: Math.min(...v), max: Math.max(...v), dmin: Math.min(...d), dmax: Math.max(...d) }; };
   let tt;
   const toast = (m) => { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 3000); };
 
@@ -41,19 +46,37 @@
   function desenhaServicos() {
     const cats = new Map();
     for (const s of E.info.servicos) { const c = s.combo ? "Combos" : s.categoria || "Serviços"; if (!cats.has(c)) cats.set(c, []); cats.get(c).push(s); }
-    $("#lServ").innerHTML = [...cats].map(([c, l]) => `${cats.size > 1 ? `<p class="cat">${esc(c)}</p>` : ""}${l.map((s) => `<button type="button" class="serv" data-s="${s.id}" aria-pressed="false"><span class="info"><b>${esc(s.nome)}</b><span>${s.duracao_min} min${s.descricao ? " · " + esc(s.descricao) : ""}</span></span><span class="preco">${s.promo_centavos != null ? `<s>${brl(s.preco_centavos)}</s>${brl(s.promo_centavos)}` : brl(s.preco_centavos)}</span></button>`).join("")}`).join("");
+    $("#lServ").innerHTML = [...cats].map(([c, l]) => `${cats.size > 1 ? `<p class="cat">${esc(c)}</p>` : ""}${l.map((s) => { const f = pet() && s.portes?.length ? faixa(s) : null; return `<button type="button" class="serv" data-s="${s.id}" aria-pressed="false"><span class="info"><b>${esc(s.nome)}</b><span>${f ? (f.dmin === f.dmax ? f.dmin : `${f.dmin} a ${f.dmax}`) : s.duracao_min} min${f ? " conforme o porte" : ""}${s.descricao ? " · " + esc(s.descricao) : ""}</span></span><span class="preco">${f ? (f.min === f.max ? brl(f.min) : `<small>a partir de</small>${brl(f.min)}`) : s.promo_centavos != null ? `<s>${brl(s.preco_centavos)}</s>${brl(s.promo_centavos)}` : brl(s.preco_centavos)}</span></button>`; }).join("")}`).join("");
   }
   $("#lServ").addEventListener("click", (e) => {
     const b = e.target.closest("[data-s]"); if (!b) return;
     E.servico = E.info.servicos.find((s) => s.id === +b.dataset.s); E.prof = "qualquer"; E.hora = null;
     $$("#lServ [data-s]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    if (pet()) {
+      mostra("#pPet"); desenhaPortes();
+      if (!E.porte || !$("#fPet").value.trim()) { ["#p2", "#p3", "#p4"].forEach((i) => mostra(i, false)); numerar(); rolar("#pPet"); return; }
+    }
+    seguirDoServico();
+  });
+  function desenhaPortes() {
+    const s = E.servico, pr = (k) => { const p = (s?.portes || []).find((x) => x.porte === k); return p ? p.preco_centavos : s ? s.promo_centavos ?? s.preco_centavos : null; };
+    $("#lPorte").innerHTML = PORTES.map(([k, n, kg]) => `<button type="button" data-porte="${k}" aria-pressed="${k === E.porte}"><b>${n}</b><span>${kg}${s ? " · " + brl(pr(k)) : ""}</span></button>`).join("");
+  }
+  $("#lPorte").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-porte]"); if (!b) return;
+    if (!$("#fPet").value.trim()) { $("#fPet").focus(); toast("Informe o nome do pet."); return; }
+    E.porte = b.dataset.porte; E.hora = null; $$("#lPorte [data-porte]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    mostra("#p4", false); seguirDoServico();
+  });
+  $("#fPet").addEventListener("change", () => { if (E.porte && E.servico && $("#p3").hidden && $("#fPet").value.trim()) seguirDoServico(); });
+  function seguirDoServico() {
     const profs = E.info.profissionais.filter((p) => p.servicos.includes(E.servico.id));
     if (profs.length > 1) {
       $("#lProf").innerHTML = `<button type="button" data-p="qualquer" aria-pressed="true"><b>Sem preferência</b><span>Primeiro horário livre</span></button>` + profs.map((p) => `<button type="button" data-p="${p.id}" aria-pressed="false"><b>${esc(p.nome)}</b><span>${esc(p.funcao || "")}</span></button>`).join("");
       mostra("#p2");
     } else { E.prof = profs[0] ? String(profs[0].id) : "qualquer"; mostra("#p2", false); }
-    mostra("#p4", false); abrirDias(); rolar(profs.length > 1 ? "#p2" : "#p3");
-  });
+    mostra("#p4", false); abrirDias(); numerar(); rolar(profs.length > 1 ? "#p2" : "#p3");
+  }
   $("#lProf").addEventListener("click", (e) => {
     const b = e.target.closest("[data-p]"); if (!b) return;
     E.prof = b.dataset.p; E.hora = null; $$("#lProf [data-p]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
@@ -78,8 +101,9 @@
     const box = $("#lHoras"), meu = ++pedido;
     box.innerHTML = '<p class="small mute">Buscando horários…</p>';
     try {
-      const r = await api(`/livres?data=${E.dia}&servico=${E.servico.id}&profissional=${E.prof}`);
+      const r = await api(`/livres?data=${E.dia}&servico=${E.servico.id}&profissional=${E.prof}${pet() && E.porte ? `&porte=${E.porte}` : ""}`);
       if (meu !== pedido) return;
+      E.livre = { duracao: r.duracao_min, valor: r.valor_centavos };
       E.profDoHorario = {};
       for (const p of r.profissionais) for (const h of p.horarios) (E.profDoHorario[h] ||= []).push(p.nome);
       const hs = Object.keys(E.profDoHorario).sort();
@@ -93,8 +117,10 @@
     E.hora = b.dataset.h; $$("#lHoras [data-h]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     const quem = E.prof !== "qualquer" ? E.info.profissionais.find((p) => String(p.id) === E.prof)?.nome : E.profDoHorario[E.hora]?.length === 1 ? E.profDoHorario[E.hora][0] : "o primeiro profissional livre";
     const s = E.servico;
-    $("#resumo").innerHTML = `<b>${esc(s.nome)}</b>${dataLonga(E.dia)}, às ${E.hora} · ${s.duracao_min} min<br>com ${esc(quem)} · ${brl(s.promo_centavos ?? s.preco_centavos)}`;
-    $("#fErr").textContent = ""; mostra("#p4"); rolar("#p4");
+    const dur = E.livre?.duracao ?? s.duracao_min, val = E.livre?.valor ?? (s.promo_centavos ?? s.preco_centavos);
+    const doPet = pet() ? ` para ${esc($("#fPet").value.trim())} (${PORTES.find((p) => p[0] === E.porte)?.[1].toLowerCase()})` : "";
+    $("#resumo").innerHTML = `<b>${esc(s.nome)}${doPet}</b>${dataLonga(E.dia)}, às ${E.hora} · ${dur} min<br>com ${esc(quem)} · ${brl(val)}`;
+    $("#fErr").textContent = ""; mostra("#p4"); numerar(); rolar("#p4");
   });
 
   $("#fluxo").addEventListener("submit", async (e) => {
@@ -108,8 +134,13 @@
     try {
       const corpo = { servico_id: E.servico.id, data: E.dia, hora: E.hora, nome, whatsapp: whats, observacoes: $("#fObs").value.trim() };
       if (E.prof !== "qualquer") corpo.profissional_id = +E.prof;
+      if (pet()) {
+        const nomePet = $("#fPet").value.trim();
+        if (!nomePet || !E.porte) { er.textContent = "Informe o nome e o porte do pet."; rolar("#pPet"); return; }
+        corpo.pet = { nome: nomePet, especie: $("#fEsp").value, porte: E.porte };
+      }
       const r = await api("/agendar", { method: "POST", body: JSON.stringify(corpo) });
-      try { localStorage.setItem("sw_cliente", JSON.stringify({ nome, whats })); } catch {}
+      try { localStorage.setItem("sw_cliente", JSON.stringify({ nome, whats, pet: corpo.pet || null })); } catch {}
       confirmado(r);
     } catch (x) {
       er.textContent = x.message;
@@ -118,7 +149,7 @@
   });
 
   function confirmado(r) {
-    $("#okResumo").textContent = `${r.servico} com ${r.profissional} · ${dataLonga(r.inicio.slice(0, 10))}, às ${r.inicio.slice(11, 16)} · ${brl(r.valor_centavos)}`;
+    $("#okResumo").textContent = `${r.servico}${r.pet ? ` para ${r.pet}` : ""} com ${r.profissional} · ${dataLonga(r.inicio.slice(0, 10))}, às ${r.inicio.slice(11, 16)} · ${brl(r.valor_centavos)}`;
     $("#okCod").textContent = r.codigo;
     if (r.whatsapp_link) { $("#okWa").href = r.whatsapp_link; mostra("#okWa"); }
     const t = (s) => s.replace(/[-:]/g, "") + "00";
@@ -131,7 +162,7 @@
   $("#okNovo").addEventListener("click", () => {
     E.servico = null; E.hora = null; E.prof = "qualquer";
     $$("#lServ [data-s]").forEach((x) => x.setAttribute("aria-pressed", "false"));
-    ["#p2", "#p3", "#p4", "#ok", "#okWa"].forEach((i) => mostra(i, false)); mostra("#fluxo"); rolar("#p1");
+    ["#pPet", "#p2", "#p3", "#p4", "#ok", "#okWa"].forEach((i) => mostra(i, false)); mostra("#fluxo"); numerar(); rolar("#p1");
   });
 
   // consultar / cancelar pelo código
@@ -142,7 +173,7 @@
     try {
       const a = await api(`/agendamento?codigo=${encodeURIComponent(cod)}&whatsapp=${encodeURIComponent(whats)}`);
       const st = { confirmado: "Confirmado", concluido: "Concluído", cancelado: "Cancelado", faltou: "Não compareceu" }[a.status] || a.status;
-      res.innerHTML = `<div class="resumo" style="margin-top:12px"><b>${esc(a.servico)} · ${st}</b>${dataLonga(a.inicio.slice(0, 10))}, às ${a.inicio.slice(11, 16)} com ${esc(a.profissional)} · ${brl(a.valor_centavos)}</div>${a.status === "confirmado" ? '<button type="button" class="btn bad full" id="cCancelar" style="margin-top:10px">Cancelar este horário</button>' : ""}`;
+      res.innerHTML = `<div class="resumo" style="margin-top:12px"><b>${esc(a.servico)}${a.pet ? " · " + esc(a.pet) : ""} · ${st}</b>${dataLonga(a.inicio.slice(0, 10))}, às ${a.inicio.slice(11, 16)} com ${esc(a.profissional)} · ${brl(a.valor_centavos)}</div>${a.status === "confirmado" ? '<button type="button" class="btn bad full" id="cCancelar" style="margin-top:10px">Cancelar este horário</button>' : ""}`;
     } catch (x) { er.textContent = x.message; }
   });
   $("#cRes").addEventListener("click", async (e) => {
@@ -156,6 +187,6 @@
     } catch (x) { er.textContent = x.message; }
   });
 
-  try { const c = JSON.parse(localStorage.getItem("sw_cliente") || "null"); if (c) { $("#fNome").value = c.nome || ""; $("#fWhats").value = c.whats || ""; $("#cWhats").value = c.whats || ""; } } catch {}
+  try { const c = JSON.parse(localStorage.getItem("sw_cliente") || "null"); if (c) { $("#fNome").value = c.nome || ""; $("#fWhats").value = c.whats || ""; $("#cWhats").value = c.whats || ""; if (c.pet) { $("#fPet").value = c.pet.nome || ""; $("#fEsp").value = c.pet.especie || "cao"; E.porte = c.pet.porte || null; } } } catch {}
   inicio();
 })();

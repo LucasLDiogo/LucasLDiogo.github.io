@@ -111,3 +111,15 @@ dialog .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media(max-width:640px){.top .emp{display:none}main{padding:12px 10px 64px}.ag{max-height:none}}
+/* pet shop, pacotes e plano */
+body:not(.pet) .soPet{display:none!important}
+.portes{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 10px;align-items:center;margin-top:8px}
+.portes b{font-size:13px}.portes .cab{font-size:12px;color:var(--mute);font-weight:600}
+.aviso{margin-top:10px;padding:10px 12px;border-radius:10px;background:color-mix(in oklab,var(--warn) 12%,var(--card));color:var(--ink);font-size:13.5px;border:1px solid color-mix(in oklab,var(--warn) 30%,var(--card))}
+.pets{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px}
+.pet{border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:left;background:var(--card);cursor:pointer;font:inherit;color:inherit}
+.pet:hover{border-color:var(--p)}.pet b{display:block}.pet span{font-size:12.5px;color:var(--mute)}
+.pet.off{opacity:.55}
+.saldo{display:inline-flex;gap:3px;vertical-align:middle}.saldo i{width:9px;height:9px;border-radius:50%;background:var(--line)}.saldo i.u{background:var(--p)}
+.sug{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.plano-lim{margin-top:14px}.plano-lim .bar{margin-top:6px}.bar i.cheio{background:var(--bad)}

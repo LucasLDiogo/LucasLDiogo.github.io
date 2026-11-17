@@ -40,3 +40,4 @@
 .consulta summary{cursor:pointer;font-weight:700;min-height:28px}
 .rodape{text-align:center;color:var(--mute);font-size:12.5px;padding:8px 12px 28px}
 .rodape a{color:var(--mute)}
+.serv .preco small{display:block;font:500 11.5px Inter,sans-serif;color:var(--mute)}

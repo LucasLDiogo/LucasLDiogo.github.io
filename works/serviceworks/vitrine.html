@@ -20,6 +20,11 @@
 
  <form id="fluxo" hidden novalidate>
   <section class="passo" id="p1"><h2><span class="n">1</span>Escolha o serviço</h2><div id="lServ"></div></section>
+  <section class="passo" id="pPet" hidden><h2><span class="n">2</span>Seu pet</h2>
+   <div class="f2"><div><label for="fPet">Nome do pet</label><input id="fPet" maxlength="40" autocomplete="off"></div><div><label for="fEsp">Espécie</label><select id="fEsp"><option value="cao">Cão</option><option value="gato">Gato</option><option value="outro">Outro</option></select></div></div>
+   <p class="small" style="margin-top:14px"><b>Porte</b> <span class="mute">— define o tempo e o preço do serviço</span></p>
+   <div class="opcoes" id="lPorte"></div>
+  </section>
   <section class="passo" id="p2" hidden><h2><span class="n">2</span>Com quem?</h2><div class="opcoes" id="lProf"></div></section>
   <section class="passo" id="p3" hidden><h2><span class="n">3</span>Dia e horário</h2>
    <div class="dias" id="lDias" aria-label="Dia"></div>

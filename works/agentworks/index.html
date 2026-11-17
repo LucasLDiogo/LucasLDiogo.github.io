@@ -65,6 +65,7 @@
  <button role="tab" data-v="testar" aria-selected="false">Testar o assistente</button>
  <button role="tab" data-v="relatorios" aria-selected="false">Relatórios</button>
  <button role="tab" data-v="config" aria-selected="false" data-adm>Configuração</button>
+ <button role="tab" data-v="plano" aria-selected="false">Plano</button>
 </nav>
 <main>
  <section class="view on" id="v-conversas" role="tabpanel">
@@ -136,6 +137,10 @@
     <label>Código para o site (antes de &lt;/body&gt;)</label><div class="cod"><code id="cWidget"></code><button class="btn sm" type="button" data-act="copiar" data-alvo="cWidget">Copiar</button></div></div>
    <div class="card"><h2>WhatsApp</h2><div id="cWhats" style="margin-top:8px"></div></div>
   </div>
+ </section>
+ <section class="view" id="v-plano" role="tabpanel">
+  <div class="head"><div><h1>Seu plano</h1><p>Situação da assinatura e quanto do plano você está usando.</p></div></div>
+  <div class="card" id="planoBox"><p class="mute">Carregando…</p></div>
  </section>
 </main>
 
