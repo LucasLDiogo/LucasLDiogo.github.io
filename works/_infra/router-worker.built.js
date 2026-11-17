@@ -11,7 +11,7 @@ const ALIASES = {
 const PRODUTOS = {
   "agentworks.lldworks.com.br": { slug: "agentworks", nome: "AgentWorks", cor: "#0E9F6E", dir: "portfolio/demos", entrada: "agentworks.html", frase: "Atendimento no WhatsApp com IA, base de conhecimento e passagem para humano." },
   "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "portfolio/demos", entrada: "salesworks.html", frase: "Loja online e CRM de vendas: pipeline, clientes e campanhas." },
-  "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "portfolio/demos", entrada: "serviceworks.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
+  "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "serviceworks", entrada: "index.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
   "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "portfolio/demos", entrada: "linkworks.html", frase: "Link na bio com páginas, estatísticas e proteção." },
   "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "portfolio/demos", entrada: "socialworks.html", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
   "rhworks.lldworks.com.br": { slug: "rhworks", nome: "RHWorks", cor: "#A16207", dir: "rhworks", entrada: "index.html", frase: "Triagem de currículos com IA: ranking, parecer e roteiro de entrevista.", api: true },
@@ -144,7 +144,15 @@ async function produto(req, env, url, p) {
   if (path === "/entrar") return req.method === "POST" ? entrar(req, env, url, p) : html(telaLogin(p));
   if (path === "/sair") return sair();
   // Vitrine: rotas públicas, sem login, para quem vai comprar ou agendar.
-  if (BACKENDS[p.slug] && path.startsWith("/api/publico/")) return backend(req, env, url, p, null);
+  if (BACKENDS[p.slug]) {
+    // Vitrine e seus arquivos são públicos: quem vai agendar não tem login.
+    if (path.startsWith("/api/publico/")) return backend(req, env, url, p, null);
+    if (/^\/v\/[a-z0-9-]{3,40}\/?$/.test(path) || path.startsWith("/pub/")) {
+      if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
+      if (path.includes("..")) return new Response("Inválido", { status: 400 });
+      return origem(req, p.dir + (path.startsWith("/v/") ? "/vitrine.html" : path), 60);
+    }
+  }
   const s = await sessao(req, env, p);
   if (!s) return path.startsWith("/api/") ? new Response('{"erro":"login"}', { status: 401, headers: { "Content-Type": "application/json" } }) : Response.redirect(url.origin + "/entrar", 302);
   if (BACKENDS[p.slug] && path.startsWith("/api/")) return path.startsWith("/api/admin/") ? backend(req, env, url, p, s) : jsonErro(404, "Rota não encontrada");
@@ -157,6 +165,7 @@ async function produto(req, env, url, p) {
   const arq = path === "/" || path === "/index.html" ? "/" + p.entrada : path;
   const r = await origem(req, p.dir + arq, arq === "/" + p.entrada ? 0 : 300);
   if (arq !== "/" + p.entrada || r.status !== 200) return r;
+  if (BACKENDS[p.slug]) { const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); return new Response(r.body, { status: 200, headers: h }); } // painel próprio: sem script embutido (CSP)
   // Página principal: avisa o app que o login já foi feito no servidor e põe o botão Sair.
   const marca = `<script>window.LW_AUTH=${JSON.stringify({ email: s.e, cliente: s.cn || "", slug: s.cs || "", papel: s.r || "admin" }).replace(/</g, "\\u003c")}</script>`;
   const barra = p.slug === "rhworks" ? `<a href="/sair" style="position:fixed;right:14px;bottom:14px;z-index:50;background:#16141D;color:#fff;font:600 13px Inter,sans-serif;padding:8px 14px;border-radius:99px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.2)">Sair · ${esc(s.e)}</a>` : "";

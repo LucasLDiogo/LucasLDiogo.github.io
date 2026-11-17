@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; form-action 'self'; base-uri 'none'">
+<title>ServiceWorks · Painel</title>
+<link rel="icon" href="/pub/icone.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="/pub/sw.css">
+<script src="/app.js" defer></script>
+</head><body>
+<header class="top">
+ <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#7C3AED"/><rect fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" x="14" y="17" width="36" height="33" rx="5"/><path fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M14 27h36M23 13v8M41 13v8M25 38l5 5 9-10"/></svg><span>Service<b>Works</b></span></a>
+ <span class="emp" id="empNome">Carregando…</span><span class="sp"></span>
+ <a class="btn sm ghost" id="lnkVitrine" href="#" target="_blank" rel="noopener" hidden>Ver vitrine ↗</a>
+ <a class="btn sm" href="/sair">Sair</a>
+</header>
+<nav class="nav" role="tablist" aria-label="Seções do painel">
+ <button role="tab" data-v="agenda" aria-selected="true">Agenda</button>
+ <button role="tab" data-v="clientes" aria-selected="false">Clientes</button>
+ <button role="tab" data-v="servicos" aria-selected="false">Serviços</button>
+ <button role="tab" data-v="equipe" aria-selected="false">Equipe e horários</button>
+ <button role="tab" data-v="folgas" aria-selected="false">Folgas e bloqueios</button>
+ <button role="tab" data-v="relatorios" aria-selected="false">Relatórios</button>
+ <button role="tab" data-v="config" aria-selected="false">Configurações</button>
+</nav>
+<main>
+ <section class="view on" id="v-agenda" role="tabpanel">
+  <div class="kpis" id="kpis"></div>
+  <div class="ag-bar">
+   <button class="btn sm" data-act="dia" data-d="-1" aria-label="Dia anterior">‹</button>
+   <span class="dia" id="diaTxt"></span>
+   <button class="btn sm" data-act="dia" data-d="1" aria-label="Próximo dia">›</button>
+   <button class="btn sm" data-act="hoje">Hoje</button>
+   <input type="date" id="diaSel" aria-label="Escolher dia">
+   <span style="flex:1"></span>
+   <button class="btn pri" data-act="novo">+ Novo agendamento</button>
+  </div>
+  <div class="ag" id="ag" aria-label="Agenda do dia"></div>
+  <p class="small mute" style="margin-top:8px">Clique num espaço vazio para agendar naquele horário. Área listrada = fora do expediente. “online” = marcado pelo cliente na vitrine.</p>
+ </section>
+
+ <section class="view" id="v-clientes" role="tabpanel">
+  <div class="head"><div><h1>Clientes</h1><p>Quem já agendou com você, com histórico, atendimentos e faltas.</p></div>
+   <div class="row"><input id="cliBusca" type="search" placeholder="Buscar por nome ou WhatsApp" aria-label="Buscar cliente" style="width:280px"><button class="btn pri" data-act="cliNovo">+ Cliente</button></div></div>
+  <div class="card scroll"><table><thead><tr><th>Nome</th><th>WhatsApp</th><th class="n">Atendimentos</th><th class="n">Faltas</th><th>Último horário</th><th></th></tr></thead><tbody id="cliLista"></tbody></table></div>
+ </section>
+
+ <section class="view" id="v-servicos" role="tabpanel">
+  <div class="head"><div><h1>Serviços</h1><p>O que aparece na vitrine, com duração e preço. A duração define quanto tempo o horário fica ocupado.</p></div><button class="btn pri" data-act="srvNovo" data-adm>+ Serviço</button></div>
+  <div class="card scroll"><table><thead><tr><th>Serviço</th><th>Categoria</th><th class="n">Duração</th><th class="n">Preço</th><th class="n">Promoção</th><th>Situação</th><th></th></tr></thead><tbody id="srvLista"></tbody></table></div>
+ </section>
+
+ <section class="view" id="v-equipe" role="tabpanel">
+  <div class="head"><div><h1>Equipe e horários</h1><p>Cada profissional com os serviços que faz e o horário de trabalho de cada dia da semana.</p></div><button class="btn pri" data-act="profNovo" data-adm>+ Profissional</button></div>
+  <div class="grid g2" id="profLista"></div>
+ </section>
+
+ <section class="view" id="v-folgas" role="tabpanel">
+  <div class="head"><div><h1>Folgas e bloqueios</h1><p>Feriado, férias, consulta médica: o horário bloqueado some da vitrine e do painel.</p></div><button class="btn pri" data-act="blqNovo">+ Bloqueio</button></div>
+  <div class="card scroll"><table><thead><tr><th>De</th><th>Até</th><th>Quem</th><th>Motivo</th><th></th></tr></thead><tbody id="blqLista"></tbody></table></div>
+ </section>
+
+ <section class="view" id="v-relatorios" role="tabpanel">
+  <div class="head"><div><h1>Relatórios</h1><p>Atendimentos, faturamento e faltas no período.</p></div>
+   <form class="row" id="relForm"><input type="date" id="relDe" aria-label="De" style="width:auto"><span class="mute">até</span><input type="date" id="relAte" aria-label="Até" style="width:auto"><button class="btn">Atualizar</button></form></div>
+  <div class="kpis" id="relKpis"></div>
+  <div class="grid g2"><div class="card"><h2>Serviços mais feitos</h2><div id="relSrv" style="margin-top:12px"></div></div><div class="card"><h2>Por profissional</h2><div id="relProf" style="margin-top:12px"></div></div></div>
+ </section>
+
+ <section class="view" id="v-config" role="tabpanel">
+  <div class="head"><div><h1>Configurações</h1><p>Dados da empresa, link da vitrine e regras do agendamento online.</p></div></div>
+  <form class="grid g2" id="cfgForm">
+   <div class="card"><h2>Empresa</h2>
+    <label for="cNome">Nome que aparece na vitrine</label><input id="cNome" required maxlength="120">
+    <div class="f2"><div><label for="cSeg">Segmento</label><select id="cSeg"><option value="barbearia">Barbearia</option><option value="salao">Salão de beleza</option><option value="clinica">Clínica</option><option value="petshop">Pet shop</option><option value="outro">Outro</option></select></div>
+     <div><label for="cWhats">WhatsApp da empresa</label><input id="cWhats" inputmode="tel" placeholder="(54) 99999-0000"></div></div>
+    <label for="cEnd">Endereço</label><input id="cEnd" maxlength="200">
+    <label for="cSobre">Sobre (aparece no topo da vitrine)</label><textarea id="cSobre" maxlength="600"></textarea>
+    <label for="cCor">Cor da vitrine</label><input type="color" id="cCor">
+   </div>
+   <div class="card"><h2>Agendamento online</h2>
+    <label for="cSlug">Endereço da vitrine</label>
+    <div class="row" style="flex-wrap:nowrap"><span class="mute small" style="white-space:nowrap">serviceworks.lldworks.com.br/v/</span><input id="cSlug" required minlength="3" maxlength="40" pattern="[a-z0-9\-]+"></div>
+    <p class="help">Só letras minúsculas, números e hífen. Mudar o endereço quebra links já divulgados.</p>
+    <div class="row" style="margin-top:8px"><button type="button" class="btn sm" data-act="copiarLink">Copiar link</button><a class="btn sm" id="cfgAbrir" target="_blank" rel="noopener">Abrir vitrine ↗</a></div>
+    <div class="f2"><div><label for="cAnt">Antecedência mínima (min)</label><input id="cAnt" type="number" min="0" max="2880" step="15"></div>
+     <div><label for="cJan">Agenda aberta por (dias)</label><input id="cJan" type="number" min="1" max="120"></div>
+     <div><label for="cInt">Horários a cada (min)</label><select id="cInt"><option>5</option><option>10</option><option>15</option><option>20</option><option>30</option><option>60</option></select></div></div>
+    <label class="chk" style="margin-top:16px"><input type="checkbox" id="cAtiva"> Vitrine aceitando agendamentos</label>
+    <p class="err" id="cfgErr" role="alert"></p>
+    <div class="row" style="justify-content:flex-end"><button class="btn pri" data-adm>Salvar configurações</button></div>
+   </div>
+  </form>
+ </section>
+</main>
+
+<dialog id="dlgAg"><form method="dialog" id="fAg">
+ <h2>Novo agendamento</h2>
+ <div class="f2"><div><label for="agSrv">Serviço</label><select id="agSrv" required></select></div><div><label for="agProf">Profissional</label><select id="agProf" required></select></div></div>
+ <div class="f2"><div><label for="agData">Dia</label><input type="date" id="agData" required></div><div><label for="agHora">Hora</label><input type="time" id="agHora" step="300" required></div></div>
+ <p class="small mute" style="margin-top:10px">Horários livres:</p><div class="slots" id="agSlots" style="margin-top:6px"></div>
+ <label for="agCli">Cliente</label><input id="agCli" list="agCliLista" placeholder="Digite o nome ou WhatsApp de quem já é cliente" autocomplete="off"><datalist id="agCliLista"></datalist>
+ <div class="f2" id="agNovoCli"><div><label for="agNome">Nome (cliente novo)</label><input id="agNome" maxlength="80"></div><div><label for="agWhats">WhatsApp</label><input id="agWhats" inputmode="tel" placeholder="(54) 99999-0000"></div></div>
+ <label for="agObs">Observações</label><input id="agObs" maxlength="300">
+ <label class="chk" style="margin-top:12px"><input type="checkbox" id="agEnc"> Encaixe (agendar mesmo se o horário estiver ocupado)</label>
+ <p class="err" id="agErr" role="alert"></p>
+ <div class="acts"><button value="x" class="btn" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Agendar</button></div>
+</form></dialog>
+
+<dialog id="dlgEv"><form method="dialog" id="fEv">
+ <div class="row sb"><h2 id="evTit"></h2><span id="evSt"></span></div>
+ <p id="evInfo" class="mute" style="margin-top:6px"></p>
+ <div class="row" style="margin-top:14px">
+  <button type="button" class="btn ok sm" data-ev="concluido">Concluído</button>
+  <button type="button" class="btn sm" data-ev="faltou">Faltou</button>
+  <button type="button" class="btn bad sm" data-ev="cancelado">Cancelar</button>
+  <button type="button" class="btn sm" data-ev="confirmado">Voltar para confirmado</button>
+  <a class="btn sm" id="evWhats" target="_blank" rel="noopener">WhatsApp ↗</a>
+ </div>
+ <h3 style="margin-top:18px">Remarcar</h3>
+ <div class="f2"><div><label for="evData">Dia</label><input type="date" id="evData"></div><div><label for="evHora">Hora</label><input type="time" id="evHora" step="300"></div><div><label for="evProf">Profissional</label><select id="evProf"></select></div></div>
+ <label for="evObs">Observações</label><input id="evObs" maxlength="300">
+ <p class="err" id="evErr" role="alert"></p>
+ <div class="acts"><button value="x" class="btn" formnovalidate>Fechar</button><button type="button" class="btn" data-ev="obs">Salvar observação</button><button type="button" class="btn pri" data-ev="remarcar">Remarcar</button></div>
+</form></dialog>
+
+<dialog id="dlgSrv"><form method="dialog" id="fSrv">
+ <h2 id="srvTit">Serviço</h2>
+ <label for="sNome">Nome</label><input id="sNome" required maxlength="80">
+ <div class="f2"><div><label for="sCat">Categoria</label><input id="sCat" maxlength="40" placeholder="Cabelo, Barba, Combos…"></div><div><label for="sDur">Duração (min)</label><input id="sDur" type="number" min="5" max="600" step="5" required></div></div>
+ <div class="f2"><div><label for="sPreco">Preço (R$)</label><input id="sPreco" inputmode="decimal" required placeholder="45,00"></div><div><label for="sPromo">Preço promocional (R$)</label><input id="sPromo" inputmode="decimal" placeholder="opcional"></div><div><label for="sOrdem">Ordem na vitrine</label><input id="sOrdem" type="number" min="0" max="999"></div></div>
+ <label for="sDesc">Descrição</label><input id="sDesc" maxlength="300">
+ <div class="marcas" style="margin-top:12px"><label class="chk"><input type="checkbox" id="sCombo"> Combo</label><label class="chk"><input type="checkbox" id="sAtivo"> Ativo na vitrine</label></div>
+ <p class="err" id="srvErr" role="alert"></p>
+ <div class="acts"><button value="x" class="btn" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<dialog id="dlgProf" style="width:min(680px,96vw)"><form method="dialog" id="fProf">
+ <h2 id="profTit">Profissional</h2>
+ <div class="f2"><div><label for="pNome">Nome</label><input id="pNome" required maxlength="80"></div><div><label for="pFunc">Função</label><input id="pFunc" maxlength="60" placeholder="Barbeiro, Cabeleireira…"></div><div><label for="pOrdem">Ordem</label><input id="pOrdem" type="number" min="0" max="999"></div></div>
+ <label class="chk" style="margin-top:12px"><input type="checkbox" id="pAtivo"> Atende (aparece na agenda e na vitrine)</label>
+ <h3 style="margin-top:16px">Serviços que faz</h3><div class="marcas" id="pServ" style="margin-top:8px"></div>
+ <h3 style="margin-top:16px">Horário de trabalho</h3><p class="help">Use dois turnos para marcar o almoço. Dia sem turno = folga.</p><div class="semana" id="pSem"></div>
+ <p class="err" id="profErr" role="alert"></p>
+ <div class="acts"><button value="x" class="btn" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<dialog id="dlgBlq"><form method="dialog" id="fBlq">
+ <h2>Bloquear horário</h2>
+ <label for="bProf">Quem</label><select id="bProf"></select>
+ <div class="f2"><div><label for="bIni">De</label><input type="datetime-local" id="bIni" required step="300"></div><div><label for="bFim">Até</label><input type="datetime-local" id="bFim" required step="300"></div></div>
+ <label for="bMot">Motivo</label><input id="bMot" maxlength="120" placeholder="Feriado, férias, curso…">
+ <p class="help">Agendamentos já marcados nesse período continuam: confira a agenda e avise os clientes.</p>
+ <p class="err" id="blqErr" role="alert"></p>
+ <div class="acts"><button value="x" class="btn" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Bloquear</button></div>
+</form></dialog>
+
+<dialog id="dlgCli" style="width:min(640px,96vw)"><form method="dialog" id="fCli">
+ <h2 id="cliTit">Cliente</h2>
+ <div class="f2"><div><label for="kNome">Nome</label><input id="kNome" required maxlength="80"></div><div><label for="kWhats">WhatsApp</label><input id="kWhats" required inputmode="tel"></div></div>
+ <label for="kObs">Observações (preferências, alergias, nome do pet…)</label><textarea id="kObs" maxlength="600"></textarea>
+ <div id="kHist"></div>
+ <p class="err" id="cliErr" role="alert"></p>
+ <div class="acts"><a class="btn" id="kWa" target="_blank" rel="noopener">WhatsApp ↗</a><button value="x" class="btn" formnovalidate>Fechar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body></html>

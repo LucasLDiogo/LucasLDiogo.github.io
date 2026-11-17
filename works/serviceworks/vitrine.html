@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; form-action 'self'; base-uri 'none'">
+<meta name="description" content="Agende seu horário online.">
+<meta name="theme-color" content="#7C3AED">
+<title>Agendar horário</title>
+<link rel="icon" href="/pub/icone.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/pub/sw.css">
+<link rel="stylesheet" href="/pub/vitrine.css">
+<script src="/pub/vitrine.js" defer></script>
+</head><body class="vt">
+<header class="capa">
+ <div class="in"><p class="seg" id="vSeg"></p><h1 id="vNome">Carregando agenda…</h1><p id="vSobre"></p>
+  <div class="row" style="margin-top:14px"><span class="chip" id="vEnd" hidden></span><a class="btn sm" id="vWa" target="_blank" rel="noopener" hidden>Falar no WhatsApp</a></div></div>
+</header>
+<main class="vmain">
+ <div id="vErro" class="card" hidden><h2 id="vErroT"></h2><p class="mute" id="vErroM" style="margin-top:6px"></p></div>
+
+ <form id="fluxo" hidden novalidate>
+  <section class="passo" id="p1"><h2><span class="n">1</span>Escolha o serviço</h2><div id="lServ"></div></section>
+  <section class="passo" id="p2" hidden><h2><span class="n">2</span>Com quem?</h2><div class="opcoes" id="lProf"></div></section>
+  <section class="passo" id="p3" hidden><h2><span class="n">3</span>Dia e horário</h2>
+   <div class="dias" id="lDias" aria-label="Dia"></div>
+   <div id="lHoras" style="margin-top:14px"></div></section>
+  <section class="passo" id="p4" hidden><h2><span class="n">4</span>Seus dados</h2>
+   <div class="resumo" id="resumo"></div>
+   <label for="fNome">Seu nome</label><input id="fNome" autocomplete="name" maxlength="80" required>
+   <label for="fWhats">WhatsApp com DDD</label><input id="fWhats" type="tel" inputmode="tel" autocomplete="tel" placeholder="(54) 99999-0000" required>
+   <label for="fObs">Observação (opcional)</label><input id="fObs" maxlength="300">
+   <p class="err" id="fErr" role="alert"></p>
+   <button class="btn pri full grande" id="fOk">Confirmar agendamento</button>
+   <p class="tiny mute" style="margin-top:8px;text-align:center">Seu nome e WhatsApp ficam só com o estabelecimento, para confirmar e lembrar do horário.</p>
+  </section>
+ </form>
+
+ <section id="ok" class="card ok" hidden aria-live="polite">
+  <div class="selo" aria-hidden="true">✓</div>
+  <h2>Horário marcado!</h2>
+  <p class="mute" id="okResumo" style="margin-top:6px"></p>
+  <p style="margin-top:14px">Seu código: <b class="codigo" id="okCod"></b></p>
+  <p class="tiny mute">Guarde o código: com ele e o seu WhatsApp você consulta ou cancela.</p>
+  <div class="grid" style="margin-top:16px;gap:8px">
+   <a class="btn pri full" id="okWa" target="_blank" rel="noopener" hidden>Avisar o estabelecimento no WhatsApp</a>
+   <a class="btn full" id="okIcs" download="agendamento.ics">Adicionar à minha agenda</a>
+   <button class="btn ghost full" type="button" id="okNovo">Marcar outro horário</button>
+  </div>
+ </section>
+
+ <details class="card consulta" id="consulta">
+  <summary>Já agendou? Consultar ou cancelar</summary>
+  <form id="fCons" novalidate>
+   <div class="f2"><div><label for="cCod">Código</label><input id="cCod" maxlength="12" autocapitalize="characters" required></div><div><label for="cWhats">WhatsApp usado</label><input id="cWhats" type="tel" inputmode="tel" required></div></div>
+   <p class="err" id="cErr" role="alert"></p>
+   <button class="btn full" style="margin-top:6px">Consultar</button>
+  </form>
+  <div id="cRes"></div>
+ </details>
+</main>
+<footer class="rodape">Agenda online por <a href="https://produtos.lldworks.com.br/#serviceworks" target="_blank" rel="noopener">ServiceWorks · LLD Works</a></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body></html>
