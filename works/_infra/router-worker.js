@@ -112,12 +112,42 @@ async function entrar(req, env, url, p) {
 function sair() {
   return new Response(null, { status: 303, headers: { Location: "/entrar", "Cache-Control": "no-store", "Set-Cookie": "lw_s=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0", ...SEG } });
 }
+// ---------- API dos produtos com backend próprio (service binding) ----------
+// O navegador nunca fala direto com o Worker do produto: o roteador confere a sessão e envia quem é o cliente
+// em cabeçalhos x-lw-*. Cópias desses cabeçalhos vindas do navegador são descartadas.
+const BACKENDS = { serviceworks: { binding: "SERVICEWORKS", host: "sw.interno" } };
+const jsonErro = (s, erro) => new Response(JSON.stringify({ erro }), { status: s, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SEG } });
+async function backend(req, env, url, p, s) {
+  const b = BACKENDS[p.slug], alvo = b && env[b.binding];
+  if (!alvo) return jsonErro(503, "Serviço indisponível. Tente em alguns minutos.");
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    const o = req.headers.get("Origin");
+    if (o && o !== url.origin) return jsonErro(403, "Origem inválida");
+  }
+  const h = new Headers();
+  for (const k of ["content-type", "accept"]) if (req.headers.get(k)) h.set(k, req.headers.get(k));
+  h.set("x-lw-ip", req.headers.get("CF-Connecting-IP") || "?");
+  if (s) {
+    h.set("x-lw-cliente", String(s.c)); h.set("x-lw-email", s.e); h.set("x-lw-papel", s.r || "admin");
+    h.set("x-lw-slug", s.cs || ""); h.set("x-lw-nome", encodeURIComponent(s.cn || ""));
+  }
+  const corpo = req.method === "GET" || req.method === "HEAD" ? undefined : await req.arrayBuffer();
+  if (corpo && corpo.byteLength > 64 * 1024) return jsonErro(413, "Envio grande demais.");
+  const r = await alvo.fetch(new Request(`https://${b.host}${url.pathname}${url.search}`, { method: req.method, headers: h, body: corpo }));
+  const rh = new Headers(r.headers);
+  for (const [k, v] of Object.entries(SEG)) rh.set(k, v);
+  return new Response(r.body, { status: r.status, headers: rh });
+}
+
 async function produto(req, env, url, p) {
   const path = url.pathname;
   if (path === "/entrar") return req.method === "POST" ? entrar(req, env, url, p) : html(telaLogin(p));
   if (path === "/sair") return sair();
+  // Vitrine: rotas públicas, sem login, para quem vai comprar ou agendar.
+  if (BACKENDS[p.slug] && path.startsWith("/api/publico/")) return backend(req, env, url, p, null);
   const s = await sessao(req, env, p);
   if (!s) return path.startsWith("/api/") ? new Response('{"erro":"login"}', { status: 401, headers: { "Content-Type": "application/json" } }) : Response.redirect(url.origin + "/entrar", 302);
+  if (BACKENDS[p.slug] && path.startsWith("/api/")) return path.startsWith("/api/admin/") ? backend(req, env, url, p, s) : jsonErro(404, "Rota não encontrada");
   if (p.api && CRIVO_ROTAS.test(path) && !path.startsWith("/lib/")) {
     if (!env.CRIVO) return new Response("Serviço indisponível", { status: 503 });
     return env.CRIVO.fetch(new Request("https://crivo.lldworks.com.br" + path + url.search, req));
