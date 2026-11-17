@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com; frame-src 'self'; form-action 'self'; base-uri 'none'">
+<title>LinkWorks · Painel</title>
+<link rel="icon" href="/pub/icone.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="/pub/base.css">
+<style>
+.lay{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
+.cel{position:sticky;top:120px}
+.cel .moldura{width:330px;height:640px;margin:0 auto;border:10px solid #17142A;border-radius:42px;overflow:hidden;background:#fff;box-shadow:0 30px 60px -24px rgba(23,20,42,.45)}
+.cel iframe{width:100%;height:100%;border:0;display:block}
+.cel .end{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.cel .end code{font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.op{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.op label{margin:0;border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:center;cursor:pointer;color:var(--ink);font-weight:600}
+.op input{position:absolute;opacity:0;pointer-events:none}
+.op label:has(input:checked){border-color:var(--p);background:var(--pk);color:var(--p)}
+.op label:has(input:focus-visible){outline:3px solid color-mix(in oklab,var(--p) 55%,transparent)}
+.lista{display:grid;gap:8px}
+.it{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.it.off{opacity:.55}.it .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.it .t span{font-size:12.5px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.it .mv{display:flex;flex-direction:column;gap:2px}.it .mv button{min-height:24px;padding:0 8px}
+.graf{display:flex;align-items:flex-end;gap:3px;height:160px;padding-top:8px}
+.graf .c{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;min-width:3px;height:100%}
+.graf .c i{display:block;background:var(--p);border-radius:3px 3px 0 0;min-height:1px}.graf .c i.k{background:color-mix(in oklab,var(--p) 40%,var(--card))}
+.leg{display:flex;gap:14px;font-size:12.5px;color:var(--mute)}.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--p);margin-right:5px;vertical-align:-1px}.leg i.k{background:color-mix(in oklab,var(--p) 40%,var(--card))}
+@media(max-width:1000px){.lay{grid-template-columns:1fr}.cel{position:static}}
+</style>
+<script src="/pub/painel.js" defer></script>
+</head><body>
+<header class="top">
+ <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#DB2777"/><path fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M29 35a8 8 0 0 0 11.3 0l6-6a8 8 0 0 0-11.3-11.3l-2.5 2.5M35 29a8 8 0 0 0-11.3 0l-6 6a8 8 0 0 0 11.3 11.3l2.5-2.5"/></svg><span>Link<b>Works</b></span></a>
+ <span class="emp" id="nomeTopo">Carregando…</span><span class="sp"></span>
+ <a class="btn sm ghost" id="verPagina" target="_blank" rel="noopener" hidden>Ver minha página ↗</a>
+ <a class="btn sm" href="/sair">Sair</a>
+</header>
+<nav class="nav" role="tablist" aria-label="Seções do painel">
+ <button role="tab" data-v="links" aria-selected="true">Links</button>
+ <button role="tab" data-v="pagina" aria-selected="false">Aparência e perfil</button>
+ <button role="tab" data-v="estat" aria-selected="false">Estatísticas</button>
+</nav>
+<main>
+ <div class="lay">
+  <div>
+   <section class="view on" id="v-links" role="tabpanel">
+    <div class="head"><div><h1>Seus links</h1><p>O primeiro da lista aparece no topo. Use “destaque” para o botão principal.</p></div></div>
+    <form class="card" id="fNovo" style="margin-bottom:14px" data-adm>
+     <div class="f2"><div><label for="nTit">Texto do botão</label><input id="nTit" maxlength="80" placeholder="Ex.: Fazer pedido no WhatsApp" required></div><div><label for="nUrl">Endereço</label><input id="nUrl" maxlength="600" placeholder="https://… ou wa.me/55…" required inputmode="url"></div></div>
+     <p class="err" id="nErr" role="alert"></p>
+     <div class="row" style="justify-content:flex-end"><button class="btn pri">+ Adicionar link</button></div>
+    </form>
+    <div class="lista" id="lista"></div>
+   </section>
+
+   <section class="view" id="v-pagina" role="tabpanel">
+    <div class="head"><div><h1>Aparência e perfil</h1><p>As mudanças aparecem na prévia ao lado assim que você salva.</p></div></div>
+    <form class="grid" id="fPag">
+     <div class="card"><h2>Perfil</h2>
+      <label for="pTit">Nome</label><input id="pTit" maxlength="80" required>
+      <label for="pBio">Bio</label><textarea id="pBio" maxlength="300" placeholder="Uma frase sobre você ou seu negócio"></textarea>
+      <label for="pFoto">Foto (link https de uma imagem)</label><input id="pFoto" maxlength="500" inputmode="url" placeholder="https://…/foto.jpg">
+      <p class="help">Sem foto, mostramos as iniciais do nome na cor escolhida.</p>
+     </div>
+     <div class="card"><h2>Aparência</h2>
+      <label for="pCor">Cor principal</label><input type="color" id="pCor">
+      <label>Fundo</label><div class="op" role="radiogroup" aria-label="Fundo"><label><input type="radio" name="fundo" value="claro">Claro</label><label><input type="radio" name="fundo" value="escuro">Escuro</label><label><input type="radio" name="fundo" value="cor">Na cor</label></div>
+      <label>Botões</label><div class="op" role="radiogroup" aria-label="Botões"><label><input type="radio" name="botao" value="arredondado">Arredondado</label><label><input type="radio" name="botao" value="pilula">Pílula</label><label><input type="radio" name="botao" value="quadrado">Reto</label></div>
+     </div>
+     <div class="card"><h2>Redes sociais</h2><p class="help">Use @usuario, o link completo ou, no WhatsApp, o número com DDD.</p>
+      <div class="f2" id="redes"></div>
+     </div>
+     <div class="card"><h2>Endereço e publicação</h2>
+      <label for="pSlug">Endereço da página</label>
+      <div class="row" style="flex-wrap:nowrap"><span class="mute small" style="white-space:nowrap;flex:none">linkworks.lldworks.com.br/</span><input id="pSlug" required minlength="3" maxlength="30"></div>
+      <p class="help">Letras minúsculas, números, ponto, hífen ou sublinhado. Mudar o endereço quebra o link que já está na sua bio.</p>
+      <label class="chk" style="margin-top:12px"><input type="checkbox" id="pPub"> Página no ar</label>
+      <p class="err" id="pErr" role="alert"></p>
+      <div class="row" style="justify-content:flex-end"><button class="btn pri" data-adm>Salvar</button></div>
+     </div>
+    </form>
+   </section>
+
+   <section class="view" id="v-estat" role="tabpanel">
+    <div class="head"><div><h1>Estatísticas</h1><p>Contamos visitas e cliques sem guardar dados pessoais de quem visita.</p></div>
+     <div class="op" style="grid-template-columns:repeat(3,auto)" role="radiogroup" aria-label="Período"><label><input type="radio" name="dias" value="7">7 dias</label><label><input type="radio" name="dias" value="30" checked>30 dias</label><label><input type="radio" name="dias" value="90">90 dias</label></div></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="card" style="margin-bottom:14px"><div class="row sb"><h2>Por dia</h2><div class="leg"><span><i></i>Visitas</span><span><i class="k"></i>Cliques</span></div></div><div class="graf" id="graf" role="img" aria-label="Visitas e cliques por dia"></div><div class="row sb tiny mute" id="grafEixo"></div></div>
+    <div class="grid g2"><div class="card"><h2>Links mais clicados</h2><div id="topLinks" style="margin-top:12px"></div></div><div class="card"><h2>De onde vêm as visitas</h2><div id="origens" style="margin-top:12px"></div></div></div>
+   </section>
+  </div>
+  <aside class="cel" aria-label="Prévia da página">
+   <div class="moldura"><iframe id="previa" title="Prévia da sua página" sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe></div>
+   <div class="end"><code id="endereco"></code><button class="btn sm" type="button" data-act="copiar">Copiar link</button></div>
+  </aside>
+ </div>
+</main>
+
+<dialog id="dLink"><form method="dialog" id="fLink">
+ <h2>Editar link</h2>
+ <label for="eTit">Texto do botão</label><input id="eTit" maxlength="80" required>
+ <label for="eUrl">Endereço</label><input id="eUrl" maxlength="600" required inputmode="url">
+ <div class="f2"><div><label for="eIni">Aparece a partir de (opcional)</label><input type="datetime-local" id="eIni"></div><div><label for="eFim">Some em (opcional)</label><input type="datetime-local" id="eFim"></div></div>
+ <div class="marcas" style="margin-top:12px"><label class="chk"><input type="checkbox" id="eDst"> Destaque</label><label class="chk"><input type="checkbox" id="eAtv"> Ativo</label></div>
+ <p class="err" id="eErr" role="alert"></p>
+ <div class="acts"><button value="x" class="btn" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body></html>

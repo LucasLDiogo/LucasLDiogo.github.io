@@ -12,7 +12,7 @@ const PRODUTOS = {
   "agentworks.lldworks.com.br": { slug: "agentworks", nome: "AgentWorks", cor: "#0E9F6E", dir: "portfolio/demos", entrada: "agentworks.html", frase: "Atendimento no WhatsApp com IA, base de conhecimento e passagem para humano." },
   "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "portfolio/demos", entrada: "salesworks.html", frase: "Loja online e CRM de vendas: pipeline, clientes e campanhas." },
   "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "serviceworks", entrada: "index.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
-  "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "portfolio/demos", entrada: "linkworks.html", frase: "Link na bio com páginas, estatísticas e proteção." },
+  "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "linkworks", entrada: "index.html", frase: "Link na bio com páginas, estatísticas e proteção." },
   "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "portfolio/demos", entrada: "socialworks.html", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
   "rhworks.lldworks.com.br": { slug: "rhworks", nome: "RHWorks", cor: "#A16207", dir: "rhworks", entrada: "index.html", frase: "Triagem de currículos com IA: ranking, parecer e roteiro de entrevista.", api: true },
 };
@@ -115,9 +115,12 @@ function sair() {
 // ---------- API dos produtos com backend próprio (service binding) ----------
 // O navegador nunca fala direto com o Worker do produto: o roteador confere a sessão e envia quem é o cliente
 // em cabeçalhos x-lw-*. Cópias desses cabeçalhos vindas do navegador são descartadas.
-const BACKENDS = { serviceworks: { binding: "SERVICEWORKS", host: "sw.interno" } };
+const BACKENDS = { serviceworks: { binding: "SERVICEWORKS", host: "sw.interno" }, linkworks: { binding: "LINKWORKS", host: "lw.interno" } };
+// LinkWorks: linkworks.lldworks.com.br/<endereço> é a página pública; /<endereço>/l/<id> conta o clique.
+const LW_PUBLICA = /^\/([a-z0-9][a-z0-9_.-]{2,29})(\/l\/\d{1,9})?\/?$/;
+const LW_RESERVADO = /^(entrar|sair|api|pub|index\.html|favicon\.ico|robots\.txt)$/;
 const jsonErro = (s, erro) => new Response(JSON.stringify({ erro }), { status: s, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SEG } });
-async function backend(req, env, url, p, s) {
+async function backend(req, env, url, p, s, caminho = url.pathname) {
   const b = BACKENDS[p.slug], alvo = b && env[b.binding];
   if (!alvo) return jsonErro(503, "Serviço indisponível. Tente em alguns minutos.");
   if (req.method !== "GET" && req.method !== "HEAD") {
@@ -127,13 +130,14 @@ async function backend(req, env, url, p, s) {
   const h = new Headers();
   for (const k of ["content-type", "accept"]) if (req.headers.get(k)) h.set(k, req.headers.get(k));
   h.set("x-lw-ip", req.headers.get("CF-Connecting-IP") || "?");
+  if (!s) for (const k of ["user-agent", "referer"]) if (req.headers.get(k)) h.set(k, req.headers.get(k).slice(0, 500));
   if (s) {
     h.set("x-lw-cliente", String(s.c)); h.set("x-lw-email", s.e); h.set("x-lw-papel", s.r || "admin");
     h.set("x-lw-slug", s.cs || ""); h.set("x-lw-nome", encodeURIComponent(s.cn || ""));
   }
   const corpo = req.method === "GET" || req.method === "HEAD" ? undefined : await req.arrayBuffer();
   if (corpo && corpo.byteLength > 64 * 1024) return jsonErro(413, "Envio grande demais.");
-  const r = await alvo.fetch(new Request(`https://${b.host}${url.pathname}${url.search}`, { method: req.method, headers: h, body: corpo }));
+  const r = await alvo.fetch(new Request(`https://${b.host}${caminho}${url.search}`, { method: req.method, headers: h, body: corpo, redirect: "manual" }));
   const rh = new Headers(r.headers);
   for (const [k, v] of Object.entries(SEG)) rh.set(k, v);
   return new Response(r.body, { status: r.status, headers: rh });
@@ -145,12 +149,18 @@ async function produto(req, env, url, p) {
   if (path === "/sair") return sair();
   // Vitrine: rotas públicas, sem login, para quem vai comprar ou agendar.
   if (BACKENDS[p.slug]) {
-    // Vitrine e seus arquivos são públicos: quem vai agendar não tem login.
-    if (path.startsWith("/api/publico/")) return backend(req, env, url, p, null);
-    if (/^\/v\/[a-z0-9-]{3,40}\/?$/.test(path) || path.startsWith("/pub/")) {
+    // Partes públicas dos produtos com backend próprio: arquivos /pub/, vitrine do ServiceWorks e páginas do LinkWorks.
+    const estatico = path.startsWith("/pub/") || (p.slug === "serviceworks" && /^\/v\/[a-z0-9-]{3,40}\/?$/.test(path));
+    if (estatico) {
       if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
       if (path.includes("..")) return new Response("Inválido", { status: 400 });
       return origem(req, p.dir + (path.startsWith("/v/") ? "/vitrine.html" : path), 60);
+    }
+    if (p.slug === "serviceworks" && path.startsWith("/api/publico/")) return backend(req, env, url, p, null);
+    const lw = p.slug === "linkworks" && path.match(LW_PUBLICA);
+    if (lw && !LW_RESERVADO.test(lw[1])) {
+      if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
+      return backend(req, env, url, p, null, `/p/${lw[1]}${lw[2] || ""}`);
     }
   }
   const s = await sessao(req, env, p);
