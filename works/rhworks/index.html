@@ -893,7 +893,7 @@ function relatorio(vid){const v=vagaDe(vid);if(!v)return;const rk=ranking(vid).f
  <h2>Quem vale conversar</h2>${fichas||'<p>Nenhum candidato indicado ainda.</p>'}
  <h2>Ranking completo</h2><table><thead><tr><th>#</th><th>Candidato</th><th>Nota</th><th>Sugestão do RHWorks</th><th>Decisão do RH</th></tr></thead><tbody>${linhas}</tbody></table>
  <p class="nota">Nota de 0 a 100 = ${S.cfg.prov==='local'?'critérios da vaga':`${100-S.cfg.pesoIA}% critérios da vaga + ${S.cfg.pesoIA}% leitura do Llama`}. A sugestão apoia a decisão; quem decide é o RH. Sexo, cor/raça e idade não são critério de seleção (Lei 9.029/95). Documento com dados pessoais: compartilhe só com quem participa do processo (LGPD). Gerado pelo RHWorks · © 2026 Lucas L. Diogo · LLD Works.</p>
- </body></html>`;
+ <\/body></html>`;
  const w=window.open('','_blank');if(!w){baixar(`relatorio-${norm(v.titulo).replace(/\W+/g,'-')}.html`,html,'text/html');toast('O navegador bloqueou a janela; o relatório foi baixado como arquivo');return}w.document.open();w.document.write(html);w.document.close()}
 
 /* ============ COMPARAR ============ */
