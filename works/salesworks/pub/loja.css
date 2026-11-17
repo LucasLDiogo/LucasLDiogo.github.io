@@ -1,0 +1,64 @@
+/* SalesWorks — loja online pública. Celular primeiro. --p vem da cor da loja. */
+.lj{background:var(--bg);padding-bottom:96px}
+.capa{background:linear-gradient(160deg,var(--p),color-mix(in oklab,var(--p) 55%,#0C0B12));color:#fff;padding:30px 18px 58px}
+.capa .in{max-width:1080px;margin:0 auto}
+.capa h1{font-size:clamp(26px,6vw,38px);font-weight:800;color:#fff}
+.capa p{opacity:.92;margin-top:8px;max-width:60ch}
+.capa .chip{background:rgba(255,255,255,.16);color:#fff;white-space:normal}
+.capa .chip.on::before{content:"";width:8px;height:8px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 3px rgba(74,222,128,.3)}
+.capa .chip.off::before{content:"";width:8px;height:8px;border-radius:50%;background:#FCA5A5}
+.capa .btn{background:#fff;color:var(--p);border-color:#fff}
+.capa .btn.ghost{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.35)}
+.lmain{max-width:1080px;margin:-34px auto 0;padding:0 12px;position:relative}
+.filtro{position:sticky;top:0;z-index:5;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:var(--sh);display:grid;gap:8px}
+.cats{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.cats button{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:6px 14px;font-weight:600;cursor:pointer;min-height:38px;color:var(--ink)}
+.cats button[aria-pressed=true]{background:var(--p);border-color:var(--p);color:#fff}
+.sec{font:800 18px Montserrat,sans-serif;margin:22px 4px 10px}
+.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:12px}
+.pd{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.pd .ft{aspect-ratio:3/2;background:var(--pk);display:grid;place-items:center;font:800 40px Montserrat,sans-serif;color:var(--p);position:relative}
+.pd .ft img{width:100%;height:100%;object-fit:cover;display:block}
+.pd .ft .chip{position:absolute;left:8px;top:8px;background:var(--card)}
+.pd .cp{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.pd .nm{font-weight:700;line-height:1.3}
+.pd .ds{font-size:13px;color:var(--mute);line-height:1.35}
+.pd .pr{margin-top:auto;padding-top:8px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.pd .pr b{font:800 18px Montserrat,sans-serif}.pd .pr s{color:var(--mute);font-size:13px}.pd .pr span{color:var(--mute);font-size:13px}
+.pd .ac{padding:0 12px 12px}
+.pd.esg{opacity:.6}
+.step{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;border:1.5px solid var(--p);border-radius:12px;overflow:hidden;min-height:44px}
+.step button{border:0;background:var(--pk);color:var(--p);font:700 20px/1 Inter,sans-serif;height:100%;min-height:42px;cursor:pointer}
+.step output{text-align:center;font-weight:700}
+.barra{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%)}
+.barra .btn{width:min(560px,100%);margin:0 auto;display:flex;justify-content:space-between;min-height:54px;border-radius:14px;font-size:16px;box-shadow:0 12px 30px -10px color-mix(in oklab,var(--p) 70%,transparent)}
+.carr .it{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.carr .it .v{font-size:13px;color:var(--mute)}
+.carr .step{min-height:38px;grid-template-columns:38px 1fr 38px}.carr .step button{min-height:36px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.opts label{margin:0;border:1.5px solid var(--line);border-radius:12px;padding:11px 10px;text-align:center;cursor:pointer;color:var(--ink);font-weight:600;font-size:14.5px}
+.opts input{position:absolute;opacity:0;pointer-events:none}
+.opts label:has(input:checked){border-color:var(--p);background:var(--pk);color:var(--p)}
+.opts label:has(input:focus-visible){outline:3px solid color-mix(in oklab,var(--p) 55%,transparent)}
+.tot{display:grid;grid-template-columns:1fr auto;gap:4px 16px;margin-top:12px}.tot .g{font:800 19px Montserrat,sans-serif}
+.aviso{background:color-mix(in oklab,var(--warn) 12%,var(--card));color:var(--warn);border-radius:10px;padding:9px 12px;font-size:14px;font-weight:600;margin-top:10px}
+.ok-ic{width:64px;height:64px;border-radius:50%;background:color-mix(in oklab,var(--ok) 15%,var(--card));color:var(--ok);display:grid;place-items:center;font-size:32px;margin:0 auto 10px}
+.pix{display:flex;gap:8px;align-items:center;background:var(--soft);border-radius:12px;padding:10px 12px;margin-top:12px}.pix code{flex:1;word-break:break-all;font-size:14px}
+.linha{display:grid;gap:0;margin-top:14px}
+.linha .e{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;padding-bottom:12px;position:relative;color:var(--mute)}
+.linha .e::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid var(--line);background:var(--card);margin-top:3px;z-index:1}
+.linha .e:not(:last-child)::after{content:"";position:absolute;left:8px;top:18px;bottom:0;width:2px;background:var(--line)}
+.linha .e.feito{color:var(--ink)}.linha .e.feito::before{background:var(--p);border-color:var(--p)}
+.linha .e.atual{font-weight:700}
+dialog.sheet{width:min(560px,100vw);max-height:94vh;margin:auto auto 0;border-radius:20px 20px 0 0}
+@media(min-width:640px){dialog.sheet{margin:auto;border-radius:20px}}
+@media(max-width:560px){
+ .prods{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .pd{border-radius:14px}.pd .ft{aspect-ratio:1;font-size:30px}
+ .pd .cp{padding:10px 10px 8px}.pd .nm{font-size:14px}.pd .ds{font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .pd .pr b{font-size:16px}.pd .ac{padding:0 8px 10px}
+ .pd .step{grid-template-columns:36px 1fr 36px}.pd .step output{font-size:13.5px}
+ .pd .btn{min-height:40px;padding:6px 8px}
+ .capa{padding:24px 16px 52px}
+}
+.rod{text-align:center;color:var(--mute);font-size:12.5px;padding:28px 12px}.rod a{color:var(--mute)}

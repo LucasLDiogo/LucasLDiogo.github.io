@@ -10,7 +10,7 @@ const ALIASES = {
 // Produtos com login: cada um no próprio endereço. dir = pasta em /works/, entrada = página principal.
 const PRODUTOS = {
   "agentworks.lldworks.com.br": { slug: "agentworks", nome: "AgentWorks", cor: "#0E9F6E", dir: "portfolio/demos", entrada: "agentworks.html", frase: "Atendimento no WhatsApp com IA, base de conhecimento e passagem para humano." },
-  "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "portfolio/demos", entrada: "salesworks.html", frase: "Loja online e CRM de vendas: pipeline, clientes e campanhas." },
+  "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "salesworks", entrada: "index.html", frase: "Loja online com pedidos no WhatsApp, estoque e CRM de clientes." },
   "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "serviceworks", entrada: "index.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
   "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "linkworks", entrada: "index.html", frase: "Link na bio com páginas, estatísticas e proteção." },
   "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "portfolio/demos", entrada: "socialworks.html", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
@@ -128,7 +128,7 @@ async function demo(req, env, url, p) {
     if (path.includes("..")) return new Response("Inválido", { status: 400 });
     return origem(req, "portfolio/demos" + (path === "/" || path === "/index.html" ? `/${p.slug}.html` : path), path === "/" ? 0 : 300);
   }
-  if (path.startsWith("/api/admin/") && req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Demonstração em modo leitura: as alterações estão desativadas. Peça o seu acesso para testar de verdade.");
+  if (path.startsWith("/api/") && req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Demonstração em modo leitura: as alterações estão desativadas. Peça o seu acesso para testar de verdade.");
   return produto(req, env, url, p, DEMO_SESSAO);
 }
 
@@ -136,11 +136,18 @@ async function demo(req, env, url, p) {
 const BACKENDS = {
   serviceworks: { binding: "SERVICEWORKS", host: "sw.interno", painel: true },
   linkworks: { binding: "LINKWORKS", host: "lw.interno", painel: true },
+  salesworks: { binding: "SALESWORKS", host: "sl.interno", painel: true },
   rhworks: { binding: "RHWORKS", host: "rh.interno", corpoMax: 4 * 1024 * 1024 },
 };
 // LinkWorks: linkworks.lldworks.com.br/<endereço> é a página pública; /<endereço>/l/<id> conta o clique.
 const LW_PUBLICA = /^\/([a-z0-9][a-z0-9_.-]{2,29})(\/l\/\d{1,9})?\/?$/;
 const LW_RESERVADO = /^(entrar|sair|api|pub|index\.html|favicon\.ico|robots\.txt)$/;
+// SalesWorks: salesworks.lldworks.com.br/<endereço> é a loja online pública.
+const SL_LOJA = /^\/([a-z0-9][a-z0-9-]{2,39})\/?$/;
+const SL_RESERVADO = /^(entrar|sair|api|pub|index|admin|painel|loja|lojas|favicon|robots|salesworks|lldworks)$/;
+// A loja/vitrine "demo" é pública e o painel dela também (modo leitura): pedido ou agendamento de verdade ali
+// exporia nome e WhatsApp do visitante. Nela o fluxo inteiro funciona, menos o envio final.
+const DEMO_PUBLICO = /^\/api\/publico\/demo(\/|$)/;
 const jsonErro = (s, erro) => new Response(JSON.stringify({ erro }), { status: s, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SEG } });
 async function backend(req, env, url, p, s, caminho = url.pathname) {
   const b = BACKENDS[p.slug], alvo = b && env[b.binding];
@@ -178,7 +185,15 @@ async function produto(req, env, url, p, sessaoFixa = null) {
       if (path.includes("..")) return new Response("Inválido", { status: 400 });
       return origem(req, p.dir + (path.startsWith("/v/") ? "/vitrine.html" : path), 60);
     }
-    if (p.slug === "serviceworks" && path.startsWith("/api/publico/")) return backend(req, env, url, p, null);
+    if ((p.slug === "serviceworks" || p.slug === "salesworks") && path.startsWith("/api/publico/")) {
+      if (DEMO_PUBLICO.test(path) && req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Esta é uma demonstração: o envio está desativado. Contrate o seu para receber pedidos e agendamentos de verdade.");
+      return backend(req, env, url, p, null);
+    }
+    const sl = p.slug === "salesworks" && path.match(SL_LOJA);
+    if (sl && !SL_RESERVADO.test(sl[1])) {
+      if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
+      return origem(req, "salesworks/loja.html", 60);
+    }
     const lw = p.slug === "linkworks" && path.match(LW_PUBLICA);
     if (lw && !LW_RESERVADO.test(lw[1])) {
       if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
