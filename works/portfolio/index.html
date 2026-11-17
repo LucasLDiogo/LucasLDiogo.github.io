@@ -151,13 +151,13 @@ footer{padding:36px 0;color:var(--mute);font-size:14px}footer .wrap{display:flex
  <h2 class="rv">Três portas de entrada, um só lugar de gestão</h2>
  <p class="lead rv" style="margin-top:14px">O cliente final usa a vitrine sem criar conta. A empresa entra no próprio painel com e-mail, senha e papéis. A LLD Works acompanha todas as aplicações num console central protegido.</p>
  <table class="stack rv"><thead><tr><th>Produto</th><th>Cliente final</th><th>Painel da empresa</th><th>Gestão LLD</th></tr></thead><tbody>
-  <tr><td><b>AgentWorks</b></td><td>WhatsApp oficial da empresa</td><td><a href="https://atende.lldworks.com.br/painel" rel="noopener">atende.lldworks.com.br/painel</a> · e-mail e senha, perfis dono e atendente</td><td>Admin LLD (empresas, planos, faturas) + console</td></tr>
-  <tr><td><b>ServiceWorks</b></td><td>Vitrine de agendamento com código no WhatsApp</td><td>Mesmo painel do AgentWorks, módulos agenda e gestão</td><td>Console</td></tr>
-  <tr><td><b>SalesWorks</b></td><td>Loja sem cadastro, confirmação por código</td><td>Painel /admin com e-mail e senha</td><td>Console</td></tr>
+  <tr><td><b>AgentWorks</b></td><td>WhatsApp oficial da empresa</td><td><a href="https://agentworks.lldworks.com.br" rel="noopener">agentworks.lldworks.com.br</a> · e-mail e senha (demo) · sistema real em atende.lldworks.com.br/painel</td><td>Admin LLD (empresas, planos, faturas) + console</td></tr>
+  <tr><td><b>ServiceWorks</b></td><td>Vitrine de agendamento com código no WhatsApp</td><td><a href="https://serviceworks.lldworks.com.br" rel="noopener">serviceworks.lldworks.com.br</a> · e-mail e senha</td><td>Console</td></tr>
+  <tr><td><b>SalesWorks</b></td><td>Loja sem cadastro, confirmação por código</td><td><a href="https://salesworks.lldworks.com.br" rel="noopener">salesworks.lldworks.com.br</a> · e-mail e senha</td><td>Console</td></tr>
   <tr><td><b>PageWorks · ProWorks</b></td><td>Site público</td><td>Edição de textos e fotos (planejado)</td><td>Console</td></tr>
-  <tr><td><b>LinkWorks</b></td><td>Página do link na bio</td><td>Editor com login (em construção)</td><td>Console</td></tr>
-  <tr><td><b>SocialWorks</b></td><td>Instagram da empresa</td><td>Calendário e automações (em construção)</td><td>Console</td></tr>
-  <tr><td><b>RHWorks</b></td><td>Candidato e portal do colaborador</td><td><a href="https://crivo.lldworks.com.br" rel="noopener">Triagem (Crivo)</a> · painel do RH em construção</td><td>Console</td></tr>
+  <tr><td><b>LinkWorks</b></td><td>Página do link na bio</td><td><a href="https://linkworks.lldworks.com.br" rel="noopener">linkworks.lldworks.com.br</a> · e-mail e senha</td><td>Console</td></tr>
+  <tr><td><b>SocialWorks</b></td><td>Instagram da empresa</td><td><a href="https://socialworks.lldworks.com.br" rel="noopener">socialworks.lldworks.com.br</a> · e-mail e senha</td><td>Console</td></tr>
+  <tr><td><b>RHWorks</b></td><td>Candidato e portal do colaborador</td><td><a href="https://rhworks.lldworks.com.br" rel="noopener">rhworks.lldworks.com.br</a> · triagem com IA, e-mail e senha</td><td>Console</td></tr>
  </tbody></table>
  <p class="note">Console central: console.lldworks.com.br, protegido por Cloudflare Access com código no e-mail do responsável pela LLD Works.</p>
 </div></section>
@@ -186,23 +186,23 @@ footer{padding:36px 0;color:var(--mute);font-size:14px}footer .wrap{display:flex
 <script>{
 const I = window.LWI || {};
 const P = [
- {s:'agentworks',n:'Agent',c:'#0E9F6E',st:['live','Em operação · LLD Atende'],f:'Atendimento no WhatsApp',
+ {s:'agentworks',n:'Agent',c:'#0E9F6E',st:['live','Em operação · sistema real e demo com login'],f:'Atendimento no WhatsApp',
   o:'Um agente de IA treinado com as informações do seu negócio atende no WhatsApp 24 horas: tira dúvidas, agenda e passa para a equipe quando precisa.',
   p:['Você cadastra a base de conhecimento: preços, horários, endereço, políticas.','O cliente manda mensagem no número oficial da empresa e o agente responde em segundos.','Reclamação, pedido especial ou dúvida sem resposta vão para um humano, com o histórico.'],
   e:['Agente escopado ao negócio (regra da Meta)','Agendamento integrado ao ServiceWorks','Transferência para humano','Painel de atendimentos e métricas','Base de conhecimento editável','Número oficial da API do WhatsApp'],
-  w:['Painel com login e senha','Várias empresas','IA na nuvem'],d:'demos/agentworks.html',x:['atende.lldworks.com.br','https://atende.lldworks.com.br/painel'],k:4,
+  w:['Painel com login e senha','Várias empresas','IA na nuvem'],d:'demos/agentworks.html',x:['agentworks.lldworks.com.br','https://agentworks.lldworks.com.br'],xl:'Entrar com login',k:4,
   cap:['Login com senha e 2FA','Conversa: responde, agenda, transfere','Base de conhecimento editável','Histórico de atendimentos']},
  {s:'salesworks',n:'Sales',c:'#EA580C',st:['build','Loja pronta · CRM em construção'],f:'Loja online + CRM de vendas',
   o:'Vitrine de produtos com pedido online e um CRM que transforma cada pedido em relacionamento: funil, carteira de clientes, alertas de recompra e campanhas pelo WhatsApp.',
   p:['Os produtos ficam na vitrine; o cliente monta o pedido e paga por Pix ou cartão.','O pedido entra no funil (novo, montado, aguardando, pago, entregue) e baixa o estoque.','Cliente há 15 dias sem comprar vira ação do dia, com mensagem pronta e link da vitrine.'],
   e:['Vitrine responsiva com carrinho','Pipeline de pedidos em Kanban','Carteira segmentada (fiel, em risco, sumido)','Campanhas de reativação no WhatsApp','Alertas de estoque mínimo','Financeiro e DRE do mês'],
-  w:['Nuvem','Pix e cartão','WhatsApp'],d:'demos/salesworks.html',x:null,k:5,
+  w:['Nuvem','Pix e cartão','WhatsApp'],d:'demos/salesworks.html',x:['salesworks.lldworks.com.br','https://salesworks.lldworks.com.br'],xl:'Entrar com login',k:5,
   cap:['Login com senha e 2FA','Painel: faturamento, funil e ações','Pipeline de pedidos em Kanban','Carteira de clientes segmentada','Reativação pelo WhatsApp']},
  {s:'serviceworks',n:'Service',c:'#7C3AED',st:['build','Base pronta · vitrine em construção'],f:'Agenda, vitrine e CRM para serviços',
   o:'Para barbearias, salões, clínicas e pet shops: vitrine com serviços, combos e promoções, agenda inteligente por profissional, CRM de recorrência e assistente que agenda pelo WhatsApp e Instagram.',
   p:['O cliente abre o link da vitrine, escolhe serviço, profissional e horário.','Confirma com um código no WhatsApp; nos horários de pico, paga um sinal via Pix.','A agenda avisa quem está atrasado para voltar e oferece vagas liberadas à lista de espera.'],
   e:['Vitrine com combos e promoções','Agenda por profissional com encaixes','Lista de espera automática','Lembretes e confirmação no WhatsApp','CRM de recorrência','Assistente que agenda e remarca'],
-  w:['Nuvem','WhatsApp e Instagram','Pix'],d:'demos/serviceworks.html',x:null,k:5,
+  w:['Nuvem','WhatsApp e Instagram','Pix'],d:'demos/serviceworks.html',x:['serviceworks.lldworks.com.br','https://serviceworks.lldworks.com.br'],xl:'Entrar com login',k:5,
   cap:['Login com senha e 2FA','Agenda do dia por profissional','Vitrine pública com reserva segura','Clientes e recorrência','Assistente de agendamento']},
  {s:'pageworks',n:'Page',c:'#2563EB',st:['live','Em operação'],f:'Criação de sites',
   o:'Sites rápidos, bonitos e encontráveis no Google, publicados no domínio do cliente ou em lldworks.com.br, com animações, SEO e formulário que chega no WhatsApp.',
@@ -220,19 +220,19 @@ const P = [
   o:'A página que fica na bio do Instagram e do TikTok com todos os seus links: loja, WhatsApp, agenda, redes. Com temas da sua marca e estatísticas de clique.',
   p:['Escolha o endereço: linkworks.lldworks.com.br/seunome.','Monte os links no editor e veja o celular ao vivo.','Acompanhe cliques e de onde vêm as visitas.'],
   e:['Editor com pré-visualização ao vivo','Temas da marca','Estatísticas de cliques e origem','Links verificados antes de publicar','Integração com vitrine e agenda','Endereço reservado'],
-  w:['Nuvem'],d:'demos/linkworks.html',x:null,k:4,
+  w:['Nuvem'],d:'demos/linkworks.html',x:['linkworks.lldworks.com.br','https://linkworks.lldworks.com.br'],xl:'Entrar com login',k:4,
   cap:['Login com senha e 2FA','Editor com celular ao vivo','Estatísticas de cliques','Segurança do link público']},
  {s:'socialworks',n:'Social',c:'#DC2626',st:['build','Em construção'],f:'Agente de Instagram e redes',
   o:'Agenda de Reels, carrosséis e stories, resposta automática a comentários com DM e caixa de entrada única. Construído sobre o Postiz (código aberto, licença AGPL-3.0) e a API oficial da Meta.',
   p:['Planeje a semana no calendário e agende as publicações.','Quem comenta a palavra-chave recebe o link na DM, em segundos.','DMs de Instagram e Facebook chegam numa caixa só, com sugestão de resposta.'],
   e:['Calendário de conteúdo','Agendamento de Reels e stories','Comentário → DM automática','Caixa de entrada unificada','Assistente de respostas','Relatório de alcance'],
-  w:['Nuvem','API oficial da Meta'],d:'demos/socialworks.html',x:null,k:4,
+  w:['Nuvem','API oficial da Meta'],d:'demos/socialworks.html',x:['socialworks.lldworks.com.br','https://socialworks.lldworks.com.br'],xl:'Entrar com login',k:4,
   cap:['Login com senha e 2FA','Calendário da semana','Comentário → DM automática','Caixa de entrada única']},
- {s:'rhworks',n:'RH',c:'#A16207',st:['live','Triagem no ar (Crivo) · DP em construção'],f:'Gestão de pessoas e RH',
+ {s:'rhworks',n:'RH',c:'#A16207',st:['live','Triagem com IA no ar · DP em construção'],f:'Gestão de pessoas e RH',
   o:'O departamento pessoal num painel: colaboradores, admissão digital, férias, banco de horas, documentos e recrutamento com triagem explicada pela IA, e um portal para o colaborador.',
   p:['O DP cadastra ou importa os colaboradores e os documentos.','O sistema avisa férias vencendo, fim de experiência e documentos pendentes.','O colaborador acessa holerite, pede férias e envia atestado pelo celular.'],
   e:['Cadastro e admissão digital','Alertas de férias e experiência','Banco de horas via arquivo do ponto','Recrutamento com triagem por IA','Portal do colaborador','Dados sensíveis só para o DP'],
-  w:['Nuvem','Integra com ponto certificado'],d:'demos/rhworks.html',x:['crivo.lldworks.com.br','https://crivo.lldworks.com.br'],k:5,
+  w:['Nuvem','Integra com ponto certificado'],d:'demos/rhworks.html',x:['rhworks.lldworks.com.br','https://rhworks.lldworks.com.br'],xl:'Entrar com login',k:5,
   cap:['Login com senha e 2FA','Pendências do DP','Colaboradores','Recrutamento com triagem por IA','Portal do colaborador']}];
 const name = p => `${p.n}<b>Works</b>`;
 const CORE = [['Login único','Senha forte, 2FA, Google, sessões controladas e papéis por usuário.'],['Clientes compartilhados','O cliente que comprou na loja aparece na agenda e no WhatsApp.'],['Mensagens','WhatsApp e Instagram oficiais, com opt-in e histórico.'],['Pagamentos','Pix e cartão com confirmação automática e conciliação.'],['IA com limites','Responde só com a base do negócio e passa para humano.'],['Painéis e relatórios','Indicadores de cada produto e exportação para Excel.']];
