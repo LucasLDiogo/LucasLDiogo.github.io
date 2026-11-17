@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SalesWorks — demo</title><link rel="stylesheet" href="base.css">
+<style>
+/* VOICE: balcão de hortifruti organizado; IDEA: quadro de pedidos da loja; COLOUR: laranja SalesWorks; TYPE: Montserrat/Inter; LAYOUT: KPIs → funil → ações */
+.funnel .r{display:grid;grid-template-columns:150px minmax(0,1fr) 70px;gap:10px;align-items:center;margin:8px 0}
+.funnel .r b{font-size:13px}.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.alert:last-child{border:0}.dot{width:10px;height:10px;border-radius:50%;margin-top:6px;flex:none}
+.wa{background:#0E9F6E;border-color:#0E9F6E;color:#fff}
+pre.msg{white-space:pre-wrap;background:var(--soft);padding:12px;border-radius:10px;font:14px/1.5 Inter,sans-serif}
+@media(max-width:600px){.funnel .r{grid-template-columns:110px minmax(0,1fr) 54px}}
+</style></head><body>
+<div id="auth"></div>
+<div id="app" hidden><main>
+ <section class="view" data-tab="Painel">
+  <div class="row sb" style="margin-bottom:12px"><h1>Bom dia, equipe Rancho Flores</h1><span class="chip p">Novembro/2026 · até dia 16</span></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid g2">
+   <div class="card"><h2>Funil do mês</h2><div class="funnel" id="funil"></div><p class="small mute">Conversão lead → pedido pago: <b id="conv"></b></p>
+    <h2 style="margin-top:18px">Vendas por canal</h2><div class="funnel" id="canal"></div>
+    <h2 style="margin-top:18px">Mais vendidos da semana</h2><table><tbody id="top"></tbody></table></div>
+   <div class="card"><div class="row sb"><h2>Ações de hoje</h2><span class="chip warn" id="nAl"></span></div><div id="alertas"></div></div>
+  </div>
+ </section>
+ <section class="view" data-tab="Pipeline">
+  <div class="row sb" style="margin-bottom:12px"><div><h1>Pipeline de vendas</h1><p class="mute small">Arraste os cards entre as etapas. Pedido parado há mais de 2 dias fica destacado.</p></div>
+   <div class="row"><input id="qp" placeholder="Buscar cliente ou pedido" style="width:220px"><button class="btn pri" id="novo">+ Nova oportunidade</button></div></div>
+  <div class="kan" id="kan"></div>
+ </section>
+ <section class="view" data-tab="Clientes">
+  <div class="row sb" style="margin-bottom:12px"><h1>Carteira de clientes</h1>
+   <div class="row"><select id="seg" style="width:auto"><option value="">Todos os segmentos</option><option>Fiel</option><option>Em risco</option><option>Sumido</option><option>Novo</option></select><input id="qc" placeholder="Buscar" style="width:180px"></div></div>
+  <div class="card scroll"><table><thead><tr><th>Cliente</th><th>Segmento</th><th class="n">Última compra</th><th class="n">Pedidos</th><th class="n">Total gasto</th><th class="n">Ticket médio</th><th></th></tr></thead><tbody id="tc"></tbody></table></div>
+ </section>
+ <section class="view" data-tab="Campanhas">
+  <div class="grid g2">
+   <div class="card"><h2>Reativação pelo WhatsApp</h2><p class="mute small">Clientes há mais de 15 dias sem comprar recebem uma mensagem pronta com o link da vitrine. O envio sai do número da loja; o cliente pode pedir para não receber mais.</p>
+    <label for="tpl">Modelo da mensagem</label><textarea id="tpl" rows="5">Oi, {nome}! Aqui é do Rancho Flores 🌿 Faz {dias} dias que você não passa por aqui. Chegaram morangos e folhas fresquinhas hoje. Seu pedido está a um clique: {link}</textarea>
+    <p class="small mute">Variáveis: {nome}, {dias}, {link}</p><div class="row" style="margin-top:8px"><button class="btn pri" id="prev">Pré-visualizar para 1º cliente</button><span class="mute small" id="alvo"></span></div>
+    <pre class="msg" id="pv" hidden></pre></div>
+   <div class="card"><h2>Regras automáticas</h2><table><tbody>
+    <tr><td>Cliente sem comprar há 15 dias</td><td class="n"><span class="chip ok">Ativa</span></td></tr>
+    <tr><td>Pedido aguardando cliente há 24 h → lembrete</td><td class="n"><span class="chip ok">Ativa</span></td></tr>
+    <tr><td>Aniversário do cliente → cupom 10%</td><td class="n"><span class="chip">Pausada</span></td></tr>
+    <tr><td>Produto voltou ao estoque → avisar interessados</td><td class="n"><span class="chip ok">Ativa</span></td></tr></tbody></table>
+    <p class="small mute" style="margin-top:10px">Toda mensagem respeita o opt-in do cliente (LGPD) e o limite de 1 campanha por cliente a cada 7 dias.</p></div>
+  </div>
+ </section>
+</main></div>
+<div class="modal" id="mNovo"><div class="card"><h2>Nova oportunidade</h2>
+ <form id="fNovo"><label for="nN">Cliente</label><input id="nN" required maxlength="60"><label for="nV">Valor estimado (R$)</label><input id="nV" type="number" min="1" step="0.01" required>
+ <label for="nO">Origem</label><select id="nO"><option>Vitrine online</option><option>WhatsApp</option><option>Instagram</option><option>Indicação</option></select>
+ <div class="row" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn" onclick="LW.modal.close('mNovo')">Cancelar</button><button class="btn pri">Salvar</button></div></form></div></div>
+<script src="icons.js"></script><script src="base.js"></script>
+<script>{
+const {$, $$, brl, esc, toast} = LW;
+const HOJE = new Date('2026-11-16T09:00:00');
+const dias = d => Math.round((HOJE - new Date(d + 'T12:00:00')) / 864e5);
+const LINK = 'ranchofloresloja.com';
+const ETAPAS = [['lead','Novo contato'],['orc','Pedido montado'],['aguarda','Aguardando cliente'],['pago','Pago'],['entregue','Entregue']];
+let ops = [
+ {id:1,c:'Mariana Souza',v:142.9,s:'lead',o:'Instagram',h:0},{id:2,c:'Restaurante Sabor da Serra',v:860,s:'orc',o:'WhatsApp',h:1},
+ {id:3,c:'Carlos Menezes',v:96.5,s:'aguarda',o:'Vitrine online',h:3},{id:4,c:'Ana Paula Ribeiro',v:188.4,s:'pago',o:'Vitrine online',h:0},
+ {id:5,c:'Padaria Trigo Bom',v:540,s:'entregue',o:'Indicação',h:0},{id:6,c:'Juliana Prado',v:73.2,s:'aguarda',o:'WhatsApp',h:1},
+ {id:7,c:'Escola Pequeno Saber',v:1240,s:'orc',o:'Indicação',h:2},{id:8,c:'Roberto Lima',v:58.9,s:'lead',o:'Vitrine online',h:0},
+ {id:9,c:'Fernanda Castro',v:211,s:'pago',o:'Instagram',h:0},{id:10,c:'Lucas Andrade',v:134.7,s:'entregue',o:'WhatsApp',h:0}];
+const cli = [
+ ['Ana Paula Ribeiro','2026-11-14',22,3410],['Restaurante Sabor da Serra','2026-11-12',41,18950],['Carlos Menezes','2026-10-22',9,1088],
+ ['Padaria Trigo Bom','2026-11-15',37,16220],['Juliana Prado','2026-10-28',6,512],['Fernanda Castro','2026-11-13',14,2380],
+ ['Marcos Vieira','2026-09-30',11,1490],['Beatriz Nunes','2026-11-02',4,388],['Roberto Lima','2026-11-16',1,58.9],
+ ['Helena Martins','2026-10-09',18,2876],['Lucas Andrade','2026-11-10',8,970],['Patrícia Gomes','2026-10-25',5,640]
+].map(([nome,ultima,ped,tot],i)=>({id:i,nome,ultima,ped,tot}));
+const seg = c => { const d = dias(c.ultima); return c.ped <= 1 ? 'Novo' : d > 30 ? 'Sumido' : d > 15 ? 'Em risco' : 'Fiel'; };
+const segChip = s => `<span class="chip ${s==='Fiel'?'ok':s==='Em risco'?'warn':s==='Sumido'?'bad':'p'}">${s}</span>`;
+
+function kpis(){
+ const pago = ops.filter(o=>o.s==='pago'||o.s==='entregue'), fat = pago.reduce((a,o)=>a+o.v,0);
+ const k = [['Faturamento do mês', brl(fat+28410), '<span class="up">▲ 12,4% vs out/26</span>'],['Pedidos pagos', pago.length+212, '<span class="up">▲ 18 pedidos</span>'],
+  ['Ticket médio', brl((fat+28410)/(pago.length+212)), '<span class="down">▼ R$ 3,10</span>'],['Clientes em risco/sumidos', cli.filter(c=>['Em risco','Sumido'].includes(seg(c))).length, '<span class="mute">reativar hoje</span>']];
+ $('#kpis').innerHTML = k.map(([l,v,d])=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join('');
+ const tot = ops.length + 40, cnt = ETAPAS.map(([s],i)=>ops.filter(o=>ETAPAS.findIndex(e=>e[0]===o.s)>=i).length + [40,31,26,22,20][i]);
+ $('#funil').innerHTML = ETAPAS.map(([s,n],i)=>`<div class="r"><b>${n}</b><div class="bar"><i style="width:${cnt[i]/tot*100}%"></i></div><span class="small n">${cnt[i]}</span></div>`).join('');
+ $('#canal').innerHTML=[['Vitrine online',54],['WhatsApp',31],['Instagram',11],['Indicação',4]].map(([n,v])=>`<div class="r"><b>${n}</b><div class="bar"><i style="width:${v}%"></i></div><span class="small n">${v}%</span></div>`).join('');
+ $('#top').innerHTML=[['Morango 500 g',86,1281.4],['Alface crespa',142,568],['Ovos caipira (dz)',64,1088],['Cesta da semana',21,1869]].map(([n,q,v])=>`<tr><td>${n}</td><td class="n mute">${q} un.</td><td class="n">${brl(v)}</td></tr>`).join('');
+ $('#conv').textContent = (cnt[3]/cnt[0]*100).toFixed(1).replace('.',',') + '%';
+ const al = [...ops.filter(o=>o.s==='aguarda'&&o.h>=1).map(o=>({c:'var(--warn)',t:`${esc(o.c)} não respondeu sobre o pedido de ${brl(o.v)}`,a:'Lembrar cliente'})),
+  ...cli.filter(c=>dias(c.ultima)>15).map(c=>({c:'var(--bad)',t:`${esc(c.nome)} está há ${dias(c.ultima)} dias sem comprar`,a:'Enviar WhatsApp',id:c.id})),
+  {c:'var(--p)',t:'Morango 500 g abaixo do estoque mínimo (8 un.)',a:'Ver estoque'}];
+ $('#nAl').textContent = al.length + ' pendentes';
+ $('#alertas').innerHTML = al.map(x=>`<div class="alert"><span class="dot" style="background:${x.c}"></span><div style="flex:1">${x.t}</div><button class="btn sm" data-wa="${x.id??''}">${x.a}</button></div>`).join('');
+}
+function kan(){
+ const q = $('#qp').value.toLowerCase();
+ $('#kan').innerHTML = ETAPAS.map(([s,n])=>{ const l = ops.filter(o=>o.s===s && o.c.toLowerCase().includes(q));
+  return `<div class="col" data-s="${s}"><h3><span>${n}</span><span class="mute">${l.length} · ${brl(l.reduce((a,o)=>a+o.v,0))}</span></h3>${l.map(o=>`<div class="kc" draggable="true" tabindex="0" data-id="${o.id}" ${o.h>=2?'style="border-color:var(--warn)"':''}><div class="row sb"><span class="t">${esc(o.c)}</span><b>${brl(o.v)}</b></div><div class="row sb m" style="margin-top:6px"><span>#${1040+o.id} · ${o.o}</span>${o.h>=2?'<span class="chip warn">parado '+o.h+'d</span>':''}</div></div>`).join('')||'<div class="empty small">Sem cards</div>'}</div>`; }).join('');
+}
+function tab(){
+ const q = $('#qc').value.toLowerCase(), f = $('#seg').value;
+ const l = cli.filter(c=>c.nome.toLowerCase().includes(q) && (!f||seg(c)===f)).sort((a,b)=>b.tot-a.tot);
+ $('#tc').innerHTML = l.map(c=>`<tr><td><b>${esc(c.nome)}</b></td><td>${segChip(seg(c))}</td><td class="n">${dias(c.ultima)} dias</td><td class="n">${c.ped}</td><td class="n">${brl(c.tot)}</td><td class="n">${brl(c.tot/c.ped)}</td><td class="n"><button class="btn sm wa" data-wa="${c.id}">WhatsApp</button></td></tr>`).join('') || '<tr><td colspan="7" class="empty">Nenhum cliente encontrado</td></tr>';
+}
+function msg(c){ return $('#tpl').value.replaceAll('{nome}', c.nome.split(' ')[0]).replaceAll('{dias}', dias(c.ultima)).replaceAll('{link}', LINK); }
+document.addEventListener('click', e => { const b = e.target.closest('[data-wa]'); if (!b) return; const c = cli.find(x=>String(x.id)===b.dataset.wa);
+ if (c) { LW.show(3); $('#pv').hidden = false; $('#pv').textContent = msg(c); $('#alvo').textContent = 'Para: ' + c.nome; } else toast('Ação registrada na linha do tempo do cliente.'); });
+$('#prev').onclick = () => { const c = cli.find(c=>dias(c.ultima)>15); $('#pv').hidden = false; $('#pv').textContent = msg(c); $('#alvo').textContent = 'Para: ' + c.nome; };
+$('#qp').oninput = kan; $('#qc').oninput = tab; $('#seg').onchange = tab;
+$('#novo').onclick = () => LW.modal.open('mNovo');
+$('#fNovo').onsubmit = e => { e.preventDefault(); const c = $('#nN').value.trim(), v = +$('#nV').value; if (!c || !(v > 0)) return toast('Preencha cliente e valor.');
+ ops.push({id: Date.now(), c, v, s:'lead', o:$('#nO').value, h:0}); LW.modal.close('mNovo'); e.target.reset(); kan(); kpis(); toast('Oportunidade criada em "Novo contato".'); };
+LW.kanban($('#kan'), (id, s) => { const o = ops.find(o=>String(o.id)===id); if (!o) return; o.s = s; o.h = 0; kan(); kpis(); toast(`${o.c} → ${ETAPAS.find(e=>e[0]===s)[1]}`); });
+LW.init({name:'SalesWorks', color:'#EA580C', icon:LWI.salesworks, sub:'Loja + CRM de vendas', org:'Rancho Flores', initials:'RF', demoUser:'gestao@ranchoflores.com.br',
+ loginTitle:'Venda mais para quem já compra de você.', loginText:'Pedidos da vitrine, WhatsApp e Instagram num funil só, com alertas de recompra e estoque.',
+ bullets:['Pipeline de pedidos com arrastar e soltar','Cliente sumido há 15 dias vira ação do dia','Mensagem de WhatsApp pronta com link da vitrine','Cada loja só enxerga os próprios dados'],
+ onEnter(){ kpis(); kan(); tab(); }});
+}</script></body></html>

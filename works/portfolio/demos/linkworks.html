@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LinkWorks — demo</title><link rel="stylesheet" href="base.css">
+<style>
+/* VOICE: criativo e direto; IDEA: o cartão de visita no bolso do Instagram; COLOUR: rosa LinkWorks; TYPE: Montserrat/Inter; LAYOUT: editor à esquerda, celular ao vivo à direita */
+.ed{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px}
+.lk{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--card)}
+.lk .hd{cursor:grab;color:var(--mute);text-align:center;font-weight:700}
+.lk input{min-height:36px;padding:6px 10px;font-size:14px}
+.sw{position:relative;width:44px;height:26px;border-radius:99px;background:var(--line);border:0;cursor:pointer}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}
+.sw.on{background:var(--p)}.sw.on::after{left:21px}
+.themes{display:flex;gap:8px;flex-wrap:wrap}.themes button{width:44px;height:44px;border-radius:12px;border:2px solid transparent;cursor:pointer}
+.themes button.on{border-color:var(--ink)}
+.pv{padding:28px 18px;min-height:580px;text-align:center;color:var(--fg);background:var(--bgp)}
+.pv .ph{width:84px;height:84px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font:800 30px Montserrat;background:var(--acc);color:var(--bgp)}
+.pv h2{font-size:19px}.pv p{font-size:13.5px;opacity:.85;margin:6px 0 18px}
+.pv a{display:block;padding:13px;border-radius:14px;margin:9px 0;text-decoration:none;font-weight:600;font-size:14.5px;background:var(--btn);color:var(--btnfg);transition:transform .15s}
+.pv a:hover{transform:scale(1.02)}.pv .soc{display:flex;justify-content:center;gap:14px;margin-top:16px;font-size:13px;opacity:.8}
+.pv .ft{margin-top:22px;font-size:11.5px;opacity:.6}
+.url{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--pk);color:var(--p);font-weight:600;margin-bottom:12px;flex-wrap:wrap}
+.hr .r{display:grid;grid-template-columns:minmax(0,1fr) 120px 60px;gap:10px;align-items:center;margin:9px 0}
+@media(max-width:960px){.ed{grid-template-columns:1fr}}
+</style></head><body>
+<div id="auth"></div>
+<div id="app" hidden><main>
+ <section class="view" data-tab="Editor">
+  <div class="ed"><div>
+   <div class="url">linkworks.lldworks.com.br/<span id="slugv">ranchoflores</span><span class="sp" style="flex:1"></span><button class="btn sm" id="copy">Copiar link</button></div>
+   <div class="card" style="margin-bottom:14px"><h2>Perfil</h2>
+    <div class="grid g2" style="gap:10px"><div><label for="nm">Nome</label><input id="nm" value="Rancho Flores" maxlength="40"></div><div><label for="sl">Endereço (slug)</label><input id="sl" value="ranchoflores" maxlength="30"></div></div>
+    <label for="bio">Bio</label><input id="bio" value="Hortifruti fresquinho da roça pra sua mesa 🌿 Entregas em Passo Fundo" maxlength="120">
+    <label>Tema</label><div class="themes" id="themes"></div></div>
+   <div class="card"><div class="row sb"><h2>Links</h2><button class="btn pri sm" id="add">+ Adicionar link</button></div>
+    <p class="small mute">Arraste pela alça para reordenar. Desative sem apagar.</p><div id="links"></div></div>
+  </div>
+  <div><div class="phone"><div class="pv" id="pv"></div></div><p class="small mute" style="text-align:center">Pré-visualização ao vivo</p></div></div>
+ </section>
+ <section class="view" data-tab="Estatísticas">
+  <div class="kpis" id="kpis"></div>
+  <div class="grid g2"><div class="card hr"><h2>Cliques por link (últimos 30 dias)</h2><div id="cl"></div></div>
+   <div class="card hr"><h2>De onde vêm as visitas</h2><div id="orig"></div><p class="small mute" style="margin-top:10px">Métricas agregadas, sem cookies de rastreamento individual. Bots e cliques repetidos em 10 s são descartados.</p></div></div>
+ </section>
+ <section class="view" data-tab="Segurança">
+  <div class="grid g2"><div class="card"><h2>Proteções do link público</h2><table><tbody>
+   <tr><td>Verificação de links maliciosos antes de publicar (lista de bloqueio)</td><td class="n"><span class="chip ok">Ativo</span></td></tr>
+   <tr><td>HTTPS obrigatório e redirecionamento seguro</td><td class="n"><span class="chip ok">Ativo</span></td></tr>
+   <tr><td>Endereço reservado (ninguém copia seu slug)</td><td class="n"><span class="chip ok">Ativo</span></td></tr>
+   <tr><td>Proteção contra robôs (Cloudflare Turnstile) em formulários</td><td class="n"><span class="chip ok">Ativo</span></td></tr></tbody></table></div>
+   <div class="card"><h2>Conta</h2><table><tbody><tr><td>Login com senha + código 2FA</td><td class="n"><span class="chip ok">Ativo</span></td></tr>
+   <tr><td>Histórico de alterações do perfil</td><td class="n"><span class="chip ok">30 dias</span></td></tr><tr><td>Exportar e excluir meus dados (LGPD)</td><td class="n"><button class="btn sm" onclick="LW.toast('Pedido registrado. Arquivo enviado por e-mail em até 24 h.')">Solicitar</button></td></tr></tbody></table></div></div>
+ </section>
+</main></div>
+<script src="icons.js"></script><script src="base.js"></script>
+<script>{
+const {$, $$, esc, toast} = LW;
+const TH = [{n:'Roça',bgp:'#F3EBDD',fg:'#2F3A1F',acc:'#4D7C0F',btn:'#4D7C0F',btnfg:'#fff'},{n:'Noite',bgp:'#0F172A',fg:'#E2E8F0',acc:'#F472B6',btn:'#1E293B',btnfg:'#F8FAFC'},
+ {n:'Coral',bgp:'#FFF1EC',fg:'#5B1F12',acc:'#E8590C',btn:'#fff',btnfg:'#5B1F12'},{n:'Mar',bgp:'#E6F4F8',fg:'#0C3B4A',acc:'#0891B2',btn:'#0891B2',btnfg:'#fff'},{n:'Mono',bgp:'#fff',fg:'#111',acc:'#111',btn:'#111',btnfg:'#fff'}];
+let th = 0, links = [
+ {t:'🛒 Fazer pedido na loja online',u:'https://ranchofloresloja.com',on:true,cl:1284},{t:'💬 Pedir pelo WhatsApp',u:'https://wa.me/5554999999999',on:true,cl:932},
+ {t:'🧺 Cesta da semana — veja o que chegou',u:'https://ranchofloresloja.com/cesta',on:true,cl:611},{t:'📍 Como chegar',u:'https://maps.google.com',on:true,cl:204},{t:'⭐ Avalie a gente no Google',u:'https://g.page/r',on:false,cl:88}];
+function prev(){ const t = TH[th], el = $('#pv'); Object.entries(t).forEach(([k,v])=>k!=='n'&&el.style.setProperty('--'+k,v));
+ const nm = $('#nm').value || 'Seu nome';
+ el.innerHTML = `<div class="ph">${esc(nm.trim()[0]||'?').toUpperCase()}</div><h2>${esc(nm)}</h2><p>${esc($('#bio').value)}</p>${links.filter(l=>l.on).map(l=>`<a href="${esc(l.u)}" rel="noopener noreferrer" target="_blank">${esc(l.t)}</a>`).join('')}<div class="soc"><span>Instagram</span><span>TikTok</span><span>YouTube</span></div><div class="ft">feito com LinkWorks · LLD Works</div>`; }
+function list(){ $('#links').innerHTML = links.map((l,i)=>`<div class="lk" draggable="true" data-i="${i}"><span class="hd" title="Arrastar">⋮⋮</span><div class="grid" style="gap:6px"><input value="${esc(l.t)}" data-f="t" data-i="${i}" aria-label="Título"><input value="${esc(l.u)}" data-f="u" data-i="${i}" aria-label="Endereço"></div>
+ <div class="grid" style="gap:6px;justify-items:end"><button class="sw ${l.on?'on':''}" data-sw="${i}" aria-label="Ativar link" aria-pressed="${l.on}"></button><button class="btn sm" data-del="${i}">Remover</button></div></div>`).join('') || '<div class="empty">Nenhum link ainda.</div>'; }
+function themes(){ $('#themes').innerHTML = TH.map((t,i)=>`<button class="${i===th?'on':''}" data-th="${i}" title="${t.n}" aria-label="Tema ${t.n}" style="background:linear-gradient(135deg,${t.bgp} 50%,${t.acc} 50%)"></button>`).join(''); }
+function stats(){ const tot = links.reduce((a,l)=>a+l.cl,0), mx = Math.max(...links.map(l=>l.cl));
+ $('#kpis').innerHTML = [['Visitas ao perfil','5.912','<span class="up">▲ 21% vs mês anterior</span>'],['Cliques em links',tot.toLocaleString('pt-BR'),'<span class="mute">'+Math.round(tot/5912*100)+'% de cliques por visita</span>'],['Pedidos vindos do link','214','<span class="up">via vitrine SalesWorks</span>'],['Melhor horário','18h–20h','<span class="mute">publique antes disso</span>']]
+  .map(([l,v,d])=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join('');
+ $('#cl').innerHTML = links.map(l=>`<div class="r"><span class="small">${esc(l.t)}</span><div class="bar"><i style="width:${l.cl/mx*100}%"></i></div><span class="small n">${l.cl}</span></div>`).join('');
+ $('#orig').innerHTML = [['Instagram (bio)',68],['WhatsApp',17],['TikTok',9],['Direto',6]].map(([n,v])=>`<div class="r"><span class="small">${n}</span><div class="bar"><i style="width:${v}%"></i></div><span class="small n">${v}%</span></div>`).join(''); }
+const safe = u => { try { const x = new URL(u); return x.protocol === 'https:' && !/(bit\.ly\/malware|\.zip$|\.exe$)/i.test(u); } catch { return false; } };
+document.addEventListener('input', e => { const f = e.target.dataset.f; if (f) { links[+e.target.dataset.i][f] = e.target.value; if (f === 'u') e.target.style.borderColor = safe(e.target.value) ? '' : 'var(--bad)'; prev(); }
+ if (['nm','bio'].includes(e.target.id)) prev(); if (e.target.id === 'sl') { e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,''); $('#slugv').textContent = e.target.value; } });
+document.addEventListener('click', e => { const s = e.target.closest('[data-sw]'); if (s) { const l = links[+s.dataset.sw]; l.on = !l.on; list(); prev(); }
+ const d = e.target.closest('[data-del]'); if (d) { links.splice(+d.dataset.del,1); list(); prev(); stats(); toast('Link removido.'); }
+ const t = e.target.closest('[data-th]'); if (t) { th = +t.dataset.th; themes(); prev(); } });
+$('#add').onclick = () => { links.unshift({t:'Novo link',u:'https://',on:true,cl:0}); list(); prev(); $('#links input').select(); };
+$('#copy').onclick = () => { const u = 'https://linkworks.lldworks.com.br/' + $('#sl').value; navigator.clipboard?.writeText(u).then(()=>toast('Link copiado!'),()=>toast(u)); };
+let drag = null; $('#links').addEventListener('dragstart', e => { drag = +e.target.closest('.lk').dataset.i; });
+$('#links').addEventListener('dragover', e => e.preventDefault());
+$('#links').addEventListener('drop', e => { e.preventDefault(); const to = e.target.closest('.lk'); if (!to || drag === null) return; const [m] = links.splice(drag,1); links.splice(+to.dataset.i,0,m); drag = null; list(); prev(); });
+LW.init({name:'LinkWorks', color:'#DB2777', icon:LWI.linkworks, sub:'Link na bio', org:'Rancho Flores', initials:'RF', demoUser:'marketing@ranchoflores.com.br',
+ loginTitle:'Um link na bio que vende.', loginText:'Uma página leve com todos os seus links: loja, WhatsApp, agenda e redes. Com estatísticas e o seu endereço em lldworks.com.br.',
+ bullets:['Editor com pré-visualização ao vivo','Temas da sua marca','Cliques e origem das visitas','Links verificados antes de publicar'],
+ onEnter(){ themes(); list(); prev(); stats(); }});
+}</script></body></html>

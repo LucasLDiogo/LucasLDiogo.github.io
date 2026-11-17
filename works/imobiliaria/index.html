@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Araucária Imóveis — Encontre o seu lugar</title>
+<meta name="description" content="Araucária Imóveis: casas e apartamentos para comprar e alugar, com busca, simulador de financiamento e atendimento por corretor. Site de demonstração PageWorks · LLD Works.">
+<meta property="og:title" content="Araucária Imóveis"><meta property="og:image" content="media/poster.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231E3A2B'/%3E%3Cpath d='M32 12v40M14 26c6 0 12-3 18-8 6 5 12 8 18 8M18 36c5 0 10-2 14-6 4 4 9 6 14 6' fill='none' stroke='%23C9A55B' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: sofisticado e direto, como um bom corretor
+   IDEA: a araucária — copa larga que abriga, raiz firme no sul
+   PICTURE: vídeo das casas ao entardecer com a busca de imóveis por cima
+   COLOUR and TYPE: verde-mata #1E3A2B dominante, latão #C9A55B nos acentos, branco quente #F7F6F2; Archivo 800 + Inter
+   LAYOUT: hero com busca → resultados filtráveis → destaque → simulador → anunciar → corretores → contato */
+:root{--mata:#1E3A2B;--mata2:#142A1F;--lat:#C9A55B;--pap:#F7F6F2;--ink:#151A16;--mute:#5E665F;--line:#E2E1DA}
+*{box-sizing:border-box;min-width:0}html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;font:17px/1.6 Inter,system-ui,sans-serif;color:var(--ink);background:#fff;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,Inter,sans-serif;line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.02em}
+h2{font-size:clamp(30px,3.8vw,50px);font-weight:800}h3{font-size:20px;font-weight:700}
+p{margin:0 0 12px}a{color:inherit}img{max-width:100%;display:block}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(5vw,18px)}.band{padding:clamp(64px,9vw,120px) 0}
+.lead{font-size:clamp(17px,1.5vw,19px);color:var(--mute);max-width:62ch}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 24px;border-radius:12px;font-weight:700;text-decoration:none;border:0;cursor:pointer;font-size:16px;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}.btn.lat{background:var(--lat);color:var(--mata2)}.btn.mata{background:var(--mata);color:#fff}
+:focus-visible{outline:3px solid var(--lat);outline-offset:3px}
+header{position:fixed;inset:0 0 auto;z-index:20;transition:background .3s}header.s{background:rgba(20,42,31,.94);backdrop-filter:blur(10px)}
+header .wrap{display:flex;align-items:center;gap:24px;min-height:76px;color:#fff}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 21px Archivo;letter-spacing:-.01em}.logo small{display:block;font:500 11px Inter;opacity:.75;letter-spacing:.04em}
+.logo svg{width:40px;height:40px}
+nav.m{display:flex;gap:4px;margin-left:auto}nav.m a{text-decoration:none;font-weight:600;font-size:15px;padding:8px 12px;border-radius:10px}nav.m a:hover{background:rgba(255,255,255,.12)}
+.hero{position:relative;min-height:100svh;display:grid;align-items:center;color:#fff;overflow:hidden}
+.hero video,.hero .pst{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,28,20,.88) 0%,rgba(14,28,20,.55) 45%,rgba(14,28,20,.15) 100%)}
+.hero .wrap{position:relative;z-index:2;width:100%;padding-top:110px;padding-bottom:60px}
+.hero h1{font-size:clamp(44px,6.6vw,88px);font-weight:800;max-width:12ch}.hero h1 em{font-style:normal;color:var(--lat)}
+.hero p{font-size:clamp(17px,1.6vw,20px);max-width:46ch;opacity:.9;margin:18px 0 30px}
+.busca{background:#fff;color:var(--ink);border-radius:20px;padding:10px;display:grid;grid-template-columns:auto repeat(4,minmax(0,1fr)) auto;gap:8px;max-width:1080px;box-shadow:0 30px 60px -20px rgba(0,0,0,.45)}
+.tg{display:flex;background:var(--pap);border-radius:12px;padding:4px}.tg button{border:0;background:transparent;border-radius:9px;padding:0 16px;font:700 15px Inter;cursor:pointer;color:var(--mute);min-height:44px}
+.tg .on{background:var(--mata);color:#fff}
+.busca select{border:0;background:var(--pap);border-radius:12px;padding:0 14px;min-height:52px;font:16px Inter;color:var(--ink);width:100%}
+.busca label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.hd{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:20px;margin-top:34px}
+.card{border-radius:20px;overflow:hidden;background:#fff;border:1px solid var(--line);transition:transform .25s,box-shadow .25s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-6px);box-shadow:0 24px 50px -28px rgba(20,42,31,.45)}
+.card .im{aspect-ratio:16/10;overflow:hidden;position:relative}.card .im img{width:100%;height:100%;object-fit:cover;transition:transform .6s}.card:hover .im img{transform:scale(1.06)}
+.tag{position:absolute;left:14px;top:14px;background:rgba(255,255,255,.95);font:700 12.5px Inter;padding:6px 10px;border-radius:8px}
+.card .bd{padding:18px 20px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pr{font:800 24px Archivo;color:var(--mata)}.pr small{font:500 14px Inter;color:var(--mute)}
+.ft{display:flex;gap:14px;font-size:14px;color:var(--mute);flex-wrap:wrap;margin-top:auto;padding-top:10px;border-top:1px solid var(--line)}
+.vazio{grid-column:1/-1;padding:40px;text-align:center;border:1.5px dashed var(--line);border-radius:20px;color:var(--mute)}
+.dest{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center}
+.gal{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:10px;aspect-ratio:16/11}
+.gal div{border-radius:18px;overflow:hidden}.gal div:first-child{grid-row:span 2}.gal img{width:100%;height:100%;object-fit:cover}
+.spec{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:24px 0}.spec div{background:#fff;border-radius:14px;padding:14px;text-align:center}
+.spec b{display:block;font:800 22px Archivo;color:var(--mata)}.spec span{font-size:13px;color:var(--mute)}
+.sim{background:var(--mata);color:#fff;border-radius:30px;padding:clamp(28px,5vw,56px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(24px,4vw,56px)}
+.sim .lead{color:rgba(255,255,255,.8)}
+.rg{margin-top:18px}.rg label{display:flex;justify-content:space-between;gap:10px;font-weight:600;font-size:15px;margin-bottom:8px}.rg label b{color:var(--lat);font-family:Archivo;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--lat);min-height:28px}
+.res{background:#fff;color:var(--ink);border-radius:22px;padding:26px}
+.mod{display:flex;background:var(--pap);border-radius:12px;padding:4px;margin-bottom:18px}.mod button{flex:1;border:0;background:transparent;border-radius:9px;min-height:42px;font:700 14px Inter;cursor:pointer;color:var(--mute)}.mod .on{background:var(--mata);color:#fff}
+.big{font:800 clamp(34px,4vw,48px) Archivo;color:var(--mata);white-space:nowrap}
+.rows div{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}.rows b{white-space:nowrap}
+.bars{display:flex;align-items:end;gap:4px;height:90px;margin-top:16px}.bars i{flex:1;background:var(--lat);border-radius:4px 4px 0 0;opacity:.85}
+.note{font-size:13px;color:var(--mute);margin-top:12px}
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.pane{background:var(--pap);border-radius:24px;padding:clamp(24px,4vw,40px)}
+.pane label{display:block;font-size:13.5px;font-weight:600;color:var(--mute);margin:12px 0 6px}
+.pane input,.pane select{width:100%;min-height:48px;border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font:16px Inter;background:#fff}
+.ok{display:none;margin-top:14px;padding:14px;border-radius:12px;background:#E8EFE9}.ok.on{display:block}
+.cor{display:grid;gap:12px;margin-top:18px}.cor div{display:flex;gap:14px;align-items:center;background:#fff;border-radius:16px;padding:14px}
+.av{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font:800 18px Archivo;color:#fff;flex:none}
+.cor small{display:block;color:var(--mute)}
+footer{background:var(--mata2);color:rgba(255,255,255,.75);padding:48px 0;font-size:14.5px}footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}footer a{color:#fff}
+.demo{background:var(--lat);color:var(--mata2);text-align:center;font-size:12.5px;font-weight:700;padding:6px 16px;position:fixed;left:0;right:0;bottom:0;z-index:25}body{padding-bottom:30px}
+@media(max-width:980px){.busca{grid-template-columns:1fr 1fr}.tg{grid-column:1/-1}.busca .btn{grid-column:1/-1}.dest,.sim,.duo{grid-template-columns:1fr}nav.m{display:none}}
+@media(max-width:520px){.busca{grid-template-columns:1fr}.spec{grid-template-columns:1fr 1fr}header .btn{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style></head><body>
+<div class="demo">Site de demonstração · PageWorks by LLD Works · imóveis, preços e corretores fictícios</div>
+<header id="hd"><div class="wrap">
+ <a class="logo" href="#inicio" aria-label="Araucária Imóveis, início"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#1E3A2B"/><path d="M32 12v40M14 26c6 0 12-3 18-8 6 5 12 8 18 8M18 36c5 0 10-2 14-6 4 4 9 6 14 6" fill="none" stroke="#C9A55B" stroke-width="4" stroke-linecap="round"/></svg><span>Araucária<small>IMÓVEIS · RS</small></span></a>
+ <nav class="m" aria-label="Seções"><a href="#imoveis">Imóveis</a><a href="#destaque">Destaque</a><a href="#simulador">Simulador</a><a href="#anunciar">Anunciar</a><a href="#contato">Contato</a></nav>
+ <a class="btn lat" href="#anunciar" style="min-height:44px">Fale com um corretor</a></div></header>
+
+<section class="hero" id="inicio">
+ <img class="pst" src="media/poster.jpg" alt="">
+ <video autoplay muted loop playsinline preload="auto" poster="media/poster.jpg" aria-hidden="true"><source src="media/hero.mp4" type="video/mp4"></video>
+ <div class="wrap"><h1 id="h1">Encontre o lugar onde a vida <em>acontece</em>.</h1>
+  <p>Casas e apartamentos selecionados no norte gaúcho, com visita agendada pelo WhatsApp e corretor que conhece cada rua.</p>
+  <form class="busca" id="fb" role="search">
+   <div class="tg" role="group" aria-label="Negócio"><button type="button" class="on" data-neg="venda">Comprar</button><button type="button" data-neg="aluguel">Alugar</button></div>
+   <label for="bTipo">Tipo</label><select id="bTipo"><option value="">Todos os tipos</option><option>Casa</option><option>Apartamento</option><option>Cobertura</option><option>Terreno</option></select>
+   <label for="bBairro">Bairro</label><select id="bBairro"><option value="">Todos os bairros</option></select>
+   <label for="bQ">Quartos</label><select id="bQ"><option value="0">Quartos</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option></select>
+   <label for="bMax">Preço máximo</label><select id="bMax"></select>
+   <button class="btn lat">Buscar</button></form></div>
+</section>
+
+<section class="band" id="imoveis"><div class="wrap">
+ <div class="hd"><div><h2 class="rv">Imóveis disponíveis</h2><p class="lead" id="cnt" style="margin:12px 0 0"></p></div>
+  <label style="font-size:14px;color:var(--mute)">Ordenar <select id="ord" style="min-height:44px;border:1.5px solid var(--line);border-radius:10px;padding:0 10px;font:15px Inter;margin-left:6px"><option value="r">Relevância</option><option value="p">Menor preço</option><option value="P">Maior preço</option><option value="m">Maior área</option></select></label></div>
+ <div class="cards" id="cards"></div></div></section>
+
+<section class="band" id="destaque" style="background:var(--pap)"><div class="wrap dest">
+ <div class="gal rv"><div><img src="media/casa.webp" srcset="media/casa-m.webp 960w, media/casa.webp 1920w" sizes="(max-width:980px) 66vw, 40vw" alt="Casa contemporânea com piscina ao anoitecer" loading="lazy"></div><div><img src="media/sala-m.webp" alt="Sala de estar com pé-direito duplo" loading="lazy"></div><div><img src="media/varanda-m.webp" alt="Varanda com vista para a cidade ao pôr do sol" loading="lazy"></div></div>
+ <div class="rv"><span style="font-weight:700;color:#8A6E2F">Destaque da semana</span><h2 style="margin-top:8px">Casa Mirante das Araucárias</h2>
+  <p class="lead" style="margin-top:14px">Projeto contemporâneo em condomínio fechado, piscina com borda infinita, integração total com o jardim e vista para o bosque nativo.</p>
+  <div class="spec"><div><b>420</b><span>m² úteis</span></div><div><b>4</b><span>suítes</span></div><div><b>4</b><span>vagas</span></div><div><b>1.200</b><span>m² terreno</span></div></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><span class="pr" style="font-size:30px">R$ 3.450.000</span><a class="btn mata" href="#anunciar">Agendar visita</a></div></div></div></section>
+
+<section class="band" id="simulador"><div class="wrap"><div class="sim rv">
+ <div><h2>Simule o financiamento</h2><p class="lead" style="margin-top:14px">Veja a primeira parcela e o total pago nas tabelas SAC e Price, com taxa e prazo que você escolhe.</p>
+  <div class="rg"><label for="sV">Valor do imóvel <b id="oV"></b></label><input type="range" id="sV" min="150000" max="3500000" step="10000" value="650000"></div>
+  <div class="rg"><label for="sE">Entrada <b id="oE"></b></label><input type="range" id="sE" min="10" max="80" step="1" value="20"></div>
+  <div class="rg"><label for="sP">Prazo <b id="oP"></b></label><input type="range" id="sP" min="60" max="420" step="12" value="360"></div>
+  <div class="rg"><label for="sT">Juros ao ano <b id="oT"></b></label><input type="range" id="sT" min="7" max="14" step="0.1" value="10.5"></div></div>
+ <div class="res" aria-live="polite"><div class="mod" role="group" aria-label="Tabela"><button type="button" class="on" data-m="sac">SAC</button><button type="button" data-m="price">Price</button></div>
+  <span style="font-size:14px;color:var(--mute)">Primeira parcela</span><div class="big" id="r1"></div>
+  <div class="rows"><div><span>Valor financiado</span><b id="rF"></b></div><div><span>Última parcela</span><b id="rU"></b></div><div><span>Total de juros</span><b id="rJ"></b></div><div><span>Renda mínima sugerida (30%)</span><b id="rR"></b></div></div>
+  <div class="bars" id="bars" aria-hidden="true"></div>
+  <p class="note">Simulação sem seguros e taxas administrativas. A aprovação depende do banco.</p></div></div></div></section>
+
+<section class="band" id="anunciar" style="background:var(--pap)"><div class="wrap duo">
+ <div class="pane rv" style="background:#fff"><h2 style="font-size:clamp(26px,3vw,36px)">Quer vender ou alugar?</h2><p class="lead" style="margin-top:10px">Avaliação gratuita em até 48 horas, com fotos profissionais e vídeo do seu imóvel.</p>
+  <form id="fA" novalidate><label for="aN">Nome</label><input id="aN" autocomplete="name" maxlength="80"><label for="aT">WhatsApp</label><input id="aT" inputmode="tel" placeholder="(54) 9 9999-9999" maxlength="16">
+   <label for="aI">Tipo de imóvel</label><select id="aI"><option>Casa</option><option>Apartamento</option><option>Terreno</option><option>Comercial</option></select>
+   <label for="aB">Bairro</label><input id="aB" maxlength="60"><button class="btn mata" style="width:100%;margin-top:16px">Pedir avaliação</button>
+   <div class="ok" id="okA" role="status" aria-live="polite"></div></form></div>
+ <div class="pane rv"><h2 style="font-size:clamp(26px,3vw,36px)">Corretores</h2><p class="lead" style="margin-top:10px">Cada bairro tem um especialista. Fale direto com quem conhece a região.</p>
+  <div class="cor" id="cor"></div>
+  <div style="margin-top:18px;border-radius:18px;overflow:hidden;aspect-ratio:16/9"><img src="media/chaves-m.webp" alt="Casal recebendo as chaves do corretor" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div></div></div></section>
+
+<section class="band" id="contato"><div class="wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px">
+ <div><h2 class="rv">Visite a Araucária</h2></div>
+ <div class="pane rv"><b style="font:700 18px Archivo">Endereço</b><p style="margin:6px 0 0">Av. da Demonstração, 900 — Centro<br>Passo Fundo · RS</p></div>
+ <div class="pane rv"><b style="font:700 18px Archivo">Atendimento</b><p style="margin:6px 0 0">Seg a sex, 9h às 18h · Sáb, 9h às 12h<br>WhatsApp (54) 9 0000-0000</p></div></div></section>
+
+<footer><div class="wrap"><span>Araucária Imóveis · CRECI a preencher pelo cliente</span><span>Site de demonstração criado pela <a href="https://lldworks.com.br">LLD Works</a> · PageWorks · 2026</span></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>{
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const P=[
+ {t:'Casa Mirante das Araucárias',tipo:'Casa',neg:'venda',b:'Vila Rodrigues',p:3450000,m:420,q:4,v:4,img:'casa'},
+ {t:'Apartamento Jardim Botânico',tipo:'Apartamento',neg:'venda',b:'Centro',p:890000,m:132,q:3,v:2,img:'sala'},
+ {t:'Cobertura Horizonte',tipo:'Cobertura',neg:'venda',b:'Petrópolis',p:1680000,m:245,q:3,v:3,img:'varanda'},
+ {t:'Studio Praça da Cuia',tipo:'Apartamento',neg:'aluguel',b:'Centro',p:1850,m:38,q:1,v:1,img:'sala'},
+ {t:'Casa Recanto do Bosque',tipo:'Casa',neg:'aluguel',b:'São Cristóvão',p:6900,m:210,q:3,v:2,img:'casa'},
+ {t:'Apartamento Vista Serra',tipo:'Apartamento',neg:'aluguel',b:'Petrópolis',p:3400,m:94,q:2,v:1,img:'varanda'},
+ {t:'Casa Família Moinhos',tipo:'Casa',neg:'venda',b:'Boqueirão',p:720000,m:180,q:3,v:2,img:'chaves'},
+ {t:'Apartamento Duo',tipo:'Apartamento',neg:'venda',b:'Vila Rodrigues',p:465000,m:72,q:2,v:1,img:'sala'},
+ {t:'Terreno Alto do Parque',tipo:'Terreno',neg:'venda',b:'São Cristóvão',p:390000,m:600,q:0,v:0,img:'casa'},
+ {t:'Cobertura Duplex Centro',tipo:'Cobertura',neg:'aluguel',b:'Centro',p:9800,m:280,q:4,v:3,img:'varanda'},
+ {t:'Casa Térrea Jardins',tipo:'Casa',neg:'venda',b:'Boqueirão',p:1120000,m:240,q:4,v:3,img:'chaves'},
+ {t:'Apartamento Compacto Sul',tipo:'Apartamento',neg:'aluguel',b:'Boqueirão',p:1450,m:45,q:1,v:1,img:'sala'}].map((x,i)=>({...x,id:i}));
+let neg='venda';
+const MAXV={venda:[0,500000,900000,1500000,2500000],aluguel:[0,2000,3500,6000,10000]};
+function fillMax(){$('#bMax').innerHTML=MAXV[neg].map(v=>`<option value="${v}">${v?'Até '+brl(v):'Preço máximo'}</option>`).join('')}
+$('#bBairro').innerHTML+=[...new Set(P.map(p=>p.b))].sort().map(b=>`<option>${b}</option>`).join('');
+function render(anim){const tipo=$('#bTipo').value,b=$('#bBairro').value,q=+$('#bQ').value,mx=+$('#bMax').value,o=$('#ord').value;
+ let l=P.filter(p=>p.neg===neg&&(!tipo||p.tipo===tipo)&&(!b||p.b===b)&&p.q>=q&&(!mx||p.p<=mx));
+ if(o==='p')l.sort((a,c)=>a.p-c.p);if(o==='P')l.sort((a,c)=>c.p-a.p);if(o==='m')l.sort((a,c)=>c.m-a.m);
+ $('#cnt').textContent=`${l.length} ${l.length===1?'imóvel encontrado':'imóveis encontrados'} para ${neg==='venda'?'comprar':'alugar'}`;
+ $('#cards').innerHTML=l.map(p=>`<article class="card"><div class="im"><img src="media/${p.img}-m.webp" alt="${esc(p.t)}" loading="lazy" style="object-position:${['center','left','right'][p.id%3]}"><span class="tag">${p.tipo} · ${p.b}</span></div>
+  <div class="bd"><h3>${esc(p.t)}</h3><div class="pr">${brl(p.p)}${p.neg==='aluguel'?' <small>/mês</small>':''}</div>
+  <div class="ft"><span>${p.m} m²</span>${p.q?`<span>${p.q} quarto${p.q>1?'s':''}</span><span>${p.v} vaga${p.v>1?'s':''}</span>`:'<span>Plano e escriturado</span>'}</div></div></article>`).join('')||'<div class="vazio">Nenhum imóvel com esses filtros. Tente ampliar o preço ou o bairro.</div>';
+ if(anim&&window.gsap&&!matchMedia('(prefers-reduced-motion: reduce)').matches)gsap.from('.card',{y:30,opacity:0,duration:.5,stagger:.05,ease:'power2.out'});}
+$$('.tg button').forEach(bt=>bt.onclick=()=>{neg=bt.dataset.neg;$$('.tg button').forEach(x=>x.classList.toggle('on',x===bt));fillMax();render(true)});
+$('#fb').onsubmit=e=>{e.preventDefault();render(true);document.getElementById('imoveis').scrollIntoView({behavior:'smooth'})};
+['#bTipo','#bBairro','#bQ','#bMax','#ord'].forEach(s=>$(s).onchange=()=>render(true));
+fillMax();render(false);
+let modo='sac';
+function sim(){const V=+$('#sV').value,E=+$('#sE').value,N=+$('#sP').value,T=+$('#sT').value;
+ $('#oV').textContent=brl(V);$('#oE').textContent=E+'% · '+brl(V*E/100);$('#oP').textContent=N+' meses ('+Math.round(N/12)+' anos)';$('#oT').textContent=T.toFixed(1).replace('.',',')+'%';
+ const F=V*(1-E/100),i=Math.pow(1+T/100,1/12)-1;let p1,pu,tot=0,pts=[];
+ if(modo==='sac'){const a=F/N;for(let k=0;k<N;k++){const pk=a+(F-a*k)*i;tot+=pk;if(k%Math.ceil(N/24)===0)pts.push(pk)}p1=a+F*i;pu=a+a*i}
+ else{const pm=F*i/(1-Math.pow(1+i,-N));p1=pu=pm;tot=pm*N;for(let k=0;k<24;k++)pts.push(pm)}
+ $('#r1').textContent=brl(p1);$('#rF').textContent=brl(F);$('#rU').textContent=brl(pu);$('#rJ').textContent=brl(tot-F);$('#rR').textContent=brl(p1/0.3);
+ const mx=Math.max(...pts);$('#bars').innerHTML=pts.map(v=>`<i style="height:${Math.max(8,v/mx*100)}%"></i>`).join('');}
+$$('.mod button').forEach(bt=>bt.onclick=()=>{modo=bt.dataset.m;$$('.mod button').forEach(x=>x.classList.toggle('on',x===bt));sim()});
+['#sV','#sE','#sP','#sT'].forEach(s=>$(s).oninput=sim);sim();
+$('#cor').innerHTML=[['Marina Kunz','Centro e Petrópolis','#1E3A2B'],['Diego Farias','Vila Rodrigues e Boqueirão','#8A6E2F'],['Paula Werner','Condomínios e terrenos','#3D5A48']].map(([n,a,c])=>`<div><span class="av" style="background:${c}">${n.split(' ').map(x=>x[0]).join('')}</span><span><b>${n}</b><small>${a}</small></span></div>`).join('');
+$('#aT').oninput=e=>{let d=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=d.length>6?`(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`:d};
+$('#fA').onsubmit=e=>{e.preventDefault();const ok=$('#okA'),n=$('#aN').value.trim(),t=$('#aT').value.replace(/\D/g,'');ok.classList.add('on');
+ ok.textContent=n.length<3?'Informe seu nome.':t.length!==11?'Informe um WhatsApp com DDD.':`Obrigado, ${n.split(' ')[0]}! Um corretor responderia em até 2 horas úteis pelo WhatsApp (demonstração: nada foi enviado).`};
+addEventListener('scroll',()=>$('#hd').classList.toggle('s',scrollY>40),{passive:true});
+if(window.gsap){gsap.registerPlugin(ScrollTrigger);gsap.matchMedia().add('(prefers-reduced-motion: no-preference)',()=>{
+ gsap.from('#h1',{y:60,opacity:0,duration:1.1,ease:'power4.out',delay:.15});
+ gsap.from('.hero p,.busca',{y:30,opacity:0,duration:.9,stagger:.15,delay:.45,ease:'power3.out'});
+ gsap.to('.hero video',{scale:1.1,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+ $$('.rv').forEach(el=>gsap.from(el,{y:40,opacity:0,duration:.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}}));
+ gsap.from('.gal div',{clipPath:'inset(0 0 100% 0)',duration:1.1,stagger:.15,ease:'power3.inOut',scrollTrigger:{trigger:'.gal',start:'top 80%'}});
+});}
+}</script></body></html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clínica Vértice — Saúde com atenção</title>
+<meta name="description" content="Clínica Vértice: consultas, exames e check-up com agendamento online. Site de demonstração PageWorks · LLD Works.">
+<meta property="og:title" content="Clínica Vértice — Saúde com atenção"><meta property="og:image" content="media/poster.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F4C4A'/%3E%3Cpath d='M16 18l16 30 16-30' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='18' r='5' fill='%23E9684A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: acolhedor e preciso, como uma boa recepção
+   IDEA: o vértice — o ponto onde cuidado e técnica se encontram
+   PICTURE: vídeo da clínica em tela cheia + agenda de horários que funciona
+   COLOUR and TYPE: verde-petróleo #0F4C4A dominante, sálvia #EAF2EE, coral #E9684A só nas ações; Manrope 800 + Inter
+   LAYOUT: hero em vídeo → especialidades → clínica → corpo clínico → agendamento → exames → FAQ → contato */
+:root{--pet:#0F4C4A;--pet2:#0B3836;--sal:#EAF2EE;--cor:#E9684A;--ink:#10201F;--mute:#5A6B69;--line:#D6E3DE;--bg:#FFFFFF}
+*{box-sizing:border-box;min-width:0}html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;font:17px/1.6 Inter,system-ui,sans-serif;color:var(--ink);background:var(--bg);overflow-x:clip}
+h1,h2,h3{font-family:Manrope,Inter,sans-serif;line-height:1.08;margin:0;text-wrap:balance;letter-spacing:-.015em}
+h2{font-size:clamp(30px,3.8vw,48px);font-weight:800}h3{font-size:20px;font-weight:700}
+p{margin:0 0 12px}a{color:inherit}img{max-width:100%;display:block}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(5vw,18px)}.band{padding:clamp(64px,9vw,120px) 0}
+.lead{font-size:clamp(17px,1.5vw,19px);color:var(--mute);max-width:60ch}
+.btn{display:inline-flex;align-items:center;gap:8px;justify-content:center;min-height:50px;padding:0 24px;border-radius:999px;font-weight:700;text-decoration:none;border:0;cursor:pointer;font-size:16px;transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px)}.btn.cor{background:var(--cor);color:#fff;box-shadow:0 12px 28px -12px var(--cor)}
+.btn.lin{background:transparent;border:1.5px solid currentColor}.btn.pet{background:var(--pet);color:#fff}
+:focus-visible{outline:3px solid var(--cor);outline-offset:3px}
+/* nav */
+header{position:fixed;inset:0 0 auto;z-index:20;transition:background .3s,box-shadow .3s}
+header.s{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)}
+header .wrap{display:flex;align-items:center;gap:24px;min-height:76px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font:800 21px Manrope}.logo small{display:block;font:500 11px Inter;opacity:.8;letter-spacing:.02em}
+header.s .logo{color:var(--pet)}.logo svg{width:40px;height:40px;flex:none}
+nav.m{display:flex;gap:4px;margin-left:auto}nav.m a{color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:8px 12px;border-radius:999px}
+header.s nav.m a{color:var(--ink)}nav.m a:hover{background:rgba(255,255,255,.15)}header.s nav.m a:hover{background:var(--sal)}
+/* hero */
+.hero{position:relative;min-height:100svh;display:grid;align-items:end;color:#fff;overflow:hidden}
+.hero video,.hero .pst{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,30,29,.35) 0%,rgba(6,30,29,.2) 40%,rgba(6,30,29,.88) 100%)}
+.hero .wrap{position:relative;z-index:2;padding-bottom:clamp(48px,8vw,96px);width:100%}
+.hero h1{font-size:clamp(42px,6.4vw,84px);font-weight:800;max-width:14ch}
+.hero h1 .l{display:block;overflow:hidden}.hero h1 .l span{display:inline-block}
+.hero p{font-size:clamp(17px,1.6vw,20px);max-width:52ch;opacity:.92;margin:20px 0 28px}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}
+.chips span{font-size:14px;font-weight:600;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.14);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.22)}
+/* especialidades */
+.esp{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(270px,100%),1fr));gap:16px;margin-top:40px}
+.ec{padding:26px;border-radius:22px;background:var(--sal);transition:transform .25s,background .25s;cursor:default}
+.ec:hover{transform:translateY(-6px);background:#DDEBE5}
+.ec .ic{width:56px;height:56px;border-radius:16px;background:var(--pet);display:grid;place-items:center;margin-bottom:18px}
+.ec .ic svg{width:30px;height:30px}.ec p{color:var(--mute);font-size:15.5px;margin:8px 0 0}
+/* split */
+.split{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(28px,5vw,72px);align-items:center}
+.split.r>:first-child{order:2}
+.ph{border-radius:28px;overflow:hidden;position:relative;aspect-ratio:4/3.2}.ph img{width:100%;height:120%;object-fit:cover;position:absolute;top:-10%}
+.ticks{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:12px}
+.ticks li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px}.ticks li::before{content:"";width:28px;height:28px;border-radius:50%;background:var(--sal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12l4 4 8-8' fill='none' stroke='%230F4C4A' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") center/18px no-repeat}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
+.nums b{display:block;font:800 clamp(30px,3.4vw,42px) Manrope;color:var(--pet)}.nums span{font-size:14px;color:var(--mute)}
+/* equipe */
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:16px;margin-top:40px}
+.doc{border:1px solid var(--line);border-radius:22px;padding:24px;display:flex;gap:16px;align-items:center}
+.av{width:64px;height:64px;border-radius:50%;flex:none;display:grid;place-items:center;font:800 22px Manrope;color:#fff}
+.doc small{color:var(--mute);display:block}
+/* agendamento */
+.ag{background:var(--pet);color:#fff;border-radius:32px;padding:clamp(28px,5vw,56px);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(24px,4vw,56px)}
+.ag .lead{color:rgba(255,255,255,.82)}
+.steps{counter-reset:s;display:grid;gap:14px;margin-top:24px}.steps div{counter-increment:s;display:grid;grid-template-columns:40px minmax(0,1fr);gap:14px;align-items:start}
+.steps div::before{content:counter(s);width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.12);display:grid;place-items:center;font:800 17px Manrope}
+.box{background:#fff;color:var(--ink);border-radius:24px;padding:24px}
+label{display:block;font-size:13.5px;font-weight:600;color:var(--mute);margin:14px 0 6px}
+select,input{width:100%;min-height:48px;border:1.5px solid var(--line);border-radius:14px;padding:10px 14px;font:16px Inter;color:var(--ink);background:#fff}
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}.days button,.slots button{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:14px;cursor:pointer;font:600 14px Inter;color:var(--ink)}
+.days button{width:64px;padding:8px 0;text-align:center}.days button b{display:block;font:800 19px Manrope}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}.slots button{min-height:44px}
+.days .on,.slots .on{background:var(--pet);border-color:var(--pet);color:#fff}.slots button:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.ok{display:none;padding:18px;border-radius:16px;background:var(--sal);margin-top:14px}.ok.on{display:block}
+.note{font-size:13px;color:var(--mute);margin-top:12px}
+/* faq */
+details{border-bottom:1px solid var(--line);padding:20px 0}summary{cursor:pointer;font:700 19px Manrope;list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::after{content:"+";font-size:26px;color:var(--cor);line-height:1}details[open] summary::after{content:"–"}details p{color:var(--mute);margin:12px 0 0;max-width:70ch}
+/* contato */
+.cont{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px;margin-top:36px}
+.cont div{background:var(--sal);border-radius:22px;padding:24px}.cont b{display:block;font:700 18px Manrope;margin-bottom:6px}
+footer{background:var(--pet2);color:rgba(255,255,255,.75);padding:48px 0;font-size:14.5px}footer .wrap{display:flex;gap:24px;justify-content:space-between;flex-wrap:wrap}
+footer a{color:#fff}
+.wa{position:fixed;right:20px;bottom:20px;z-index:30;width:60px;height:60px;border-radius:50%;background:#1FAF5A;display:grid;place-items:center;box-shadow:0 14px 30px -10px rgba(0,0,0,.4)}
+.demo{background:var(--cor);color:#fff;text-align:center;font-size:12.5px;font-weight:600;padding:6px 16px;position:fixed;left:0;right:0;bottom:0;z-index:25}body{padding-bottom:30px}.wa{bottom:46px!important}
+@media(max-width:900px){nav.m{display:none}.split,.ag{grid-template-columns:1fr}.split.r>:first-child{order:0}.nums{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:520px){.hero .cta .btn{width:100%}.nums{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style></head><body>
+<div class="demo">Site de demonstração · PageWorks by LLD Works · clínica e profissionais fictícios</div>
+<header id="hd"><div class="wrap">
+ <a class="logo" href="#inicio" aria-label="Clínica Vértice, início"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#0F4C4A"/><path d="M16 20l16 28 16-28" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="18" r="5.5" fill="#E9684A"/></svg><span>Clínica Vértice<small>saúde com atenção</small></span></a>
+ <nav class="m" aria-label="Seções"><a href="#especialidades">Especialidades</a><a href="#clinica">A clínica</a><a href="#equipe">Equipe</a><a href="#exames">Exames</a><a href="#contato">Contato</a></nav>
+ <a class="btn cor" href="#agendar" style="min-height:44px">Agendar</a></div></header>
+
+<section class="hero" id="inicio">
+ <img class="pst" src="media/poster.jpg" alt="">
+ <video autoplay muted loop playsinline preload="auto" poster="media/poster.jpg" aria-hidden="true"><source src="media/hero.mp4" type="video/mp4"></video>
+ <div class="wrap"><h1 id="h1"><span class="l"><span>Cuidado que começa</span></span><span class="l"><span>na primeira conversa.</span></span></h1>
+  <p>Consultas, exames e check-up no mesmo lugar, com hora marcada de verdade e um time que explica cada passo do seu tratamento.</p>
+  <div class="cta"><a class="btn cor" href="#agendar">Agendar consulta</a><a class="btn lin" href="#especialidades" style="color:#fff">Ver especialidades</a></div>
+  <div class="chips"><span>Agendamento online 24 h</span><span>Telemedicina</span><span>Resultados no celular</span><span>Estacionamento próprio</span></div></div>
+</section>
+
+<section class="band" id="especialidades"><div class="wrap">
+ <h2 class="rv">Especialidades</h2><p class="lead rv" style="margin-top:14px">Do clínico geral ao especialista, com prontuário único: quem atende você sabe o seu histórico.</p>
+ <div class="esp" id="esp"></div></div></section>
+
+<section class="band" id="clinica" style="background:var(--sal)"><div class="wrap split">
+ <div class="ph rv"><img src="media/recepcao.webp" srcset="media/recepcao-m.webp 960w, media/recepcao.webp 1920w" sizes="(max-width:900px) 100vw, 55vw" alt="Recepção da clínica com balcão de madeira e plantas" loading="lazy"></div>
+ <div class="rv"><h2>Uma clínica pensada para você esperar menos</h2>
+  <p class="lead" style="margin-top:14px">Horário confirmado pelo WhatsApp, lembrete na véspera e recepção que já sabe quem você é quando você chega.</p>
+  <ul class="ticks"><li>Pontualidade como regra: atraso acima de 15 min vira aviso automático no seu celular.</li><li>Prontuário eletrônico com acesso restrito e registro de quem consultou.</li><li>Acessibilidade completa e sala de espera para crianças.</li></ul>
+  <div class="nums"><div><b data-n="12">0</b><span>especialidades</span></div><div><b data-n="6">0</b><span>dias por semana</span></div><div><b data-n="24">0</b><span>horas para agendar online</span></div></div></div></div></section>
+
+<section class="band" id="equipe"><div class="wrap">
+ <h2 class="rv">Corpo clínico</h2><p class="lead rv" style="margin-top:14px">Profissionais que conversam entre si sobre o seu caso.</p>
+ <div class="team" id="team"></div>
+ <p class="note">Nomes fictícios para demonstração. No site real, cada profissional aparece com o registro no conselho.</p></div></section>
+
+<section class="band" id="agendar" style="padding-top:0"><div class="wrap"><div class="ag rv">
+ <div><h2>Agende em menos de um minuto</h2><p class="lead" style="margin-top:14px">Escolha a especialidade, o dia e o horário. A confirmação chega no seu WhatsApp.</p>
+  <div class="steps"><div><span>Escolha a especialidade e o melhor horário.</span></div><div><span>Receba o código de confirmação no WhatsApp.</span></div><div><span>No dia, faça o check-in pelo celular e vá direto para a sala.</span></div></div></div>
+ <form class="box" id="fAg" novalidate>
+  <label for="sEsp">Especialidade</label><select id="sEsp" required></select>
+  <label>Dia</label><div class="days" id="days" role="listbox" aria-label="Dias disponíveis"></div>
+  <label>Horário</label><div class="slots" id="slots"></div>
+  <label for="iNome">Seu nome</label><input id="iNome" autocomplete="name" required maxlength="80">
+  <label for="iTel">WhatsApp</label><input id="iTel" inputmode="tel" autocomplete="tel" placeholder="(54) 9 9999-9999" required maxlength="16">
+  <button class="btn cor" style="width:100%;margin-top:18px">Confirmar agendamento</button>
+  <div class="ok" id="ok" role="status" aria-live="polite"></div>
+  <p class="note">Demonstração: nenhum dado é enviado. No produto, o pedido entra na agenda ServiceWorks e o código chega pelo WhatsApp.</p>
+ </form></div></div></section>
+
+<section class="band" id="exames" style="background:var(--sal)"><div class="wrap split r">
+ <div class="ph rv"><img src="media/exame.webp" srcset="media/exame-m.webp 960w, media/exame.webp 1920w" sizes="(max-width:900px) 100vw, 55vw" alt="Sala de exames com aparelho de ultrassom" loading="lazy"></div>
+ <div class="rv"><h2>Exames no mesmo dia da consulta</h2><p class="lead" style="margin-top:14px">Ultrassom, eletrocardiograma, coleta de exames de sangue e check-up executivo, com laudo liberado no celular.</p>
+  <ul class="ticks"><li>Coleta sem fila a partir das 6h30.</li><li>Laudos com assinatura digital.</li><li>Check-up completo em uma única manhã.</li></ul></div></div></section>
+
+<section class="band"><div class="wrap split">
+ <div class="ph rv"><img src="media/pediatria.webp" srcset="media/pediatria-m.webp 960w, media/pediatria.webp 1920w" sizes="(max-width:900px) 100vw, 55vw" alt="Pediatra examinando um bebê no colo da mãe" loading="lazy"></div>
+ <div class="rv"><h2>Pediatria com paciência de sobra</h2><p class="lead" style="margin-top:14px">Consultas de 40 minutos, acompanhamento do crescimento e canal direto com a equipe para dúvidas do dia a dia.</p>
+  <a class="btn pet" href="#agendar" style="margin-top:12px">Agendar pediatria</a></div></div></section>
+
+<section class="band" style="padding-top:0"><div class="wrap split r">
+ <div class="ph rv"><img src="media/consulta.webp" srcset="media/consulta-m.webp 960w, media/consulta.webp 1920w" sizes="(max-width:900px) 100vw, 55vw" alt="Médica conversando com paciente idosa" loading="lazy"></div>
+ <div class="rv"><h2>Tempo para ouvir</h2><p class="lead" style="margin-top:14px">Consulta é conversa. Por isso a agenda tem intervalo entre pacientes, e o plano de cuidado sai por escrito, explicado.</p></div></div></section>
+
+<section class="band" id="faq" style="background:var(--sal)"><div class="wrap" style="max-width:900px">
+ <h2 class="rv" style="margin-bottom:20px">Perguntas frequentes</h2>
+ <details><summary>Vocês atendem convênios?</summary><p>Sim. A lista de convênios aceitos aparece ao escolher a especialidade no agendamento, e a recepção confirma a cobertura antes da consulta.</p></details>
+ <details><summary>Posso remarcar pelo WhatsApp?</summary><p>Pode. Responda REMARCAR na conversa de confirmação e o assistente mostra os próximos horários livres.</p></details>
+ <details><summary>Como recebo os resultados dos exames?</summary><p>Por link seguro no celular, com acesso por código. O médico solicitante também recebe.</p></details>
+ <details><summary>Atendem por telemedicina?</summary><p>Sim, para retornos e orientações. A primeira consulta de cada especialidade é presencial.</p></details>
+ <details><summary>Meus dados ficam protegidos?</summary><p>Prontuário com acesso só da equipe envolvida no seu cuidado, registro de acessos e tratamento conforme a LGPD.</p></details>
+</div></section>
+
+<section class="band" id="contato"><div class="wrap">
+ <h2 class="rv">Visite a clínica</h2>
+ <div class="cont rv"><div><b>Endereço</b>Rua da Demonstração, 123 — Centro<br>Passo Fundo · RS</div><div><b>Horário</b>Seg a sex, 7h às 20h<br>Sábado, 8h às 13h</div><div><b>Contato</b>WhatsApp (54) 9 0000-0000<br>contato@clinicavertice.demo</div></div></div></section>
+
+<footer><div class="wrap"><span>Clínica Vértice · Responsável técnico: nome e CRM a preencher pelo cliente</span><span>Site de demonstração criado pela <a href="https://lldworks.com.br">LLD Works</a> · PageWorks · 2026</span></div></footer>
+<a class="wa" href="#agendar" aria-label="Agendar pelo WhatsApp"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg></a>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>{
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const IC={
+ clin:'<path d="M12 4v16M4 12h16" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>',
+ card:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="none" stroke="#fff" stroke-width="2"/><path d="M6 12h3l1.5-2.5 2 5 1.5-2.5H18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+ ped:'<circle cx="12" cy="8" r="3.4" fill="none" stroke="#fff" stroke-width="2"/><path d="M6 20c.6-3.6 3-5.6 6-5.6s5.4 2 6 5.6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>',
+ derm:'<path d="M12 3c3 4.5 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-6.5 6-11z" fill="none" stroke="#fff" stroke-width="2"/>',
+ gin:'<circle cx="12" cy="9" r="5" fill="none" stroke="#fff" stroke-width="2"/><path d="M12 14v7M9 18h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>',
+ orto:'<path d="M8 4c-1.5 0-2.5 1.2-2.5 2.6 0 1 .6 1.8 1.4 2.2L15 17.2c.4.8 1.2 1.4 2.2 1.4 1.4 0 2.6-1 2.6-2.5 0-1-.6-1.9-1.5-2.3L10 5.4C9.6 4.6 8.9 4 8 4z" fill="none" stroke="#fff" stroke-width="2"/>'};
+const ESP=[['Clínica geral','Check-up, prevenção e o primeiro olhar sobre qualquer sintoma.','clin'],['Cardiologia','Consulta, eletrocardiograma e ecocardiograma no mesmo dia.','card'],['Pediatria','Do recém-nascido ao adolescente, com consultas de 40 minutos.','ped'],['Dermatologia','Pele, cabelo e unhas, com mapeamento de pintas.','derm'],['Ginecologia','Saúde da mulher em todas as fases, com exames preventivos.','gin'],['Ortopedia','Dores, lesões e reabilitação junto com a fisioterapia.','orto']];
+$('#esp').innerHTML=ESP.map(([n,d,i])=>`<article class="ec"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[i]}</svg></div><h3>${n}</h3><p>${d}</p></article>`).join('');
+const DOC=[['Dra. Helena Prado','Cardiologia','#0F4C4A'],['Dr. Rafael Moura','Pediatria','#E9684A'],['Dra. Camila Torres','Dermatologia','#3C7A6B'],['Dr. André Lemos','Ortopedia','#24423F']];
+$('#team').innerHTML=DOC.map(([n,e,c])=>`<div class="doc rv"><div class="av" style="background:${c}">${n.split(' ').slice(-2).map(x=>x[0]).join('')}</div><div><h3>${n}</h3><small>${e}</small></div></div>`).join('');
+$('#sEsp').innerHTML=ESP.map(e=>`<option>${e[0]}</option>`).join('');
+// agenda: próximos 7 dias úteis a partir de amanhã (datas ISO)
+const DIAS=['dom','seg','ter','qua','qui','sex','sáb'], H=['07:30','08:15','09:00','09:45','10:30','11:15','13:30','14:15','15:00','15:45','16:30','17:15'];
+let dia=null, hora=null; const hoje=new Date(); const lista=[];
+for(let i=1;lista.length<7;i++){const d=new Date(hoje);d.setDate(hoje.getDate()+i);if(d.getDay()!==0)lista.push(d)}
+const iso=d=>d.toISOString().slice(0,10);
+function rDays(){$('#days').innerHTML=lista.map(d=>`<button type="button" role="option" class="${iso(d)===dia?'on':''}" data-d="${iso(d)}" aria-selected="${iso(d)===dia}">${DIAS[d.getDay()]}<b>${d.getDate()}</b></button>`).join('')}
+function rSlots(){const seed=(dia||'').split('-').join('')%7;$('#slots').innerHTML=dia?H.map((h,i)=>`<button type="button" class="${h===hora?'on':''}" data-h="${h}" ${((i+seed)%4===0)?'disabled':''}>${h}</button>`).join(''):'<p class="note" style="margin:0">Escolha um dia.</p>'}
+$('#days').onclick=e=>{const b=e.target.closest('[data-d]');if(!b)return;dia=b.dataset.d;hora=null;rDays();rSlots()};
+$('#slots').onclick=e=>{const b=e.target.closest('[data-h]');if(!b||b.disabled)return;hora=b.dataset.h;rSlots()};
+$('#iTel').oninput=e=>{let d=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=d.length>6?`(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`:d};
+$('#fAg').onsubmit=e=>{e.preventDefault();const ok=$('#ok');const nome=$('#iNome').value.trim(),tel=$('#iTel').value.replace(/\D/g,'');
+ let erro=!dia?'Escolha o dia.':!hora?'Escolha o horário.':nome.length<3?'Informe seu nome.':tel.length!==11?'Informe um WhatsApp com DDD.':'';
+ ok.classList.add('on');if(erro){ok.style.background='#FDECE7';ok.textContent=erro;return}
+ const d=lista.find(x=>iso(x)===dia);ok.style.background='';ok.innerHTML=`<b>Pré-agendamento feito, ${nome.split(' ')[0].replace(/[<>&]/g,'')}!</b><br>${$('#sEsp').value} · ${DIAS[d.getDay()]}, ${d.toLocaleDateString('pt-BR')} às ${hora}. O código de confirmação chegaria agora no seu WhatsApp.`};
+rDays();rSlots();
+addEventListener('scroll',()=>$('#hd').classList.toggle('s',scrollY>40),{passive:true});
+if(window.gsap){gsap.registerPlugin(ScrollTrigger);gsap.matchMedia().add('(prefers-reduced-motion: no-preference)',()=>{
+ gsap.from('#h1 .l span',{yPercent:110,duration:1.1,stagger:.12,ease:'power4.out',delay:.2});
+ gsap.from('.hero p,.hero .cta,.chips span',{y:24,opacity:0,duration:.8,stagger:.08,delay:.6});
+ gsap.to('.hero video',{scale:1.08,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+ $$('.rv').forEach(el=>gsap.from(el,{y:40,opacity:0,duration:.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}}));
+ gsap.from('.ec',{y:50,opacity:0,duration:.8,stagger:.08,ease:'power3.out',scrollTrigger:{trigger:'#esp',start:'top 85%'}});
+ $$('.ph img').forEach(im=>gsap.to(im,{yPercent:-8,ease:'none',scrollTrigger:{trigger:im.parentElement,scrub:true}}));
+ $$('[data-n]').forEach(el=>{const o={v:0};gsap.to(o,{v:+el.dataset.n,duration:1.6,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 90%'},onUpdate:()=>el.textContent=Math.round(o.v)})});
+});}else{$$('[data-n]').forEach(el=>el.textContent=el.dataset.n)}
+}</script></body></html>

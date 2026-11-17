@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /stok/
+Disallow: /works/
 
 Sitemap: https://lucasldiogo.lldworks.com.br/sitemap.xml

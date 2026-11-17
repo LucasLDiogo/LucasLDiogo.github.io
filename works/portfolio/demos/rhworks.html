@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RHWorks — demo</title><link rel="stylesheet" href="base.css">
+<style>
+/* VOICE: departamento pessoal em ordem; IDEA: a pasta funcional que nunca perde papel; COLOUR: dourado RHWorks; TYPE: Montserrat/Inter; LAYOUT: pendências primeiro */
+.pend .it{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.pend .it:last-child{border:0}.dot{width:10px;height:10px;border-radius:50%}
+.score{font-weight:800;font-family:Montserrat,sans-serif}
+.portal{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.portal .card{display:flex;flex-direction:column;gap:6px}
+.hr .r{display:grid;grid-template-columns:130px minmax(0,1fr) 44px;gap:10px;align-items:center;margin:8px 0}
+</style></head><body>
+<div id="auth"></div>
+<div id="app" hidden><main>
+ <section class="view" data-tab="Painel">
+  <div class="kpis" id="kpis"></div>
+  <div class="grid g2"><div class="card pend"><div class="row sb"><h2>Pendências do DP</h2><span class="chip warn" id="np"></span></div><div id="pend"></div></div>
+   <div class="card hr"><h2>Pessoas por setor</h2><div id="set"></div><h2 style="margin-top:16px">Banco de horas (saldo do mês)</h2><div id="bh"></div></div></div>
+ </section>
+ <section class="view" data-tab="Colaboradores">
+  <div class="row sb" style="margin-bottom:12px"><h1>Colaboradores</h1><div class="row"><input id="q" placeholder="Buscar por nome ou cargo" style="width:240px"><button class="btn pri" onclick="LW.toast('Link de admissão digital enviado ao candidato.')">+ Admissão digital</button></div></div>
+  <div class="card scroll"><table class="stack"><thead><tr><th>Nome</th><th>Cargo</th><th>Setor</th><th class="n">Admissão</th><th class="n">Férias vencem</th><th class="n">Banco de horas</th><th>Docs</th></tr></thead><tbody id="tb"></tbody></table></div>
+  <p class="small mute" style="margin-top:8px">CPF, salário e dados de saúde ficam ocultos para quem não tem o papel "DP" — cada acesso a eles é registrado.</p>
+ </section>
+ <section class="view" data-tab="Recrutamento">
+  <div class="row sb" style="margin-bottom:10px"><div><h1>Vaga: Auxiliar de expedição</h1><p class="small mute">Triagem por IA compara o currículo com os requisitos da vaga e explica a nota. A decisão é sempre de uma pessoa.</p></div><span class="chip p">27 candidaturas</span></div>
+  <div class="kan" id="kan"></div>
+ </section>
+ <section class="view" data-tab="Portal do colaborador">
+  <div class="grid g2"><div><h1 style="margin-bottom:6px">Olá, Mariana 👋</h1><p class="mute small" style="margin-top:0">O que o colaborador vê no celular, com o próprio login.</p>
+   <div class="portal"><div class="card"><b>Holerite de outubro</b><span class="small mute">Disponível desde 05/11</span><button class="btn sm" onclick="LW.toast('Holerite aberto (PDF assinado).')">Ver holerite</button></div>
+    <div class="card"><b>Férias</b><span class="small mute">18 dias disponíveis · vencem 10/04/2027</span><button class="btn sm pri" id="fer">Pedir férias</button></div>
+    <div class="card"><b>Banco de horas</b><span class="small mute">Saldo: +6h40</span><button class="btn sm" onclick="LW.toast('Espelho de ponto do mês aberto.')">Espelho de ponto</button></div>
+    <div class="card"><b>Enviar atestado</b><span class="small mute">Foto ou PDF; só o DP vê</span><button class="btn sm" onclick="LW.toast('Atestado enviado com criptografia. Protocolo RH-2291.')">Enviar</button></div></div></div>
+   <div class="card"><h2>Ponto eletrônico — como encaixa</h2><p class="small">O RHWorks não substitui o relógio de ponto oficial. Para registrar jornada por app (REP-P), a Portaria MTP 671/2021 exige um programa com registro no INPI e os requisitos técnicos do Anexo IX.</p>
+    <p class="small">Caminho do produto: <b>fase 1</b> importa o arquivo do ponto já certificado do cliente (AFD/AEJ) e calcula banco de horas e pendências; <b>fase 2</b>, se valer a pena, registro próprio do REP-P no INPI.</p>
+    <p class="small mute">Folha de pagamento e eSocial seguem no sistema da contabilidade do cliente; o RHWorks envia os eventos do mês já conferidos.</p></div></div>
+ </section>
+</main></div>
+<script src="icons.js"></script><script src="base.js"></script>
+<script>{
+const {$, $$, esc, toast} = LW;
+const HOJE = new Date('2026-11-16');
+const fmt = d => new Date(d+'T12:00:00').toLocaleDateString('pt-BR');
+const dd = d => Math.round((new Date(d+'T12:00:00') - HOJE) / 864e5);
+const C = [['Mariana Alves','Analista de DP','Administrativo','2022-03-14','2027-04-10',6.7,'ok'],['Rodrigo Pires','Motorista','Logística','2021-07-01','2026-12-20',-3.5,'ok'],
+ ['Sandra Lopes','Auxiliar de expedição','Logística','2024-01-08','2026-12-02',12.2,'pend'],['Felipe Nunes','Vendedor','Comercial','2023-09-18','2027-06-01',0,'ok'],
+ ['Aline Costa','Caixa','Loja','2025-02-03','2027-02-03',2.1,'pend'],['Jorge Matos','Conferente','Logística','2020-05-11','2026-11-30',18.4,'ok'],
+ ['Paula Reis','Gerente de loja','Loja','2019-10-21','2027-03-15',-1.2,'ok'],['Diego Ramos','Auxiliar de expedição','Logística','2026-10-26','2027-10-26',0,'pend']]
+ .map(([n,c,s,a,f,b,d])=>({n,c,s,a,f,b,d}));
+let cand = [['Lucas M.','tri',86],['Ana B.','tri',78],['Pedro H.','tri',54],['Rita S.','ent',91],['João V.','ent',73],['Carla D.','prop',88],['Marcos L.','tri',61]].map(([n,e,sc],i)=>({id:i,n,e,sc}));
+const ET = [['tri','Triagem'],['ent','Entrevista'],['prop','Proposta'],['adm','Admissão']];
+function painel(){ const hc=C.length+34;
+ $('#kpis').innerHTML=[['Colaboradores ativos',hc,'<span class="mute">3 admissões em nov/26</span>'],['Turnover (12 meses)','8,9%','<span class="up">▼ 2,1 p.p.</span>'],['Férias vencendo (60 d)',C.filter(c=>dd(c.f)<=60).length,'<span class="down">evitar pagamento em dobro</span>'],['Documentos pendentes',C.filter(c=>c.d==='pend').length,'<span class="mute">admissão e reciclagem</span>']]
+  .map(([l,v,d])=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join('');
+ const p=[...C.filter(c=>dd(c.f)<=60).map(c=>({k:'var(--bad)',t:`Férias de ${c.n} vencem em ${dd(c.f)} dias`,a:'Programar'})),
+  ...C.filter(c=>c.d==='pend').map(c=>({k:'var(--warn)',t:`${c.n}: documento pendente (${c.a>'2026-10-01'?'ASO admissional':'reciclagem NR'})`,a:'Cobrar'})),
+  {k:'var(--p)',t:'Experiência de Diego Ramos termina em 09/12 (45 dias)',a:'Avaliar'},{k:'var(--p)',t:'Fechamento do ponto de novembro: 3 marcações a justificar',a:'Revisar'}];
+ $('#np').textContent=p.length+' itens';
+ $('#pend').innerHTML=p.map(x=>`<div class="it"><span class="dot" style="background:${x.k}"></span><span>${esc(x.t)}</span><button class="btn sm" onclick="LW.toast('Tarefa criada e responsável avisado.')">${x.a}</button></div>`).join('');
+ const st={};C.forEach(c=>st[c.s]=(st[c.s]||0)+1); const add={Logística:14,Loja:9,Comercial:6,Administrativo:5}; const tot=hc;
+ $('#set').innerHTML=Object.keys(add).map(s=>`<div class="r"><span class="small">${s}</span><div class="bar"><i style="width:${((st[s]||0)+add[s])/tot*100}%"></i></div><span class="small n">${(st[s]||0)+add[s]}</span></div>`).join('');
+ $('#bh').innerHTML=[['Créditos','+142h'],['Débitos','-38h'],['Saldo','+104h']].map(([n,v])=>`<div class="r"><span class="small">${n}</span><span></span><b class="small n">${v}</b></div>`).join(''); }
+function tabela(){ const q=$('#q').value.toLowerCase(); $('#tb').innerHTML=C.filter(c=>(c.n+c.c).toLowerCase().includes(q)).map(c=>`<tr><td><b>${esc(c.n)}</b></td><td>${esc(c.c)}</td><td>${c.s}</td><td class="n">${fmt(c.a)}</td><td class="n">${dd(c.f)<=60?`<span class="chip bad">${fmt(c.f)}</span>`:fmt(c.f)}</td><td class="n">${c.b>0?'+':''}${c.b.toFixed(1).replace('.',',')}h</td><td>${c.d==='ok'?'<span class="chip ok">Completo</span>':'<span class="chip warn">Pendente</span>'}</td></tr>`).join(''); }
+function kan(){ $('#kan').innerHTML=ET.map(([s,n])=>{const l=cand.filter(c=>c.e===s).sort((a,b)=>b.sc-a.sc);return `<div class="col" data-s="${s}"><h3><span>${n}</span><span class="mute">${l.length}</span></h3>${l.map(c=>`<div class="kc" draggable="true" data-id="${c.id}"><div class="row sb"><span class="t">${esc(c.n)}</span><span class="score" style="color:${c.sc>=80?'var(--ok)':c.sc>=65?'var(--warn)':'var(--mute)'}">${c.sc}</span></div><div class="m" style="margin-top:4px">${c.sc>=80?'Experiência com expedição e empilhadeira':c.sc>=65?'Experiência em varejo; sem empilhadeira':'Primeiro emprego; disponibilidade de horário'}</div></div>`).join('')||'<div class="empty small">Vazio</div>'}</div>`}).join(''); }
+$('#q').oninput=tabela;
+$('#fer').onclick=()=>toast('Pedido de férias enviado para aprovação do gestor.');
+LW.kanban($('#kan'),(id,s)=>{const c=cand.find(c=>String(c.id)===id); if(!c) return; c.e=s; kan(); toast(`${c.n} → ${ET.find(e=>e[0]===s)[1]}`);});
+LW.init({name:'RHWorks', color:'#A16207', icon:LWI.rhworks, sub:'Gestão de pessoas', org:'Distribuidora Exemplo', initials:'DE', demoUser:'dp@distribuidoraexemplo.com.br',
+ loginTitle:'O DP em dia, sem planilha solta.', loginText:'Colaboradores, admissão digital, férias, banco de horas, documentos e recrutamento num painel só — e um portal para o colaborador.',
+ bullets:['Alertas de férias vencendo e experiência','Admissão digital com documentos','Triagem de currículos explicada pela IA','Dados sensíveis visíveis só para o DP'],
+ onEnter(){ painel(); tabela(); kan(); }});
+}</script></body></html>

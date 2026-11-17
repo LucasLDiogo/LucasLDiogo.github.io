@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AgentWorks — demo</title><link rel="stylesheet" href="base.css">
+<style>
+/* VOICE: atendente atencioso; IDEA: a conversa no WhatsApp; COLOUR: verde AgentWorks; TYPE: Montserrat/Inter; LAYOUT: celular com a conversa ao lado das regras */
+.wrap{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px}
+.wa-h{background:#075E54;color:#fff;padding:12px 14px;display:flex;gap:10px;align-items:center}
+.wa-h .av{background:#fff;color:#075E54}
+.wa-b{background:#ECE5DD;height:470px;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:6px}
+:root[data-theme=dark] .wa-b{background:#0B141A}
+.m{max-width:82%;padding:7px 10px;border-radius:9px;font-size:14px;white-space:pre-line;box-shadow:0 1px 1px rgba(0,0,0,.08);color:#111}
+.m.in{background:#fff;align-self:flex-start}.m.out{background:#D9FDD3;align-self:flex-end}
+.m small{display:block;text-align:right;font-size:10.5px;opacity:.55}
+.m.sys{align-self:center;background:#FFF3C4;font-size:12px}
+.wa-f{display:flex;gap:6px;padding:8px;background:var(--card)}
+.wa-f input{border-radius:99px}.wa-f button{border-radius:50%;width:44px;padding:0;background:#0E9F6E;color:#fff;border:0}
+.kb .it{padding:10px 0;border-bottom:1px solid var(--line)}.kb .it:last-child{border:0}
+.sugs{display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:var(--card);border-top:1px solid var(--line)}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+</style></head><body>
+<div id="auth"></div>
+<div id="app" hidden><main>
+ <section class="view" data-tab="Conversa ao vivo">
+  <div class="wrap"><div class="phone" style="min-height:auto;border-width:8px">
+   <div class="wa-h"><span class="av">FA</span><div><b>Fisioterapia Art</b><div class="small" style="opacity:.8">conta comercial verificada</div></div></div>
+   <div class="wa-b" id="wb"></div><div class="sugs" id="sg"></div>
+   <form class="wa-f" id="wf"><input id="wi" placeholder="Mensagem" aria-label="Mensagem" maxlength="300"><button aria-label="Enviar">➤</button></form></div>
+   <div class="grid" style="align-content:start">
+    <div class="kpis" id="kpis" style="margin:0"></div>
+    <div class="card"><h2>Como o agente decide</h2><table><tbody>
+     <tr><td>1. Entende a intenção (agendar, preço, endereço, convênio…)</td></tr><tr><td>2. Responde só com o que está na base de conhecimento da clínica</td></tr>
+     <tr><td>3. Ações reais por ferramenta: consultar e reservar horário na agenda (ServiceWorks)</td></tr>
+     <tr><td>4. Assunto sensível, reclamação ou dúvida sem resposta → passa para humano com o histórico</td></tr>
+     <tr><td>5. Fora do horário: registra o pedido e avisa quando a equipe volta</td></tr></tbody></table>
+     <p class="small mute" style="margin-top:8px">Política da Meta: o WhatsApp Business não permite assistente de IA de uso geral. O AgentWorks é escopado ao negócio do cliente e se apresenta como assistente virtual.</p></div></div></div>
+ </section>
+ <section class="view" data-tab="Base de conhecimento">
+  <div class="row sb" style="margin-bottom:12px"><div><h1>Base de conhecimento</h1><p class="small mute">O agente só afirma o que está aqui. Edite e a resposta muda na hora.</p></div><button class="btn pri" id="addk">+ Nova resposta</button></div>
+  <div class="card kb" id="kb"></div>
+ </section>
+ <section class="view" data-tab="Atendimentos">
+  <div class="card scroll"><table><thead><tr><th>Contato</th><th>Assunto</th><th>Resolvido por</th><th class="n">Tempo</th><th>Status</th></tr></thead><tbody id="tat"></tbody></table></div>
+ </section>
+</main></div>
+<script src="icons.js"></script><script src="base.js"></script>
+<script>{
+const {$, $$, esc, toast} = LW;
+let KB = [{p:'Endereço e estacionamento',kw:['endereço','endereco','onde','fica','local','estacionamento'],r:'Ficamos na Av. Exemplo, 1000, sala 2 — Centro. Há estacionamento conveniado ao lado (1 h grátis).'},
+ {p:'Convênios aceitos',kw:['convênio','convenio','plano','unimed','ipe'],r:'Atendemos particular e emitimos recibo para reembolso. Convênios: consulte a recepção, pois a lista muda — vou pedir para confirmarem pra você.'},
+ {p:'Valor da sessão',kw:['valor','preço','preco','quanto','custa'],r:'A sessão de fisioterapia é R$ 150. O pacote de 10 sessões sai por R$ 1.290 (economia de R$ 210).'},
+ {p:'Horário de funcionamento',kw:['horário','horario','abre','fecha','sábado','sabado'],r:'Segunda a sexta, das 7h às 20h. Sábado, das 8h às 12h.'},
+ {p:'Agendar',kw:['agendar','marcar','horário livre','consulta','sessão','sessao','vaga'],r:'@agenda'}];
+const at = [['Ricardo P.','Agendamento','Agente',' 48 s','Resolvido'],['Luciana F.','Convênio','Humano (Paula)','6 min','Resolvido'],['Marcos T.','Valor do pacote','Agente','22 s','Resolvido'],['Sílvia C.','Reclamação de atraso','Humano (recepção)','—','Em andamento'],['Gustavo R.','Remarcação','Agente','35 s','Resolvido']];
+const hr = () => new Date().toTimeString().slice(0,5);
+const add = (t,c) => { $('#wb').insertAdjacentHTML('beforeend',`<div class="m ${c}">${esc(t)}${c!=='sys'?`<small>${hr()}${c==='out'?' ✓✓':''}</small>`:''}</div>`); $('#wb').scrollTop=1e6; };
+function responder(txt){ const t = txt.toLowerCase();
+ if (/reclama|absurd|péssim|pessim|atras/.test(t)) { add('Sinto muito por isso. Vou chamar alguém da equipe agora mesmo — a conversa já está com eles.','out'); add('Atendimento transferido para humano · prioridade alta','sys'); return sug(['Obrigado']); }
+ const k = KB.find(k=>k.kw.some(w=>t.includes(w)));
+ if (!k) { add('Não tenho essa informação com segurança. Vou pedir para a equipe te responder por aqui, tudo bem?','out'); add('Pergunta sem resposta na base → enviada à equipe','sys'); return sug(['Quero agendar','Qual o valor?']); }
+ if (k.r === '@agenda') { add('Claro! Tenho estes horários com a Dra. Paula:\n• Hoje 16:30\n• Amanhã 08:00\n• Amanhã 14:00\nQual prefere?','out'); return sug(['Amanhã 08:00','Hoje 16:30']); }
+ add(k.r,'out'); sug(['Quero agendar','Onde fica?','Horário de funcionamento']); }
+function sug(l){ $('#sg').innerHTML = l.map(x=>`<button class="btn sm" data-s="${esc(x)}">${esc(x)}</button>`).join(''); }
+function enviar(txt){ if(!txt.trim()) return; add(txt,'in');
+ if (/^(hoje|amanhã|amanha) \d/i.test(txt)) { setTimeout(()=>{ add(`Pronto! Sessão reservada para ${txt.toLowerCase()} ✅\nVou te lembrar 1 dia antes. Para remarcar, responda REMARCAR.`,'out'); add('Reserva criada na agenda ServiceWorks','sys'); sug(['Obrigado']); },500); return; }
+ if (/obrigad/i.test(txt)) { setTimeout(()=>{ add('Por nada! Qualquer coisa é só chamar 💚','out'); sug(['Quero agendar']); },400); return; }
+ setTimeout(()=>responder(txt),500); }
+$('#wf').onsubmit = e => { e.preventDefault(); enviar($('#wi').value); $('#wi').value=''; };
+$('#sg').onclick = e => { const b = e.target.closest('[data-s]'); if (b) enviar(b.dataset.s); };
+function kb(){ $('#kb').innerHTML = KB.map((k,i)=>`<div class="it"><div class="row sb"><b>${esc(k.p)}</b><span class="small mute">gatilhos: ${esc(k.kw.slice(0,4).join(', '))}</span></div>${k.r==='@agenda'?'<p class="small mute">Ação: consulta e reserva na agenda (ferramenta)</p>':`<textarea rows="2" data-k="${i}" aria-label="Resposta" style="margin-top:6px">${esc(k.r)}</textarea>`}</div>`).join(''); }
+document.addEventListener('input', e => { const i = e.target.dataset.k; if (i!==undefined) KB[+i].r = e.target.value; });
+$('#addk').onclick = () => { KB.splice(KB.length-1,0,{p:'Nova resposta',kw:['palavra'],r:'Escreva a resposta oficial aqui.'}); kb(); toast('Resposta criada. Revise antes de ativar.'); };
+function kpis(){ $('#kpis').innerHTML=[['Resolvidos pelo agente','71%','<span class="up">sem fila</span>'],['1ª resposta','4 s','<span class="mute">antes: 2 h</span>'],['Agendamentos via WhatsApp','86','<span class="up">nos últimos 30 dias</span>']]
+ .map(([l,v,d])=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join(''); }
+LW.init({name:'AgentWorks', color:'#0E9F6E', icon:LWI.agentworks, sub:'Atendimento no WhatsApp', org:'Fisioterapia Art', initials:'FA', demoUser:'recepcao@fisioterapiaart.com.br',
+ loginTitle:'Atendimento no WhatsApp em segundos, 24 horas.', loginText:'Um agente treinado com as informações do seu negócio: responde, agenda e passa para a equipe quando precisa.',
+ bullets:['Respostas só da base oficial do negócio','Agenda integrada ao ServiceWorks','Transferência para humano com histórico','API oficial do WhatsApp (Meta)'],
+ onEnter(){ kpis(); kb(); $('#tat').innerHTML = at.map(a=>`<tr><td><b>${a[0]}</b></td><td>${a[1]}</td><td>${a[2]}</td><td class="n">${a[3]}</td><td><span class="chip ${a[4]==='Resolvido'?'ok':'warn'}">${a[4]}</span></td></tr>`).join('');
+  $('#wb').innerHTML=''; add('Hoje','sys'); add('Oi! Quanto custa a sessão?','in'); responder('quanto custa'); }});
+}</script></body></html>

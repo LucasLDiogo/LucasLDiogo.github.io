@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SocialWorks — demo</title><link rel="stylesheet" href="base.css">
+<style>
+/* VOICE: estúdio de conteúdo enxuto; IDEA: o quadro de pauta semanal; COLOUR: vermelho SocialWorks; TYPE: Montserrat/Inter; LAYOUT: calendário da semana primeiro */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:10px;overflow-x:auto}
+.day{background:var(--soft);border-radius:14px;padding:10px;min-height:340px}
+.day h3{font-size:13px;margin:2px 4px 10px;display:flex;justify-content:space-between}
+.post{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+.post .th{height:84px;border-radius:9px;margin-bottom:8px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:12px;letter-spacing:.02em}
+.rule{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+.sw{position:relative;width:44px;height:26px;border-radius:99px;background:var(--line);border:0;cursor:pointer}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}.sw.on{background:var(--p)}.sw.on::after{left:21px}
+.sim{background:var(--soft);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:220px}
+.b{max-width:85%;padding:8px 12px;border-radius:14px;font-size:14px}.b.c{background:var(--card);border:1px solid var(--line)}.b.d{align-self:flex-end;background:var(--p);color:#fff}
+.tag{font-size:11px;color:var(--mute)}
+.inbox .it{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+</style></head><body>
+<div id="auth"></div>
+<div id="app" hidden><main>
+ <section class="view" data-tab="Calendário">
+  <div class="kpis" id="kpis"></div>
+  <div class="row sb" style="margin-bottom:10px"><h1>Semana de 16 a 22/11</h1><button class="btn pri" id="np">+ Agendar publicação</button></div>
+  <div class="cal" id="cal"></div>
+ </section>
+ <section class="view" data-tab="Automações">
+  <div class="grid g2"><div class="card"><div class="row sb"><h2>Comentou → recebe DM</h2><button class="btn sm" id="nr">+ Nova regra</button></div>
+   <p class="small mute">Quando alguém comenta a palavra-chave num post ou Reels, o SocialWorks responde o comentário e envia uma mensagem privada com o link. Regra da Meta: 1 resposta privada por comentário, em até 7 dias.</p><div id="rules"></div></div>
+   <div class="card"><h2>Simulador</h2><label for="cm">Comentário do seguidor</label><div class="row"><input id="cm" value="Quero! Manda o LINK" style="flex:1"><button class="btn pri" id="go">Simular</button></div>
+    <div class="sim" id="sim" style="margin-top:12px"><span class="tag">Digite um comentário e clique em Simular.</span></div>
+    <p class="small mute" style="margin-top:10px">Boas-vindas a novo seguidor: a API oficial não avisa quando alguém segue. A mensagem de boas-vindas é enviada quando a pessoa manda a primeira DM ou responde um Story — sem robôs não oficiais, sem risco de bloqueio da conta.</p></div></div>
+ </section>
+ <section class="view" data-tab="Caixa de entrada">
+  <div class="grid g2"><div class="card inbox"><div class="row sb"><h2>Mensagens</h2><span class="chip p">Instagram + Facebook</span></div><div id="ib"></div></div>
+   <div class="card"><h2>Assistente de respostas</h2><p class="small mute">Sugere a resposta com base na base de conhecimento do negócio. Um humano aprova antes de enviar enquanto a conta estiver nas primeiras semanas.</p>
+    <div class="sim"><div class="b c">Vocês entregam no bairro Boqueirão? E qual o valor mínimo?</div><div class="b d">Entregamos sim! 🚚 No Boqueirão a taxa é R$ 6 e o pedido mínimo é R$ 40. Faz seu pedido aqui: ranchofloresloja.com<br><span class="tag" style="color:#fff;opacity:.8">sugestão da IA · fonte: política de entrega</span></div></div>
+    <div class="row" style="margin-top:10px"><button class="btn pri" onclick="LW.toast('Resposta enviada.')">Aprovar e enviar</button><button class="btn" onclick="LW.toast('Conversa atribuída à equipe.')">Passar para humano</button></div></div></div>
+ </section>
+</main></div>
+<div class="modal" id="mP"><div class="card"><h2>Agendar publicação</h2><form id="fP">
+ <label for="pt">Legenda</label><textarea id="pt" rows="3" required maxlength="2200">Chegou morango fresquinho! Comenta LINK que te mando o pedido 🍓</textarea>
+ <div class="grid g2" style="gap:10px"><div><label for="ptp">Formato</label><select id="ptp"><option>Reels</option><option>Carrossel</option><option>Story</option><option>Post</option></select></div>
+ <div><label for="pd">Dia</label><select id="pd"></select></div></div><label for="ph">Horário</label><input id="ph" type="time" value="18:30" required>
+ <p class="small mute">Publicação feita pela API oficial do Instagram (conta profissional). O arquivo de vídeo fica no armazenamento da conta e é removido 30 dias após publicar.</p>
+ <div class="row" style="justify-content:flex-end;margin-top:10px"><button type="button" class="btn" onclick="LW.modal.close('mP')">Cancelar</button><button class="btn pri">Agendar</button></div></form></div></div>
+<script src="icons.js"></script><script src="base.js"></script>
+<script>{
+const {$, $$, esc, toast} = LW;
+const DIAS = ['Seg 16','Ter 17','Qua 18','Qui 19','Sex 20','Sáb 21','Dom 22'];
+const COR = {Reels:'linear-gradient(135deg,#DC2626,#F59E0B)',Carrossel:'linear-gradient(135deg,#7C3AED,#DB2777)',Story:'linear-gradient(135deg,#0891B2,#22C55E)',Post:'linear-gradient(135deg,#1E293B,#475569)'};
+let posts = [{d:0,h:'11:30',tp:'Story',t:'Bastidores: chegada da colheita',st:'Publicado'},{d:0,h:'18:30',tp:'Reels',t:'3 jeitos de conservar folhas por 7 dias',st:'Agendado'},
+ {d:1,h:'12:00',tp:'Carrossel',t:'Cesta da semana: o que vem nela',st:'Agendado'},{d:2,h:'19:00',tp:'Reels',t:'Receita: suco verde em 60 s',st:'Agendado'},
+ {d:3,h:'18:00',tp:'Post',t:'Depoimento de cliente (com autorização)',st:'Rascunho'},{d:4,h:'17:30',tp:'Reels',t:'Promo de sexta: comente FEIRA',st:'Agendado'},{d:5,h:'10:00',tp:'Story',t:'Enquete: qual fruta na cesta?',st:'Agendado'}];
+let rules = [{kw:'LINK',r:'Oi {nome}! Aqui está o link da loja: ranchofloresloja.com 🌿',on:true,n:312},{kw:'FEIRA',r:'Promo de sexta liberada! Use o cupom FEIRA10 até domingo: ranchofloresloja.com',on:true,n:147},{kw:'PREÇO',r:'Os preços atualizados ficam na vitrine: ranchofloresloja.com. Quer ajuda com o pedido?',on:false,n:0}];
+function kpis(){ $('#kpis').innerHTML=[['Publicações na semana',posts.length,'<span class="mute">'+posts.filter(p=>p.tp==='Reels').length+' Reels</span>'],['DMs automáticas (30 d)',rules.reduce((a,r)=>a+r.n,0),'<span class="up">▲ 38% vs mês anterior</span>'],['Alcance médio dos Reels','4.870','<span class="up">▲ 12%</span>'],['Tempo de 1ª resposta','42 s','<span class="mute">antes: 3 h 10 min</span>']]
+ .map(([l,v,d])=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join(''); }
+function cal(){ $('#cal').innerHTML = DIAS.map((d,i)=>{ const l=posts.filter(p=>p.d===i).sort((a,b)=>a.h.localeCompare(b.h));
+ return `<div class="day"><h3><span>${d}</span><span class="mute">${l.length}</span></h3>${l.map(p=>`<div class="post"><div class="th" style="background:${COR[p.tp]}">${p.tp.toUpperCase()}</div><b class="small">${p.h}</b> <span class="chip ${p.st==='Publicado'?'ok':p.st==='Rascunho'?'':'p'}">${p.st}</span><div class="small" style="margin-top:4px">${esc(p.t)}</div></div>`).join('')||'<div class="empty small">Livre</div>'}</div>`; }).join(''); }
+function rl(){ $('#rules').innerHTML = rules.map((r,i)=>`<div class="rule"><div><b>Palavra-chave: ${esc(r.kw)}</b><div class="small mute" style="margin-top:4px">DM: ${esc(r.r)}</div><div class="small" style="margin-top:4px">${r.n} disparos em 30 dias</div></div><button class="sw ${r.on?'on':''}" data-sw="${i}" aria-label="Ativar regra" aria-pressed="${r.on}"></button></div>`).join(''); }
+function inbox(){ $('#ib').innerHTML = [['Camila R.','Vocês entregam no bairro Boqueirão?','agora','p'],['Tiago M.','Respondeu ao seu Story 🍓','4 min',''],['Restaurante Vale','Quero fechar pedido semanal','12 min','warn'],['Bruna S.','LINK','25 min','ok']]
+ .map(([n,m,t,k])=>`<div class="it"><span class="av">${n[0]}</span><div><b>${n}</b><div class="small mute">${m}</div></div><span class="chip ${k}">${t}</span></div>`).join(''); }
+$('#go').onclick = () => { const c = $('#cm').value, s = $('#sim'); const r = rules.find(r=>r.on && new RegExp('\\b'+r.kw+'\\b','i').test(c));
+ s.innerHTML = `<div class="b c">@seguidor: ${esc(c)}</div>` + (r ? `<div class="b d">Resposta pública: "Te mandei no direct! 📩"</div><div class="b d">DM privada: ${esc(r.r.replace('{nome}','seguidor'))}</div><span class="tag">Regra "${esc(r.kw)}" · 1 resposta privada por comentário · registrado no CRM</span>` : `<span class="tag">Nenhuma regra ativa casou com este comentário. Nada é enviado.</span>`); };
+document.addEventListener('click', e => { const s = e.target.closest('[data-sw]'); if (s) { const r = rules[+s.dataset.sw]; r.on = !r.on; rl(); toast(`Regra ${r.kw} ${r.on?'ativada':'pausada'}.`); } });
+$('#np').onclick = () => { $('#pd').innerHTML = DIAS.map((d,i)=>`<option value="${i}">${d}</option>`).join(''); LW.modal.open('mP'); };
+$('#nr').onclick = () => { rules.push({kw:'AGENDA',r:'Veja os horários livres e agende aqui: serviceworks.lldworks.com.br',on:true,n:0}); rl(); toast('Regra AGENDA criada.'); };
+$('#fP').onsubmit = e => { e.preventDefault(); posts.push({d:+$('#pd').value,h:$('#ph').value,tp:$('#ptp').value,t:$('#pt').value.slice(0,60),st:'Agendado'}); LW.modal.close('mP'); cal(); kpis(); toast('Publicação agendada.'); };
+LW.init({name:'SocialWorks', color:'#DC2626', icon:LWI.socialworks, sub:'Instagram e redes', org:'Rancho Flores', initials:'RF', demoUser:'social@ranchoflores.com.br',
+ loginTitle:'Seu Instagram trabalhando enquanto você atende.', loginText:'Agenda de Reels e posts, resposta automática a comentários com DM, caixa de entrada única e assistente de respostas.',
+ bullets:['Calendário de conteúdo da semana','Comentou a palavra-chave, recebe o link na DM','Caixa de entrada Instagram + Facebook','Só API oficial da Meta: sem risco de bloqueio'],
+ onEnter(){ kpis(); cal(); rl(); inbox(); }});
+}</script></body></html>

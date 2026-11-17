@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ServiceWorks — demo</title><link rel="stylesheet" href="base.css">
+<style>
+/* VOICE: recepção calma e eficiente; IDEA: o livro de agenda do balcão; COLOUR: violeta ServiceWorks; TYPE: Montserrat/Inter; LAYOUT: agenda grande primeiro */
+.ag{display:grid;grid-template-columns:62px repeat(var(--n),minmax(150px,1fr));border:1px solid var(--line);border-radius:14px;overflow:auto;background:var(--card);max-height:640px}
+.ag .h{position:sticky;top:0;background:var(--card);z-index:2;padding:10px;border-bottom:1px solid var(--line);font-weight:700;font-size:13.5px}
+.ag .t{font-size:12px;color:var(--mute);padding:4px 8px;border-top:1px solid var(--line);height:44px}
+.ag .c{border-top:1px solid var(--line);border-left:1px solid var(--line);height:44px;position:relative}
+.ag .c.free:hover{background:var(--pk);cursor:pointer}
+.ev{position:absolute;inset:3px 4px auto 4px;border-radius:9px;padding:5px 8px;font-size:12.5px;background:var(--pk);border-left:4px solid var(--p);z-index:1;overflow:hidden}
+.ev b{display:block}.ev.pend{border-left-color:var(--warn);background:color-mix(in oklab,var(--warn) 14%,var(--card))}
+.ev.gap{border:2px dashed var(--ok);background:color-mix(in oklab,var(--ok) 10%,var(--card));color:var(--ok);font-weight:600}
+.vit{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px}
+.srv{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.srv .card{cursor:pointer;transition:border-color .15s}.srv .card.on{border-color:var(--p);box-shadow:0 0 0 2px var(--pk)}
+.price{font-family:Montserrat,sans-serif;font-weight:800;font-size:18px}
+.slots{display:flex;flex-wrap:wrap;gap:6px}.slots button{min-height:38px}
+.slots .on{background:var(--p);color:#fff;border-color:var(--p)}
+.chat{display:flex;flex-direction:column;gap:8px;height:480px;overflow:auto;padding:12px;background:var(--soft);border-radius:12px}
+.b{max-width:80%;padding:8px 12px;border-radius:14px;font-size:14px;white-space:pre-line}
+.b.u{align-self:flex-end;background:var(--p);color:#fff;border-bottom-right-radius:4px}.b.a{background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px}
+.qr{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:900px){.vit{grid-template-columns:1fr}}
+</style></head><body>
+<div id="auth"></div>
+<div id="app" hidden><main>
+ <div class="row sb" style="margin-bottom:12px"><div class="row"><label for="segm" style="margin:0">Segmento do cliente:</label><select id="segm" style="width:auto"><option value="barb">Barbearia</option><option value="salao">Salão de beleza</option><option value="clin">Clínica</option><option value="pet">Pet Shop</option></select></div><span class="chip p">Segunda, 16/11/2026</span></div>
+ <section class="view" data-tab="Agenda">
+  <div class="kpis" id="kpis"></div>
+  <div class="row sb" style="margin-bottom:10px"><h1>Agenda do dia</h1><span class="small mute">Clique num horário livre para encaixar. Pontilhado verde = vaga que a IA sugere oferecer à lista de espera.</span></div>
+  <div class="ag" id="ag"></div>
+ </section>
+ <section class="view" data-tab="Vitrine pública">
+  <div class="vit"><div><h1 id="vtit"></h1><p class="mute small">Assim o cliente vê o link da vitrine (Instagram, WhatsApp, Google). Sem cadastro para olhar; confirmação por código no WhatsApp para reservar.</p>
+   <h2 style="margin:12px 0 8px">Combos e promoções</h2><div class="srv" id="combos"></div>
+   <h2 style="margin:16px 0 8px">Serviços</h2><div class="srv" id="srvs"></div></div>
+   <div class="card" style="align-self:start;position:sticky;top:80px"><h2>Seu agendamento</h2><div id="res" class="mute small">Escolha um serviço.</div>
+    <label for="vpro">Profissional</label><select id="vpro"></select><label>Horários de hoje</label><div class="slots" id="slots"></div>
+    <label for="vtel">WhatsApp</label><input id="vtel" inputmode="tel" placeholder="(54) 9 9999-9999" maxlength="16">
+    <button class="btn pri full" style="margin-top:12px" id="reservar">Receber código e reservar</button>
+    <p class="small mute" style="margin-top:8px">Reserva segura: código de 6 dígitos no WhatsApp, máx. 2 reservas abertas por número, sinal via Pix nos horários de pico e cancelamento grátis até 3 h antes.</p></div></div>
+ </section>
+ <section class="view" data-tab="Clientes">
+  <div class="row sb" style="margin-bottom:12px"><h1>Clientes e recorrência</h1><span class="chip warn" id="nsum"></span></div>
+  <div class="card scroll"><table><thead><tr><th>Cliente</th><th>Serviço habitual</th><th class="n">Frequência</th><th class="n">Última visita</th><th>Situação</th><th class="n">Gasto 12 m</th><th></th></tr></thead><tbody id="tcl"></tbody></table></div>
+ </section>
+ <section class="view" data-tab="Assistente IA">
+  <div class="grid g2"><div class="card"><div class="row sb"><h2>Conversa no WhatsApp / Instagram</h2><span class="chip ok">Assistente ativo</span></div>
+   <div class="chat" id="chat"></div><div class="qr" id="qr" style="margin-top:10px"></div></div>
+   <div class="card"><h2>O que o assistente pode fazer</h2><table><tbody>
+    <tr><td>Mostrar serviços, preços e combos da vitrine</td><td class="n"><span class="chip ok">Sim</span></td></tr>
+    <tr><td>Sugerir horários livres e reservar</td><td class="n"><span class="chip ok">Sim</span></td></tr>
+    <tr><td>Remarcar e cancelar dentro da política</td><td class="n"><span class="chip ok">Sim</span></td></tr>
+    <tr><td>Responder fora do escopo do negócio</td><td class="n"><span class="chip bad">Não</span></td></tr>
+    <tr><td>Passar para humano (reclamação, pedido especial)</td><td class="n"><span class="chip ok">Sim</span></td></tr></tbody></table>
+    <p class="small mute" style="margin-top:10px">Respostas só a partir da base do estabelecimento (preços, horários, políticas). Sem informação na base, o assistente diz que vai confirmar com a equipe e abre um atendimento humano.</p></div></div>
+ </section>
+</main></div>
+<div class="modal" id="mOtp"><div class="card"><h2>Confirme pelo WhatsApp</h2><p class="mute small" id="otpTxt"></p>
+ <input id="otpv" inputmode="numeric" maxlength="6" placeholder="000000" aria-label="Código" style="text-align:center;font-size:22px;letter-spacing:6px;margin:14px 0">
+ <div class="row" style="justify-content:flex-end"><button class="btn" onclick="LW.modal.close('mOtp')">Cancelar</button><button class="btn pri" id="otpOk">Confirmar reserva</button></div></div></div>
+<script src="icons.js"></script><script src="base.js"></script>
+<script>{
+const {$, $$, brl, esc, toast} = LW;
+const SEG = {
+ barb:{nome:'Barbearia Navalha de Ouro',pros:['Diego','Rafa','Thiago'],srv:[['Corte masculino',40,55],['Barba completa',30,40],['Corte + barba',60,85],['Pigmentação',40,60],['Sobrancelha',15,20]],combo:[['Pacote mensal: 4 cortes',0,180,'Economize R$ 40'],['Terça do pai e filho',0,95,'2 cortes']]},
+ salao:{nome:'Studio Bella Forma',pros:['Carla','Renata','Jéssica'],srv:[['Escova',45,70],['Corte feminino',60,120],['Coloração',120,260],['Manicure + pedicure',90,75],['Hidratação',40,90]],combo:[['Dia da noiva',0,890,'Cabelo + make + unhas'],['Quarta da hidratação',0,69,'-23% às quartas']]},
+ clin:{nome:'Clínica Vida Plena',pros:['Dra. Paula (fisio)','Dr. André (nutri)','Dra. Lívia (psico)'],srv:[['Sessão de fisioterapia',50,150],['Consulta nutricional',60,220],['Retorno nutricional',30,120],['Pilates clínico',50,110],['Avaliação postural',40,180]],combo:[['Pacote 10 sessões fisio',0,1290,'Economize R$ 210'],['Check-up de verão',0,360,'Nutri + avaliação']]},
+ pet:{nome:'Pet Shop Patas Felizes',pros:['Banho 1','Banho 2','Tosa (Vini)'],srv:[['Banho porte P',40,55],['Banho porte G',60,90],['Banho + tosa',90,130],['Hidratação de pelo',30,45],['Corte de unhas',15,25]],combo:[['Plano mensal: 4 banhos',0,190,'Busca e entrega grátis'],['Spa do pet',0,160,'Banho + hidratação + perfume']]}};
+const H = Array.from({length:20},(_,i)=>`${String(8+Math.floor(i/2)).padStart(2,'0')}:${i%2?'30':'00'}`);
+const CLI = ['João Pedro','Marcelo Dias','Gabriel Rocha','Vitor Hugo','Paulo Sérgio','Eduardo Lima','Rafael Costa','Bruno Teixeira','André Luiz','Felipe Moura'];
+let seg='barb', ag=[], escolha=null, slot=null;
+function gerar(){ const s=SEG[seg]; ag=[];
+ s.pros.forEach((p,pi)=>{ for(let i=0;i<H.length;i++){ if(((i*7+pi*5)%10)<6){ const sv=s.srv[(i+pi)%s.srv.length], n=Math.max(1,Math.round(sv[1]/30));
+  if(i+n>H.length || ag.some(a=>a.p===pi && i<a.i+a.n && a.i<i+n)) continue; ag.push({p:pi,i,n,c:CLI[(i+pi*3)%CLI.length],s:sv[0],v:sv[2],pend:(i+pi)%9===0}); i+=n-1; } } });
+ const g=ag.findIndex(a=>a.p===1&&a.i>=10); if(g>=0){ const a=ag[g]; ag.splice(g,1,{p:1,i:a.i,n:a.n,gap:true}); } }
+function kpis(){ const r=ag.filter(a=>!a.gap), fat=r.reduce((x,a)=>x+a.v,0), cap=SEG[seg].pros.length*H.length, oc=r.reduce((x,a)=>x+a.n,0), pc=Math.round(oc/cap*100);
+ $('#kpis').innerHTML=[['Atendimentos hoje',r.length,'<span class="mute">'+r.filter(a=>a.pend).length+' aguardando confirmação</span>'],['Previsto no dia',brl(fat),'<span class="up">▲ 9% vs segunda passada</span>'],
+  ['Ocupação da agenda',pc+'%','<div class="bar" style="margin-top:6px"><i style="width:'+pc+'%"></i></div>'],['Faltas no mês',3,'<span class="up">▼ 62% desde o sinal via Pix</span>']]
+ .map(([l,v,d])=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join(''); }
+function agenda(){ const s=SEG[seg], el=$('#ag'); el.style.setProperty('--n',s.pros.length);
+ let h='<div class="h"></div>'+s.pros.map(p=>`<div class="h">${esc(p)}</div>`).join('');
+ H.forEach((t,i)=>{ h+=`<div class="t">${t}</div>`; s.pros.forEach((p,pi)=>{ const a=ag.find(a=>a.p===pi&&a.i===i), busy=ag.some(a=>a.p===pi&&i>a.i&&i<a.i+a.n);
+  h+=`<div class="c ${a||busy?'':'free'}" data-p="${pi}" data-i="${i}">${a? a.gap?`<div class="ev gap" style="height:${a.n*44-6}px">Vaga liberada · 3 na lista de espera</div>`:`<div class="ev ${a.pend?'pend':''}" style="height:${a.n*44-6}px"><b>${esc(a.c)}</b>${esc(a.s)} · ${brl(a.v)}${a.pend?' · confirmar':''}</div>`:''}</div>`; }); });
+ el.innerHTML=h; }
+function vitrine(){ const s=SEG[seg]; $('#vtit').textContent=s.nome;
+ $('#combos').innerHTML=s.combo.map(([n,,v,d],i)=>`<div class="card" data-sv="c${i}" tabindex="0"><span class="chip warn">Promoção</span><h3 style="margin:8px 0 4px">${n}</h3><div class="row sb"><span class="price">${brl(v)}</span><span class="small mute">${d}</span></div></div>`).join('');
+ $('#srvs').innerHTML=s.srv.map(([n,m,v],i)=>`<div class="card" data-sv="s${i}" tabindex="0"><h3>${n}</h3><div class="row sb" style="margin-top:6px"><span class="price">${brl(v)}</span><span class="chip">${m} min</span></div></div>`).join('');
+ $('#vpro').innerHTML='<option>Qualquer profissional</option>'+s.pros.map(p=>`<option>${esc(p)}</option>`).join(''); $('#res').textContent='Escolha um serviço.'; slots(); }
+function slots(){ const livres=H.filter((t,i)=>i>=6 && !ag.some(a=>!a.gap&&a.p===0&&i>=a.i&&i<a.i+a.n)).slice(0,10);
+ $('#slots').innerHTML=livres.map(t=>`<button class="btn sm${t===slot?' on':''}" data-t="${t}">${t}</button>`).join(''); }
+function clientes(){ const s=SEG[seg]; const rows=CLI.map((c,i)=>({c,s:s.srv[i%s.srv.length][0],f:[15,21,30,30,45][i%5],u:[6,12,38,19,52,3,27,9,61,14][i],g:[1320,880,2140,640,1980,450,1210,760,1590,990][i]}));
+ const st=r=>r.u>r.f*1.5?['bad','Sumido']:r.u>r.f?['warn','Atrasado']:['ok','Em dia'];
+ $('#nsum').textContent=rows.filter(r=>r.u>r.f).length+' para reativar';
+ $('#tcl').innerHTML=rows.map(r=>{const [k,t]=st(r);return `<tr><td><b>${esc(r.c)}</b></td><td>${esc(r.s)}</td><td class="n">a cada ${r.f} dias</td><td class="n">${r.u} dias atrás</td><td><span class="chip ${k}">${t}</span></td><td class="n">${brl(r.g)}</td><td class="n">${k!=='ok'?'<button class="btn sm" data-rea>Convidar</button>':''}</td></tr>`}).join(''); }
+const FLOW={start:{a:'Olá! Sou o assistente da {nome}. Posso te ajudar a agendar, ver preços ou falar com a equipe.',q:['Quero agendar','Ver preços','Falar com atendente']},
+ 'Quero agendar':{a:'Ótimo! Qual serviço? Os mais pedidos: {s0} ({p0}) e {s2} ({p2}).',q:['{s0}','{s2}']},
+ '{s0}':{a:'Tenho hoje às 14:00 e 15:30, ou amanhã às 09:00. Qual prefere?',q:['Hoje 14:00','Amanhã 09:00']},'{s2}':{a:'Tenho hoje às 16:00 ou amanhã às 10:30. Qual prefere?',q:['Hoje 16:00','Amanhã 10:30']},
+ pick:{a:'Reservado ✅ {h}. Vou te lembrar 3 h antes. Para remarcar, é só responder REMARCAR.',q:['Ver preços','Obrigado!']},
+ 'Ver preços':{a:'{lista}\nQuer agendar algum?',q:['Quero agendar','Falar com atendente']},
+ 'Falar com atendente':{a:'Certo! Chamei a equipe — alguém responde por aqui em instantes. O histórico desta conversa já foi repassado.',q:['Quero agendar']},
+ 'Obrigado!':{a:'Nós que agradecemos! Até logo 👋',q:['Quero agendar']}};
+function fill(t){ const s=SEG[seg]; return t.replace('{nome}',s.nome).replace('{s0}',s.srv[0][0]).replace('{p0}',brl(s.srv[0][2])).replace('{s2}',s.srv[2][0]).replace('{p2}',brl(s.srv[2][2])).replace('{lista}',s.srv.map(x=>`• ${x[0]}: ${brl(x[2])}`).join('\n')); }
+function say(k,h){ const n=FLOW[k]||FLOW.pick; const box=$('#chat'); box.insertAdjacentHTML('beforeend',`<div class="b a">${esc(fill(n.a).replace('{h}',h||''))}</div>`);
+ $('#qr').innerHTML=n.q.map(q=>`<button class="btn sm" data-q="${esc(fill(q))}" data-k="${esc(q)}">${esc(fill(q))}</button>`).join(''); box.scrollTop=1e6; }
+$('#qr').onclick=e=>{const b=e.target.closest('[data-q]'); if(!b) return; $('#chat').insertAdjacentHTML('beforeend',`<div class="b u">${esc(b.dataset.q)}</div>`);
+ const k=b.dataset.k; setTimeout(()=>say(FLOW[k]&&!k.startsWith('Hoje')&&!k.startsWith('Amanhã')?k:'pick', b.dataset.q),350); };
+function chatReset(){ $('#chat').innerHTML=''; say('start'); }
+document.addEventListener('click',e=>{ const sv=e.target.closest('[data-sv]'); if(sv){ $$('.srv .card').forEach(c=>c.classList.toggle('on',c===sv)); escolha=sv.querySelector('h3').textContent; $('#res').innerHTML=`<b style="color:var(--ink)">${esc(escolha)}</b> · ${sv.querySelector('.price').textContent}`; }
+ const t=e.target.closest('[data-t]'); if(t){ slot=t.dataset.t; slots(); }
+ const c=e.target.closest('.c.free'); if(c){ const pi=+c.dataset.p,i=+c.dataset.i,s=SEG[seg]; ag.push({p:pi,i,n:1,c:'Encaixe (balcão)',s:s.srv[0][0],v:s.srv[0][2],pend:true}); agenda(); kpis(); toast(`Encaixe criado às ${H[i]} com ${s.pros[pi]}`); }
+ if(e.target.closest('[data-rea]')) toast('Convite com horários livres enviado pelo WhatsApp.'); });
+$('#vtel').oninput=e=>{ let d=e.target.value.replace(/\D/g,'').slice(0,11); e.target.value=d.length>6?`(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`:d; };
+$('#reservar').onclick=()=>{ if(!escolha) return toast('Escolha um serviço.'); if(!slot) return toast('Escolha um horário.'); if($('#vtel').value.replace(/\D/g,'').length!==11) return toast('Informe um WhatsApp com DDD.');
+ $('#otpTxt').textContent=`Enviamos um código para ${$('#vtel').value}. Ele vale 5 minutos. (Demo: 123456)`; LW.modal.open('mOtp'); };
+$('#otpOk').onclick=()=>{ if($('#otpv').value!=='123456') return toast('Código inválido.'); LW.modal.close('mOtp'); toast(`Reserva confirmada: ${escolha} às ${slot}. Lembrete enviado.`); };
+$('#segm').onchange=e=>{ seg=e.target.value; escolha=null; slot=null; render(); };
+function render(){ gerar(); kpis(); agenda(); vitrine(); clientes(); chatReset(); }
+LW.init({name:'ServiceWorks', color:'#7C3AED', icon:LWI.serviceworks, sub:'Agenda · vitrine · CRM', org:'Navalha de Ouro', initials:'NO', demoUser:'recepcao@navalhadeouro.com.br',
+ loginTitle:'Agenda cheia, cadeira nunca vazia.', loginText:'Para barbearias, salões, clínicas e pet shops: vitrine de serviços, agenda inteligente, CRM e assistente no WhatsApp e Instagram.',
+ bullets:['Vitrine com combos e promoções','Reserva com código no WhatsApp e sinal via Pix','Vaga liberada vai para a lista de espera','Assistente que agenda, remarca e passa para humano'],
+ onEnter: render});
+}</script></body></html>
