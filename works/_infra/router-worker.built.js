@@ -115,6 +115,23 @@ function sair() {
 // ---------- API dos produtos com backend próprio (service binding) ----------
 // O navegador nunca fala direto com o Worker do produto: o roteador confere a sessão e envia quem é o cliente
 // em cabeçalhos x-lw-*. Cópias desses cabeçalhos vindas do navegador são descartadas.
+// Demonstração: <produto>-demo.lldworks.com.br abre sem senha. Produto real = conta de demonstração do Hub em modo leitura;
+// produto ainda em construção = demonstração da vitrine de produtos; PageWorks/ProWorks = exemplo real publicado.
+const DEMO_SESSAO = { e: "demo@lldworks.com.br", c: 1, cn: "LLD Works · Demonstração", cs: "demo", r: "admin", demo: true };
+const DEMO_EXEMPLOS = { pageworks: "https://clinica.lldworks.com.br/", proworks: "https://wellington.lldworks.com.br/" };
+const faixaDemo = (p) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="https://produtos.lldworks.com.br/#${p.slug}" style="color:#fff">Quero o meu ${esc(p.nome)}</a></div>`;
+async function demo(req, env, url, p) {
+  const path = url.pathname;
+  if (path === "/entrar" || path === "/sair") return Response.redirect(url.origin + "/", 302);
+  if (!BACKENDS[p.slug]) {
+    if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
+    if (path.includes("..")) return new Response("Inválido", { status: 400 });
+    return origem(req, "portfolio/demos" + (path === "/" || path === "/index.html" ? `/${p.slug}.html` : path), path === "/" ? 0 : 300);
+  }
+  if (path.startsWith("/api/admin/") && req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Demonstração em modo leitura: as alterações estão desativadas. Peça o seu acesso para testar de verdade.");
+  return produto(req, env, url, p, DEMO_SESSAO);
+}
+
 const BACKENDS = { serviceworks: { binding: "SERVICEWORKS", host: "sw.interno" }, linkworks: { binding: "LINKWORKS", host: "lw.interno" } };
 // LinkWorks: linkworks.lldworks.com.br/<endereço> é a página pública; /<endereço>/l/<id> conta o clique.
 const LW_PUBLICA = /^\/([a-z0-9][a-z0-9_.-]{2,29})(\/l\/\d{1,9})?\/?$/;
@@ -143,7 +160,7 @@ async function backend(req, env, url, p, s, caminho = url.pathname) {
   return new Response(r.body, { status: r.status, headers: rh });
 }
 
-async function produto(req, env, url, p) {
+async function produto(req, env, url, p, sessaoFixa = null) {
   const path = url.pathname;
   if (path === "/entrar") return req.method === "POST" ? entrar(req, env, url, p) : html(telaLogin(p));
   if (path === "/sair") return sair();
@@ -163,7 +180,7 @@ async function produto(req, env, url, p) {
       return backend(req, env, url, p, null, `/p/${lw[1]}${lw[2] || ""}`);
     }
   }
-  const s = await sessao(req, env, p);
+  const s = sessaoFixa || (await sessao(req, env, p));
   if (!s) return path.startsWith("/api/") ? new Response('{"erro":"login"}', { status: 401, headers: { "Content-Type": "application/json" } }) : Response.redirect(url.origin + "/entrar", 302);
   if (BACKENDS[p.slug] && path.startsWith("/api/")) return path.startsWith("/api/admin/") ? backend(req, env, url, p, s) : jsonErro(404, "Rota não encontrada");
   if (p.api && CRIVO_ROTAS.test(path) && !path.startsWith("/lib/")) {
@@ -175,7 +192,10 @@ async function produto(req, env, url, p) {
   const arq = path === "/" || path === "/index.html" ? "/" + p.entrada : path;
   const r = await origem(req, p.dir + arq, arq === "/" + p.entrada ? 0 : 300);
   if (arq !== "/" + p.entrada || r.status !== 200) return r;
-  if (BACKENDS[p.slug]) { const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); return new Response(r.body, { status: 200, headers: h }); } // painel próprio: sem script embutido (CSP)
+  if (BACKENDS[p.slug]) { // painel próprio: sem script embutido (CSP); na demonstração, só a faixa de aviso
+    const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
+    return new Response(s.demo ? (await r.text()).replace("</body>", faixaDemo(p) + "</body>") : r.body, { status: 200, headers: h });
+  }
   // Página principal: avisa o app que o login já foi feito no servidor e põe o botão Sair.
   const marca = `<script>window.LW_AUTH=${JSON.stringify({ email: s.e, cliente: s.cn || "", slug: s.cs || "", papel: s.r || "admin" }).replace(/</g, "\\u003c")}</script>`;
   const barra = p.slug === "rhworks" ? `<a href="/sair" style="position:fixed;right:14px;bottom:14px;z-index:50;background:#16141D;color:#fff;font:600 13px Inter,sans-serif;padding:8px 14px;border-radius:99px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.2)">Sair · ${esc(s.e)}</a>` : "";
@@ -210,6 +230,9 @@ export default {
       return Response.redirect("https://rhworks.lldworks.com.br/", 301);
     }
     if (PRODUTOS[host]) return produto(req, env, url, PRODUTOS[host]);
+    const dm = host.match(/^([a-z]+)-demo\.lldworks\.com\.br$/);
+    if (dm && PRODUTOS[`${dm[1]}.lldworks.com.br`]) return demo(req, env, url, PRODUTOS[`${dm[1]}.lldworks.com.br`]);
+    if (dm && DEMO_EXEMPLOS[dm[1]]) return Response.redirect(DEMO_EXEMPLOS[dm[1]], 302);
     if (ALIASES[host]) return Response.redirect(ALIASES[host], 302);
     const dir = SITES[host];
     if (!dir) return new Response("Não encontrado", { status: 404 });
