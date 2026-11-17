@@ -123,7 +123,7 @@ const faixaDemo = (p) => `<div role="note" style="position:fixed;left:14px;botto
 async function demo(req, env, url, p) {
   const path = url.pathname;
   if (path === "/entrar" || path === "/sair") return Response.redirect(url.origin + "/", 302);
-  if (!BACKENDS[p.slug]) {
+  if (!BACKENDS[p.slug]?.painel) {
     if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
     if (path.includes("..")) return new Response("Inválido", { status: 400 });
     return origem(req, "portfolio/demos" + (path === "/" || path === "/index.html" ? `/${p.slug}.html` : path), path === "/" ? 0 : 300);
@@ -132,7 +132,12 @@ async function demo(req, env, url, p) {
   return produto(req, env, url, p, DEMO_SESSAO);
 }
 
-const BACKENDS = { serviceworks: { binding: "SERVICEWORKS", host: "sw.interno" }, linkworks: { binding: "LINKWORKS", host: "lw.interno" } };
+// painel: true = tela própria nova (sem script embutido); corpoMax = maior envio aceito (RHWorks manda currículos).
+const BACKENDS = {
+  serviceworks: { binding: "SERVICEWORKS", host: "sw.interno", painel: true },
+  linkworks: { binding: "LINKWORKS", host: "lw.interno", painel: true },
+  rhworks: { binding: "RHWORKS", host: "rh.interno", corpoMax: 4 * 1024 * 1024 },
+};
 // LinkWorks: linkworks.lldworks.com.br/<endereço> é a página pública; /<endereço>/l/<id> conta o clique.
 const LW_PUBLICA = /^\/([a-z0-9][a-z0-9_.-]{2,29})(\/l\/\d{1,9})?\/?$/;
 const LW_RESERVADO = /^(entrar|sair|api|pub|index\.html|favicon\.ico|robots\.txt)$/;
@@ -153,7 +158,7 @@ async function backend(req, env, url, p, s, caminho = url.pathname) {
     h.set("x-lw-slug", s.cs || ""); h.set("x-lw-nome", encodeURIComponent(s.cn || ""));
   }
   const corpo = req.method === "GET" || req.method === "HEAD" ? undefined : await req.arrayBuffer();
-  if (corpo && corpo.byteLength > 64 * 1024) return jsonErro(413, "Envio grande demais.");
+  if (corpo && corpo.byteLength > (b.corpoMax || 64 * 1024)) return jsonErro(413, "Envio grande demais.");
   const r = await alvo.fetch(new Request(`https://${b.host}${caminho}${url.search}`, { method: req.method, headers: h, body: corpo, redirect: "manual" }));
   const rh = new Headers(r.headers);
   for (const [k, v] of Object.entries(SEG)) rh.set(k, v);
@@ -182,7 +187,8 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   }
   const s = sessaoFixa || (await sessao(req, env, p));
   if (!s) return path.startsWith("/api/") ? new Response('{"erro":"login"}', { status: 401, headers: { "Content-Type": "application/json" } }) : Response.redirect(url.origin + "/entrar", 302);
-  if (BACKENDS[p.slug] && path.startsWith("/api/")) return path.startsWith("/api/admin/") ? backend(req, env, url, p, s) : jsonErro(404, "Rota não encontrada");
+  if (BACKENDS[p.slug] && path.startsWith("/api/admin/")) return backend(req, env, url, p, s);
+  if (BACKENDS[p.slug] && path.startsWith("/api/") && !p.api) return jsonErro(404, "Rota não encontrada");
   if (p.api && CRIVO_ROTAS.test(path) && !path.startsWith("/lib/")) {
     if (!env.CRIVO) return new Response("Serviço indisponível", { status: 503 });
     return env.CRIVO.fetch(new Request("https://crivo.lldworks.com.br" + path + url.search, req));
@@ -192,7 +198,7 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   const arq = path === "/" || path === "/index.html" ? "/" + p.entrada : path;
   const r = await origem(req, p.dir + arq, arq === "/" + p.entrada ? 0 : 300);
   if (arq !== "/" + p.entrada || r.status !== 200) return r;
-  if (BACKENDS[p.slug]) { // painel próprio: sem script embutido (CSP); na demonstração, só a faixa de aviso
+  if (BACKENDS[p.slug]?.painel) { // painel próprio: sem script embutido (CSP); na demonstração, só a faixa de aviso
     const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
     return new Response(s.demo ? (await r.text()).replace("</body>", faixaDemo(p) + "</body>") : r.body, { status: 200, headers: h });
   }
