@@ -2,15 +2,15 @@
 // Serve o portfólio e os sites (conteúdo no GitHub Pages em /works/), redireciona aliases
 // e hospeda o console central, aberto só com token válido do Cloudflare Access.
 const ORIGEM = "https://lucasldiogo.lldworks.com.br/works/";
-const SITES = { "lldworks.com.br": "portfolio", "www.lldworks.com.br": "portfolio", "clinica.lldworks.com.br": "clinica", "imobiliaria.lldworks.com.br": "imobiliaria" };
+const SITES = { "produtos.lldworks.com.br": "portfolio", "lldworks.com.br": "portfolio", "www.lldworks.com.br": "portfolio", "clinica.lldworks.com.br": "clinica", "imobiliaria.lldworks.com.br": "imobiliaria" };
 const ALIASES = {
   "agentworks.lldworks.com.br": "https://atende.lldworks.com.br/painel",
   "rhworks.lldworks.com.br": "https://crivo.lldworks.com.br/",
-  "serviceworks.lldworks.com.br": "https://lldworks.com.br/demos/serviceworks.html",
-  "salesworks.lldworks.com.br": "https://lldworks.com.br/demos/salesworks.html",
-  "linkworks.lldworks.com.br": "https://lldworks.com.br/demos/linkworks.html",
-  "socialworks.lldworks.com.br": "https://lldworks.com.br/demos/socialworks.html",
-  "pageworks.lldworks.com.br": "https://lldworks.com.br/#pageworks",
+  "serviceworks.lldworks.com.br": "https://produtos.lldworks.com.br/demos/serviceworks.html",
+  "salesworks.lldworks.com.br": "https://produtos.lldworks.com.br/demos/salesworks.html",
+  "linkworks.lldworks.com.br": "https://produtos.lldworks.com.br/demos/linkworks.html",
+  "socialworks.lldworks.com.br": "https://produtos.lldworks.com.br/demos/socialworks.html",
+  "pageworks.lldworks.com.br": "https://produtos.lldworks.com.br/#pageworks",
   "proworks.lldworks.com.br": "https://lucasldiogo.lldworks.com.br/",
 };
 const SEG = {
@@ -21,7 +21,7 @@ const SEG = {
   "X-Frame-Options": "SAMEORIGIN",
 };
 const APPS = [
-  { n: "Portfólio LLD Works", u: "https://lldworks.com.br/", cli: "https://lldworks.com.br/", emp: null, lld: null },
+  { n: "Portfólio LLD Works", u: "https://produtos.lldworks.com.br/", cli: "https://produtos.lldworks.com.br/", emp: null, lld: null },
   { n: "AgentWorks (LLD Atende)", u: "https://atende.lldworks.com.br/painel", cli: "WhatsApp da empresa", emp: "https://atende.lldworks.com.br/painel", lld: "https://atende.lldworks.com.br/painel", pc: true },
   { n: "Gateway WhatsApp (WA-AKG)", u: "https://wa.lldworks.com.br/", cli: null, emp: null, lld: "https://wa.lldworks.com.br/", pc: true },
   { n: "RHWorks · Triagem (Crivo)", u: "https://crivo.lldworks.com.br/", cli: null, emp: "https://crivo.lldworks.com.br/", lld: null },
@@ -53,6 +53,9 @@ async function accessOk(req, env) {
   if (!jwk) return false;
   const key = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
   return crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, ub64u(sig), new TextEncoder().encode(h + "." + p));
+}
+function html(body, status = 200, extra = {}) {
+  return new Response(body, { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Content-Security-Policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; frame-ancestors 'none'", ...SEG, ...extra } });
 }
 const CSS = `:root{--co:#1240E0;--ink:#0B1020;--mute:#566079;--line:#E3E7F0;--bg:#F3F5FA}*{box-sizing:border-box}body{margin:0;font:15px/1.55 Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
 h1,h2{margin:0}a{color:var(--co)}.top{background:#0B1020;color:#fff;padding:14px max(4vw,16px);display:flex;align-items:center;gap:14px}
@@ -104,7 +107,8 @@ export default {
     let path = url.pathname;
     if (path.includes("..")) return new Response("Inválido", { status: 400 });
     if (path.endsWith("/")) path += "index.html";
-    const r = await fetch(ORIGEM + dir + path, { cf: { cacheTtl: 300, cacheEverything: true } });
+    const range = req.headers.get("Range");
+    const r = await fetch(ORIGEM + dir + path, { headers: range ? { Range: range } : {}, cf: { cacheTtl: 300, cacheEverything: true } });
     if (r.status === 404) return new Response("Página não encontrada", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
     const h = new Headers(r.headers);
     for (const [k, v] of Object.entries(SEG)) h.set(k, v);
