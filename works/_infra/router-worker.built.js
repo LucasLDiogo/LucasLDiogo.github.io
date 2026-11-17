@@ -1,8 +1,8 @@
 // LLD Works — roteador do domínio lldworks.com.br
 // Serve o portfólio, os sites e os produtos (conteúdo no GitHub Pages em /works/), com login real por produto,
-// e hospeda o console central, aberto só com token válido do Cloudflare Access.
+// O console central agora é o LLD Works Hub (Worker lldworks-hub em console.lldworks.com.br).
 const ORIGEM = "https://lucasldiogo.lldworks.com.br/works/";
-const SITES = { "produtos.lldworks.com.br": "portfolio", "lldworks.com.br": "portfolio", "www.lldworks.com.br": "portfolio", "clinica.lldworks.com.br": "clinica", "imobiliaria.lldworks.com.br": "imobiliaria" };
+const SITES = { "produtos.lldworks.com.br": "portfolio", "lldworks.com.br": "portfolio", "www.lldworks.com.br": "portfolio", "clinica.lldworks.com.br": "clinica", "imobiliaria.lldworks.com.br": "imobiliaria", "wellington.lldworks.com.br": "wellington" };
 const ALIASES = {
   "pageworks.lldworks.com.br": "https://produtos.lldworks.com.br/#pageworks",
   "proworks.lldworks.com.br": "https://lucasldiogo.lldworks.com.br/",
@@ -26,21 +26,6 @@ const SEG = {
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "X-Frame-Options": "SAMEORIGIN",
 };
-const APPS = [
-  { n: "Portfólio LLD Works", u: "https://produtos.lldworks.com.br/", cli: "https://produtos.lldworks.com.br/", emp: null, lld: null },
-  { n: "AgentWorks · demo", u: "https://agentworks.lldworks.com.br/entrar", cli: null, emp: "https://agentworks.lldworks.com.br/", lld: null },
-  { n: "AgentWorks · sistema real", u: "https://atende.lldworks.com.br/painel", cli: "WhatsApp da empresa", emp: "https://atende.lldworks.com.br/painel", lld: "https://atende.lldworks.com.br/painel", pc: true },
-  { n: "Gateway WhatsApp (WA-AKG)", u: "https://wa.lldworks.com.br/", cli: null, emp: null, lld: "https://wa.lldworks.com.br/", pc: true },
-  { n: "RHWorks · triagem com IA", u: "https://rhworks.lldworks.com.br/entrar", cli: null, emp: "https://rhworks.lldworks.com.br/", lld: null },
-  { n: "SalesWorks · demo Feira Viva", u: "https://salesworks.lldworks.com.br/entrar", cli: null, emp: "https://salesworks.lldworks.com.br/", lld: null },
-  { n: "ServiceWorks · demo", u: "https://serviceworks.lldworks.com.br/entrar", cli: null, emp: "https://serviceworks.lldworks.com.br/", lld: null },
-  { n: "LinkWorks · demo", u: "https://linkworks.lldworks.com.br/entrar", cli: null, emp: "https://linkworks.lldworks.com.br/", lld: null },
-  { n: "SocialWorks · demo", u: "https://socialworks.lldworks.com.br/entrar", cli: null, emp: "https://socialworks.lldworks.com.br/", lld: null },
-  { n: "PageWorks · Clínica Vértice", u: "https://clinica.lldworks.com.br/", cli: "https://clinica.lldworks.com.br/", emp: null, lld: null },
-  { n: "PageWorks · Araucária Imóveis", u: "https://imobiliaria.lldworks.com.br/", cli: "https://imobiliaria.lldworks.com.br/", emp: null, lld: null },
-  { n: "ProWorks · Lucas L. Diogo", u: "https://lucasldiogo.lldworks.com.br/", cli: "https://lucasldiogo.lldworks.com.br/", emp: null, lld: null },
-  { n: "Rancho Flores (cliente)", u: "https://ranchofloresloja.com/", cli: "https://ranchofloresloja.com/loja", emp: "https://ranchofloresloja.com/admin/login", lld: null },
-];
 
 const enc = new TextEncoder();
 const b64u = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -48,46 +33,15 @@ const ub64u = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/"
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 function igual(a, b) { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i]; return d === 0; }
 
-// ---------- Console: Cloudflare Access (JWT RS256 conferido no servidor) ----------
-let CERTS = { at: 0, keys: [] };
-async function accessOk(req, env) {
-  if (!env.ACCESS_TEAM || !env.ACCESS_AUD) return false;
-  const jwt = req.headers.get("Cf-Access-Jwt-Assertion");
-  if (!jwt) return false;
-  const [h, p, sig] = jwt.split(".");
-  if (!h || !p || !sig) return false;
-  let head, pay;
-  try { head = JSON.parse(new TextDecoder().decode(ub64u(h))); pay = JSON.parse(new TextDecoder().decode(ub64u(p))); } catch { return false; }
-  const now = Date.now() / 1000;
-  const aud = Array.isArray(pay.aud) ? pay.aud : [pay.aud];
-  if (head.alg !== "RS256" || !aud.includes(env.ACCESS_AUD) || pay.exp < now || pay.iss !== `https://${env.ACCESS_TEAM}.cloudflareaccess.com`) return false;
-  if (Date.now() - CERTS.at > 3600e3) {
-    const r = await fetch(`https://${env.ACCESS_TEAM}.cloudflareaccess.com/cdn-cgi/access/certs`);
-    CERTS = { at: Date.now(), keys: (await r.json()).keys || [] };
-  }
-  const jwk = CERTS.keys.find((k) => k.kid === head.kid);
-  if (!jwk) return false;
-  const key = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
-  return crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, ub64u(sig), enc.encode(h + "." + p));
-}
-
 // ---------- Login dos produtos ----------
-// DEMO_USERS (secret): JSON [{ "e": "email", "h": "pbkdf2$iter$salt_b64u$hash_b64u", "apps": "*" | ["rhworks", ...] }]
-// SESSION_KEY (secret): chave HMAC das sessões. Senha nunca fica no código nem no navegador.
+// Usuários e senhas: LLD Works Hub (binding HUB → /interno/login). SESSION_KEY (secret): chave HMAC das sessões.
+// A senha nunca fica no código nem no navegador.
 const SESSAO_H = 8;
 const TENTATIVAS = new Map();
 async function hmac(env, data) {
   const k = await crypto.subtle.importKey("raw", enc.encode(env.SESSION_KEY), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   return b64u(await crypto.subtle.sign("HMAC", k, enc.encode(data)));
 }
-async function senhaOk(registro, senha) {
-  const [alg, it, salt, hash] = String(registro).split("$");
-  if (alg !== "pbkdf2") return false;
-  const base = await crypto.subtle.importKey("raw", enc.encode(senha), "PBKDF2", false, ["deriveBits"]);
-  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: ub64u(salt), iterations: +it }, base, 256);
-  return igual(new Uint8Array(bits), ub64u(hash));
-}
-function usuarios(env) { try { return JSON.parse(env.DEMO_USERS || "[]"); } catch { return []; } }
 function cookie(req, nome) { const m = (req.headers.get("Cookie") || "").match(new RegExp("(?:^|;\\s*)" + nome + "=([^;]+)")); return m ? m[1] : null; }
 async function sessao(req, env, p) {
   if (!env.SESSION_KEY) return null;
@@ -136,15 +90,22 @@ async function entrar(req, env, url, p) {
   if (t.n >= 8) return html(telaLogin(p, "Muitas tentativas. Aguarde 15 minutos e tente de novo."), 429);
   let f; try { f = await req.formData(); } catch { return html(telaLogin(p, "Envie o formulário de novo."), 400); }
   const email = String(f.get("email") || "").trim().toLowerCase().slice(0, 200), senha = String(f.get("senha") || "").slice(0, 200);
-  const u = usuarios(env).find((x) => x.e === email && (x.apps === "*" || (x.apps || []).includes(p.slug)));
-  const ok = !!u && !!env.SESSION_KEY && (await senhaOk(u.h, senha));
-  if (!ok) {
+  // Usuários, senhas e assinaturas vêm do LLD Works Hub (console.lldworks.com.br) pelo service binding HUB.
+  let r = { ok: false, motivo: "credenciais" };
+  if (env.HUB && env.SESSION_KEY) {
+    try {
+      const resp = await env.HUB.fetch("https://hub.interno/interno/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ produto: p.slug, email, senha }) });
+      r = await resp.json();
+    } catch { return html(telaLogin(p, "Serviço de login indisponível. Tente em alguns minutos.", email), 503); }
+  }
+  if (!r.ok) {
     t.n++; TENTATIVAS.set(ip, t);
-    await new Promise((r) => setTimeout(r, 400));
-    return html(telaLogin(p, "E-mail ou senha incorretos.", email), 401);
+    await new Promise((res) => setTimeout(res, 400));
+    const msg = r.motivo === "assinatura" ? "Sua assinatura está inativa. Fale com a LLD Works para regularizar o acesso." : "E-mail ou senha incorretos.";
+    return html(telaLogin(p, msg, email), r.motivo === "assinatura" ? 403 : 401);
   }
   TENTATIVAS.delete(ip);
-  const dados = b64u(enc.encode(JSON.stringify({ e: email, p: p.slug, x: Math.floor(Date.now() / 1000) + SESSAO_H * 3600 })));
+  const dados = b64u(enc.encode(JSON.stringify({ e: email, p: p.slug, c: r.cliente.id, cn: r.cliente.nome, cs: r.cliente.slug, r: r.usuario.papel, x: Math.floor(Date.now() / 1000) + SESSAO_H * 3600 })));
   const valor = dados + "." + (await hmac(env, dados));
   return new Response(null, { status: 303, headers: { Location: "/", "Cache-Control": "no-store", "Set-Cookie": `lw_s=${valor}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSAO_H * 3600}`, ...SEG } });
 }
@@ -167,7 +128,7 @@ async function produto(req, env, url, p) {
   const r = await origem(req, p.dir + arq, arq === "/" + p.entrada ? 0 : 300);
   if (arq !== "/" + p.entrada || r.status !== 200) return r;
   // Página principal: avisa o app que o login já foi feito no servidor e põe o botão Sair.
-  const marca = `<script>window.LW_AUTH=${JSON.stringify({ email: s.e })}</script>`;
+  const marca = `<script>window.LW_AUTH=${JSON.stringify({ email: s.e, cliente: s.cn || "", slug: s.cs || "", papel: s.r || "admin" }).replace(/</g, "\\u003c")}</script>`;
   const barra = p.slug === "rhworks" ? `<a href="/sair" style="position:fixed;right:14px;bottom:14px;z-index:50;background:#16141D;color:#fff;font:600 13px Inter,sans-serif;padding:8px 14px;border-radius:99px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.2)">Sair · ${esc(s.e)}</a>` : "";
   const corpo = (await r.text()).replace("</head>", marca + "</head>").replace("</body>", barra + "</body>");
   const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
@@ -188,51 +149,11 @@ function html(body, status = 200, extra = {}) {
   return new Response(body, { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Content-Security-Policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'", ...SEG, ...extra } });
 }
 
-// ---------- Console central ----------
-const CSS = `:root{--co:#1240E0;--ink:#0B1020;--mute:#566079;--line:#E3E7F0;--bg:#F3F5FA}*{box-sizing:border-box}body{margin:0;font:15px/1.55 Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
-h1,h2{margin:0}a{color:var(--co)}.top{background:#0B1020;color:#fff;padding:14px max(4vw,16px);display:flex;align-items:center;gap:14px}
-.top b{font-weight:800;font-size:19px}.top b i{font-style:normal;color:#7C9BFF}.top span{opacity:.7;font-size:13px}
-main{max-width:1240px;margin:0 auto;padding:24px max(4vw,16px) 60px}table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;margin-top:14px}
-th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}th{background:#EEF1F8;color:var(--mute);font-size:12.5px}
-.st{display:inline-block;padding:3px 10px;border-radius:99px;font-weight:700;font-size:12px;background:#EEF1F8;color:var(--mute);white-space:nowrap}.st.ok{background:#E3F6EC;color:#0E7A50}.st.bad{background:#FDECEC;color:#C02626}
-.btn{border:0;background:var(--co);color:#fff;font-weight:700;border-radius:10px;padding:10px 16px;cursor:pointer;font-size:15px}.card{background:#fff;border-radius:16px;padding:22px;border:1px solid var(--line)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:18px}
-.pc{color:#B45309;font-size:12px;font-weight:600}@media(max-width:700px){td:nth-child(3),th:nth-child(3){display:none}}`;
-function trancado() {
-  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Console LLD Works</title><style>${CSS}</style></head>
-<body><div class="top"><b>LLD <i>Works</i></b><span>Console central</span></div><main style="max-width:520px"><div class="card" style="margin-top:40px"><h1 style="font-size:22px">Acesso restrito</h1>
-<p style="color:var(--mute)">Este console abre somente para o responsável pela LLD Works, depois da verificação por código enviado ao e-mail autorizado (Cloudflare Access).</p></div></main></body></html>`;
-}
-function consolePage() {
-  const linha = (a, i) => `<tr><td><b>${a.n}</b>${a.pc ? '<br><span class="pc">roda no PC do Lucas (Docker + túnel)</span>' : ""}</td><td><span class="st" id="s${i}">verificando…</span></td>
-<td>${a.cli ? (a.cli.startsWith("http") ? `<a href="${a.cli}" target="_blank" rel="noopener">abrir</a>` : a.cli) : "—"}</td><td>${a.emp ? `<a href="${a.emp}" target="_blank" rel="noopener">painel</a>` : "—"}</td><td>${a.lld ? `<a href="${a.lld}" target="_blank" rel="noopener">admin</a>` : "—"}</td></tr>`;
-  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Console LLD Works</title><style>${CSS}</style></head>
-<body><div class="top"><b>LLD <i>Works</i></b><span>Console central · todas as aplicações</span><a class="btn" style="background:#2A3350;text-decoration:none;margin-left:auto" href="/cdn-cgi/access/logout">Sair</a></div><main>
-<h1 style="font-size:26px">Aplicações</h1><p style="color:var(--mute)">Status verificado agora pelo servidor. Cliente = o que o consumidor final usa; Empresa = painel do estabelecimento; LLD = administração da LLD Works.</p>
-<table><thead><tr><th>Aplicação</th><th>Status</th><th>Cliente</th><th>Empresa</th><th>LLD</th></tr></thead><tbody>${APPS.map(linha).join("")}</tbody></table>
-<div class="grid"><div class="card"><h2 style="font-size:17px">Infraestrutura</h2><p><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a> · <a href="https://github.com/LucasLDiogo" target="_blank" rel="noopener">GitHub</a> · <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">Supabase</a></p></div>
-<div class="card"><h2 style="font-size:17px">Segurança</h2><p style="color:var(--mute);margin:6px 0 0">Console: Cloudflare Access com código no e-mail autorizado. Produtos: senha conferida no servidor (PBKDF2) e sessão assinada (HMAC) de ${SESSAO_H} h.</p></div></div>
-</main><script>fetch('/api/status').then(r=>r.json()).then(l=>l.forEach((s,i)=>{const e=document.getElementById('s'+i);e.textContent=s.ok?('no ar · '+s.ms+' ms'):('fora · '+(s.code||'sem resposta'));e.className='st '+(s.ok?'ok':'bad')})).catch(()=>{})</script></body></html>`;
-}
-async function consoleApp(req, env, url) {
-  if (!(await accessOk(req, env))) return url.pathname.startsWith("/api/") ? new Response("{}", { status: 401 }) : html(trancado(), 403);
-  if (url.pathname === "/api/status") {
-    const res = await Promise.all(APPS.map(async (a) => {
-      const t = Date.now();
-      try { const r = await fetch(a.u, { method: "GET", redirect: "manual", signal: AbortSignal.timeout(8000) }); return { ok: r.status > 0 && r.status < 500, code: r.status, ms: Date.now() - t }; }
-      catch { return { ok: false, code: 0, ms: Date.now() - t }; }
-    }));
-    return new Response(JSON.stringify(res), { headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
-  }
-  return html(consolePage());
-}
-
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     const host = url.hostname.replace(/\.$/, "");
     if (host !== url.hostname) return Response.redirect("https://" + host + url.pathname + url.search, 301);
-    if (host === "console.lldworks.com.br") return consoleApp(req, env, url);
     if (host === "rancho.lldworks.com.br") return Response.redirect("https://ranchofloresloja.com/", 302);
     if (host === "crivo.lldworks.com.br") {
       // Endereço antigo: a IA e os arquivos da versão para instalar seguem no Worker "crivo"; o site foi para o RHWorks.
