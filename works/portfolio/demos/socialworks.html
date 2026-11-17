@@ -33,7 +33,7 @@
  <section class="view" data-tab="Caixa de entrada">
   <div class="grid g2"><div class="card inbox"><div class="row sb"><h2>Mensagens</h2><span class="chip p">Instagram + Facebook</span></div><div id="ib"></div></div>
    <div class="card"><h2>Assistente de respostas</h2><p class="small mute">Sugere a resposta com base na base de conhecimento do negócio. Um humano aprova antes de enviar enquanto a conta estiver nas primeiras semanas.</p>
-    <div class="sim"><div class="b c">Vocês entregam no bairro Boqueirão? E qual o valor mínimo?</div><div class="b d">Entregamos sim! 🚚 No Boqueirão a taxa é R$ 6 e o pedido mínimo é R$ 40. Faz seu pedido aqui: ranchofloresloja.com<br><span class="tag" style="color:#fff;opacity:.8">sugestão da IA · fonte: política de entrega</span></div></div>
+    <div class="sim"><div class="b c">Vocês entregam no bairro Boqueirão? E qual o valor mínimo?</div><div class="b d">Entregamos sim! 🚚 No Boqueirão a taxa é R$ 6 e o pedido mínimo é R$ 40. Faz seu pedido aqui: feiraviva.lldworks.com.br<br><span class="tag" style="color:#fff;opacity:.8">sugestão da IA · fonte: política de entrega</span></div></div>
     <div class="row" style="margin-top:10px"><button class="btn pri" onclick="LW.toast('Resposta enviada.')">Aprovar e enviar</button><button class="btn" onclick="LW.toast('Conversa atribuída à equipe.')">Passar para humano</button></div></div></div>
  </section>
 </main></div>
@@ -51,7 +51,7 @@ const COR = {Reels:'linear-gradient(135deg,#DC2626,#F59E0B)',Carrossel:'linear-g
 let posts = [{d:0,h:'11:30',tp:'Story',t:'Bastidores: chegada da colheita',st:'Publicado'},{d:0,h:'18:30',tp:'Reels',t:'3 jeitos de conservar folhas por 7 dias',st:'Agendado'},
  {d:1,h:'12:00',tp:'Carrossel',t:'Cesta da semana: o que vem nela',st:'Agendado'},{d:2,h:'19:00',tp:'Reels',t:'Receita: suco verde em 60 s',st:'Agendado'},
  {d:3,h:'18:00',tp:'Post',t:'Depoimento de cliente (com autorização)',st:'Rascunho'},{d:4,h:'17:30',tp:'Reels',t:'Promo de sexta: comente FEIRA',st:'Agendado'},{d:5,h:'10:00',tp:'Story',t:'Enquete: qual fruta na cesta?',st:'Agendado'}];
-let rules = [{kw:'LINK',r:'Oi {nome}! Aqui está o link da loja: ranchofloresloja.com 🌿',on:true,n:312},{kw:'FEIRA',r:'Promo de sexta liberada! Use o cupom FEIRA10 até domingo: ranchofloresloja.com',on:true,n:147},{kw:'PREÇO',r:'Os preços atualizados ficam na vitrine: ranchofloresloja.com. Quer ajuda com o pedido?',on:false,n:0}];
+let rules = [{kw:'LINK',r:'Oi {nome}! Aqui está o link da loja: feiraviva.lldworks.com.br 🌿',on:true,n:312},{kw:'FEIRA',r:'Promo de sexta liberada! Use o cupom FEIRA10 até domingo: feiraviva.lldworks.com.br',on:true,n:147},{kw:'PREÇO',r:'Os preços atualizados ficam na vitrine: feiraviva.lldworks.com.br. Quer ajuda com o pedido?',on:false,n:0}];
 function kpis(){ $('#kpis').innerHTML=[['Publicações na semana',posts.length,'<span class="mute">'+posts.filter(p=>p.tp==='Reels').length+' Reels</span>'],['DMs automáticas (30 d)',rules.reduce((a,r)=>a+r.n,0),'<span class="up">▲ 38% vs mês anterior</span>'],['Alcance médio dos Reels','4.870','<span class="up">▲ 12%</span>'],['Tempo de 1ª resposta','42 s','<span class="mute">antes: 3 h 10 min</span>']]
  .map(([l,v,d])=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join(''); }
 function cal(){ $('#cal').innerHTML = DIAS.map((d,i)=>{ const l=posts.filter(p=>p.d===i).sort((a,b)=>a.h.localeCompare(b.h));
@@ -65,7 +65,7 @@ document.addEventListener('click', e => { const s = e.target.closest('[data-sw]'
 $('#np').onclick = () => { $('#pd').innerHTML = DIAS.map((d,i)=>`<option value="${i}">${d}</option>`).join(''); LW.modal.open('mP'); };
 $('#nr').onclick = () => { rules.push({kw:'AGENDA',r:'Veja os horários livres e agende aqui: serviceworks.lldworks.com.br',on:true,n:0}); rl(); toast('Regra AGENDA criada.'); };
 $('#fP').onsubmit = e => { e.preventDefault(); posts.push({d:+$('#pd').value,h:$('#ph').value,tp:$('#ptp').value,t:$('#pt').value.slice(0,60),st:'Agendado'}); LW.modal.close('mP'); cal(); kpis(); toast('Publicação agendada.'); };
-LW.init({name:'SocialWorks', color:'#DC2626', icon:LWI.socialworks, sub:'Instagram e redes', org:'Rancho Flores', initials:'RF', demoUser:'social@ranchoflores.com.br',
+LW.init({name:'SocialWorks', color:'#DC2626', icon:LWI.socialworks, sub:'Instagram e redes', org:'Feira Viva', initials:'FV', demoUser:'social@feiraviva.com.br',
  loginTitle:'Seu Instagram trabalhando enquanto você atende.', loginText:'Agenda de Reels e posts, resposta automática a comentários com DM, caixa de entrada única e assistente de respostas.',
  bullets:['Calendário de conteúdo da semana','Comentou a palavra-chave, recebe o link na DM','Caixa de entrada Instagram + Facebook','Só API oficial da Meta: sem risco de bloqueio'],
  onEnter(){ kpis(); cal(); rl(); inbox(); }});

@@ -26,9 +26,9 @@
 <div id="app" hidden><main>
  <section class="view" data-tab="Editor">
   <div class="ed"><div>
-   <div class="url">linkworks.lldworks.com.br/<span id="slugv">ranchoflores</span><span class="sp" style="flex:1"></span><button class="btn sm" id="copy">Copiar link</button></div>
+   <div class="url">linkworks.lldworks.com.br/<span id="slugv">feiraviva</span><span class="sp" style="flex:1"></span><button class="btn sm" id="copy">Copiar link</button></div>
    <div class="card" style="margin-bottom:14px"><h2>Perfil</h2>
-    <div class="grid g2" style="gap:10px"><div><label for="nm">Nome</label><input id="nm" value="Rancho Flores" maxlength="40"></div><div><label for="sl">Endereço (slug)</label><input id="sl" value="ranchoflores" maxlength="30"></div></div>
+    <div class="grid g2" style="gap:10px"><div><label for="nm">Nome</label><input id="nm" value="Feira Viva" maxlength="40"></div><div><label for="sl">Endereço (slug)</label><input id="sl" value="feiraviva" maxlength="30"></div></div>
     <label for="bio">Bio</label><input id="bio" value="Hortifruti fresquinho da roça pra sua mesa 🌿 Entregas em Passo Fundo" maxlength="120">
     <label>Tema</label><div class="themes" id="themes"></div></div>
    <div class="card"><div class="row sb"><h2>Links</h2><button class="btn pri sm" id="add">+ Adicionar link</button></div>
@@ -57,8 +57,8 @@ const {$, $$, esc, toast} = LW;
 const TH = [{n:'Roça',bgp:'#F3EBDD',fg:'#2F3A1F',acc:'#4D7C0F',btn:'#4D7C0F',btnfg:'#fff'},{n:'Noite',bgp:'#0F172A',fg:'#E2E8F0',acc:'#F472B6',btn:'#1E293B',btnfg:'#F8FAFC'},
  {n:'Coral',bgp:'#FFF1EC',fg:'#5B1F12',acc:'#E8590C',btn:'#fff',btnfg:'#5B1F12'},{n:'Mar',bgp:'#E6F4F8',fg:'#0C3B4A',acc:'#0891B2',btn:'#0891B2',btnfg:'#fff'},{n:'Mono',bgp:'#fff',fg:'#111',acc:'#111',btn:'#111',btnfg:'#fff'}];
 let th = 0, links = [
- {t:'🛒 Fazer pedido na loja online',u:'https://ranchofloresloja.com',on:true,cl:1284},{t:'💬 Pedir pelo WhatsApp',u:'https://wa.me/5554999999999',on:true,cl:932},
- {t:'🧺 Cesta da semana — veja o que chegou',u:'https://ranchofloresloja.com/cesta',on:true,cl:611},{t:'📍 Como chegar',u:'https://maps.google.com',on:true,cl:204},{t:'⭐ Avalie a gente no Google',u:'https://g.page/r',on:false,cl:88}];
+ {t:'🛒 Fazer pedido na loja online',u:'https://feiraviva.lldworks.com.br',on:true,cl:1284},{t:'💬 Pedir pelo WhatsApp',u:'https://wa.me/5554999999999',on:true,cl:932},
+ {t:'🧺 Cesta da semana — veja o que chegou',u:'https://feiraviva.lldworks.com.br/cesta',on:true,cl:611},{t:'📍 Como chegar',u:'https://maps.google.com',on:true,cl:204},{t:'⭐ Avalie a gente no Google',u:'https://g.page/r',on:false,cl:88}];
 function prev(){ const t = TH[th], el = $('#pv'); Object.entries(t).forEach(([k,v])=>k!=='n'&&el.style.setProperty('--'+k,v));
  const nm = $('#nm').value || 'Seu nome';
  el.innerHTML = `<div class="ph">${esc(nm.trim()[0]||'?').toUpperCase()}</div><h2>${esc(nm)}</h2><p>${esc($('#bio').value)}</p>${links.filter(l=>l.on).map(l=>`<a href="${esc(l.u)}" rel="noopener noreferrer" target="_blank">${esc(l.t)}</a>`).join('')}<div class="soc"><span>Instagram</span><span>TikTok</span><span>YouTube</span></div><div class="ft">feito com LinkWorks · LLD Works</div>`; }
@@ -81,7 +81,7 @@ $('#copy').onclick = () => { const u = 'https://linkworks.lldworks.com.br/' + $(
 let drag = null; $('#links').addEventListener('dragstart', e => { drag = +e.target.closest('.lk').dataset.i; });
 $('#links').addEventListener('dragover', e => e.preventDefault());
 $('#links').addEventListener('drop', e => { e.preventDefault(); const to = e.target.closest('.lk'); if (!to || drag === null) return; const [m] = links.splice(drag,1); links.splice(+to.dataset.i,0,m); drag = null; list(); prev(); });
-LW.init({name:'LinkWorks', color:'#DB2777', icon:LWI.linkworks, sub:'Link na bio', org:'Rancho Flores', initials:'RF', demoUser:'marketing@ranchoflores.com.br',
+LW.init({name:'LinkWorks', color:'#DB2777', icon:LWI.linkworks, sub:'Link na bio', org:'Feira Viva', initials:'FV', demoUser:'marketing@feiraviva.com.br',
  loginTitle:'Um link na bio que vende.', loginText:'Uma página leve com todos os seus links: loja, WhatsApp, agenda e redes. Com estatísticas e o seu endereço em lldworks.com.br.',
  bullets:['Editor com pré-visualização ao vivo','Temas da sua marca','Cliques e origem das visitas','Links verificados antes de publicar'],
  onEnter(){ themes(); list(); prev(); stats(); }});

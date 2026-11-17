@@ -13,7 +13,7 @@ pre.msg{white-space:pre-wrap;background:var(--soft);padding:12px;border-radius:1
 <div id="auth"></div>
 <div id="app" hidden><main>
  <section class="view" data-tab="Painel">
-  <div class="row sb" style="margin-bottom:12px"><h1>Bom dia, equipe Rancho Flores</h1><span class="chip p">Novembro/2026 · até dia 16</span></div>
+  <div class="row sb" style="margin-bottom:12px"><h1>Bom dia, equipe Feira Viva</h1><span class="chip p">Novembro/2026 · até dia 16</span></div>
   <div class="kpis" id="kpis"></div>
   <div class="grid g2">
    <div class="card"><h2>Funil do mês</h2><div class="funnel" id="funil"></div><p class="small mute">Conversão lead → pedido pago: <b id="conv"></b></p>
@@ -35,7 +35,7 @@ pre.msg{white-space:pre-wrap;background:var(--soft);padding:12px;border-radius:1
  <section class="view" data-tab="Campanhas">
   <div class="grid g2">
    <div class="card"><h2>Reativação pelo WhatsApp</h2><p class="mute small">Clientes há mais de 15 dias sem comprar recebem uma mensagem pronta com o link da vitrine. O envio sai do número da loja; o cliente pode pedir para não receber mais.</p>
-    <label for="tpl">Modelo da mensagem</label><textarea id="tpl" rows="5">Oi, {nome}! Aqui é do Rancho Flores 🌿 Faz {dias} dias que você não passa por aqui. Chegaram morangos e folhas fresquinhas hoje. Seu pedido está a um clique: {link}</textarea>
+    <label for="tpl">Modelo da mensagem</label><textarea id="tpl" rows="5">Oi, {nome}! Aqui é do Feira Viva 🌿 Faz {dias} dias que você não passa por aqui. Chegaram morangos e folhas fresquinhas hoje. Seu pedido está a um clique: {link}</textarea>
     <p class="small mute">Variáveis: {nome}, {dias}, {link}</p><div class="row" style="margin-top:8px"><button class="btn pri" id="prev">Pré-visualizar para 1º cliente</button><span class="mute small" id="alvo"></span></div>
     <pre class="msg" id="pv" hidden></pre></div>
    <div class="card"><h2>Regras automáticas</h2><table><tbody>
@@ -56,7 +56,7 @@ pre.msg{white-space:pre-wrap;background:var(--soft);padding:12px;border-radius:1
 const {$, $$, brl, esc, toast} = LW;
 const HOJE = new Date('2026-11-16T09:00:00');
 const dias = d => Math.round((HOJE - new Date(d + 'T12:00:00')) / 864e5);
-const LINK = 'ranchofloresloja.com';
+const LINK = 'feiraviva.lldworks.com.br';
 const ETAPAS = [['lead','Novo contato'],['orc','Pedido montado'],['aguarda','Aguardando cliente'],['pago','Pago'],['entregue','Entregue']];
 let ops = [
  {id:1,c:'Mariana Souza',v:142.9,s:'lead',o:'Instagram',h:0},{id:2,c:'Restaurante Sabor da Serra',v:860,s:'orc',o:'WhatsApp',h:1},
@@ -108,7 +108,7 @@ $('#novo').onclick = () => LW.modal.open('mNovo');
 $('#fNovo').onsubmit = e => { e.preventDefault(); const c = $('#nN').value.trim(), v = +$('#nV').value; if (!c || !(v > 0)) return toast('Preencha cliente e valor.');
  ops.push({id: Date.now(), c, v, s:'lead', o:$('#nO').value, h:0}); LW.modal.close('mNovo'); e.target.reset(); kan(); kpis(); toast('Oportunidade criada em "Novo contato".'); };
 LW.kanban($('#kan'), (id, s) => { const o = ops.find(o=>String(o.id)===id); if (!o) return; o.s = s; o.h = 0; kan(); kpis(); toast(`${o.c} → ${ETAPAS.find(e=>e[0]===s)[1]}`); });
-LW.init({name:'SalesWorks', color:'#EA580C', icon:LWI.salesworks, sub:'Loja + CRM de vendas', org:'Rancho Flores', initials:'RF', demoUser:'gestao@ranchoflores.com.br',
+LW.init({name:'SalesWorks', color:'#EA580C', icon:LWI.salesworks, sub:'Loja + CRM de vendas', org:'Feira Viva', initials:'FV', demoUser:'gestao@feiraviva.com.br',
  loginTitle:'Venda mais para quem já compra de você.', loginText:'Pedidos da vitrine, WhatsApp e Instagram num funil só, com alertas de recompra e estoque.',
  bullets:['Pipeline de pedidos com arrastar e soltar','Cliente sumido há 15 dias vira ação do dia','Mensagem de WhatsApp pronta com link da vitrine','Cada loja só enxerga os próprios dados'],
  onEnter(){ kpis(); kan(); tab(); }});
