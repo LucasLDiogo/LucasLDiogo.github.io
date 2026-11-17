@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; base-uri 'none'">
+<title>AgentWorks · Painel</title>
+<link rel="icon" href="/pub/icone.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="/pub/base.css">
+<style>
+.inbox{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:14px;align-items:start}
+.lista{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.lista .flt{display:flex;gap:6px;overflow-x:auto;padding:10px;border-bottom:1px solid var(--line);scrollbar-width:none}
+.lista .flt button{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:5px 11px;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink);min-height:34px}
+.lista .flt button[aria-pressed=true]{background:var(--p);border-color:var(--p);color:#fff}
+.lista .bus{padding:8px 10px;border-bottom:1px solid var(--line)}.lista .bus input{min-height:38px;padding:6px 10px;font-size:14px}
+.lista .itens{max-height:calc(100vh - 330px);min-height:240px;overflow:auto}
+.cv{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:var(--card);padding:11px 12px;cursor:pointer;color:var(--ink)}
+.cv:hover{background:var(--soft)}.cv[aria-current=true]{background:var(--pk)}
+.cv .l1{display:flex;gap:6px;align-items:center}.cv .l1 b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cv .l1 .h{margin-left:auto;font-size:12px;color:var(--mute);flex:none}
+.cv .ul{font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.cv .l3{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.cv.esp{box-shadow:inset 4px 0 0 var(--warn)}
+.fio{background:var(--card);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;min-height:480px;max-height:calc(100vh - 210px)}
+.fio .cab{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}
+.fio .cab .q{min-width:0}.fio .cab .q b{display:block;font-size:16px}.fio .cab .sp{flex:1}
+.msgs{flex:1;overflow:auto;padding:16px 14px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.b{max-width:min(78%,560px);padding:9px 13px;border-radius:16px;white-space:pre-wrap;word-break:break-word;line-height:1.45;font-size:14.5px;position:relative}
+.b small{display:block;font-size:11px;opacity:.7;margin-top:3px}
+.b.cliente{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:5px}
+.b.robo{align-self:flex-end;background:var(--pk);border-bottom-right-radius:5px}
+.b.humano{align-self:flex-end;background:var(--p);color:#fff;border-bottom-right-radius:5px}
+.b.sistema{align-self:center;background:transparent;color:var(--mute);font-size:12.5px;padding:2px 8px;text-align:center}
+.b .quem{font-size:11px;font-weight:700;opacity:.75;display:block;margin-bottom:2px}
+.fontes{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.fontes .chip{font-size:11px;background:var(--card)}
+.comp{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);align-items:flex-end}
+.comp textarea{min-height:44px;max-height:140px;resize:none}
+.vazio{display:grid;place-items:center;flex:1;color:var(--mute);text-align:center;padding:30px}
+.kb-i{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+.kb-i.off{opacity:.55}.kb-i p{color:var(--mute);font-size:13.5px;margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.lac{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.lac span{flex:1;min-width:0}
+.sim{max-width:720px}
+.dias{display:flex;align-items:flex-end;gap:4px;height:170px;padding-top:6px}
+.dias .c{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:1px;height:100%;min-width:6px}
+.dias .c i{display:block;width:100%;background:var(--p);border-radius:4px 4px 0 0;min-height:2px}.dias .c i.t{background:var(--warn);border-radius:0;opacity:.85}
+.dias .c span{font-size:10.5px;color:var(--mute);margin-top:3px}
+.leg{display:flex;gap:14px;font-size:12.5px;color:var(--mute);margin-top:6px}.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--p);margin-right:5px;vertical-align:-1px}.leg i.t{background:var(--warn)}
+.cod{display:flex;gap:8px;align-items:flex-start}.cod code{flex:1;font-size:12.5px;background:var(--soft);border-radius:8px;padding:8px 10px;word-break:break-all}
+.sw{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;margin:0;color:var(--ink);font-weight:600}
+.sw:has(input:checked){border-color:var(--ok);background:color-mix(in oklab,var(--ok) 10%,var(--card))}
+@media(max-width:860px){.inbox{grid-template-columns:1fr}.inbox.aberta .lista{display:none}.inbox:not(.aberta) .fio{display:none}.lista .itens{max-height:none}.fio{max-height:none;min-height:70vh}}
+</style>
+<script src="/pub/painel.js" defer></script>
+</head><body>
+<header class="top">
+ <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#0E9F6E"/><path fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M16 20h32a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H30l-9 7v-7h-5a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4z"/><circle cx="24" cy="32" r="2.6" fill="#fff"/><circle cx="32" cy="32" r="2.6" fill="#fff"/><circle cx="40" cy="32" r="2.6" fill="#fff"/></svg><span>Agent<b>Works</b></span></a>
+ <span class="emp" id="nomeTopo">Carregando…</span><span class="sp"></span>
+ <span class="chip" id="stAg" hidden></span>
+ <a class="btn sm ghost" id="verChat" target="_blank" rel="noopener" hidden>Abrir o chat ↗</a>
+ <a class="btn sm" href="/sair">Sair</a>
+</header>
+<nav class="nav" role="tablist" aria-label="Seções do painel">
+ <button role="tab" data-v="conversas" aria-selected="true">Conversas <span class="chip warn" id="badge" hidden></span></button>
+ <button role="tab" data-v="base" aria-selected="false">Base de conhecimento</button>
+ <button role="tab" data-v="testar" aria-selected="false">Testar o assistente</button>
+ <button role="tab" data-v="relatorios" aria-selected="false">Relatórios</button>
+ <button role="tab" data-v="config" aria-selected="false" data-adm>Configuração</button>
+</nav>
+<main>
+ <section class="view on" id="v-conversas" role="tabpanel">
+  <div class="kpis" id="kpis"></div>
+  <div class="inbox" id="inbox">
+   <div class="lista">
+    <div class="flt" role="group" aria-label="Filtrar conversas">
+     <button data-f="aguardando" aria-pressed="false">Aguardando equipe</button><button data-f="humano" aria-pressed="false">Com a equipe</button><button data-f="robo" aria-pressed="false">Com o assistente</button><button data-f="encerrada" aria-pressed="false">Encerradas</button><button data-f="" aria-pressed="true">Todas</button>
+    </div>
+    <div class="bus"><input id="cBusca" type="search" placeholder="Buscar por nome ou WhatsApp…" aria-label="Buscar conversa"></div>
+    <div class="itens" id="convs"></div>
+   </div>
+   <div class="fio" id="fio"><div class="vazio" id="fioVazio"><div><p style="font-size:34px">💬</p><p>Escolha uma conversa.<br>As que esperam alguém da equipe ficam no topo, marcadas em laranja.</p></div></div></div>
+  </div>
+ </section>
+
+ <section class="view" id="v-base" role="tabpanel">
+  <div class="head"><div><h1>Base de conhecimento</h1><p>O assistente responde só com o que está aqui. Escreva como você responderia a um cliente.</p></div>
+   <div class="row" data-adm><button class="btn" data-act="importar">Importar em lote</button><button class="btn pri" data-act="novoItem">+ Pergunta e resposta</button></div></div>
+  <div class="card" id="lacCard" style="margin-bottom:14px" hidden><div class="row sb"><h2>Perguntas que o assistente não soube responder</h2><span class="chip warn" id="lacN"></span></div><p class="small mute" style="margin-top:4px">Responda aqui e o assistente passa a saber da próxima vez.</p><div id="lacs" style="margin-top:6px"></div></div>
+  <input id="kBusca" type="search" placeholder="Buscar na base…" style="max-width:360px;margin-bottom:12px" aria-label="Buscar na base">
+  <div class="grid" id="kbLista"></div>
+ </section>
+
+ <section class="view" id="v-testar" role="tabpanel">
+  <div class="head"><div><h1>Testar o assistente</h1><p>Converse como se fosse um cliente. Nada fica gravado, mas cada resposta conta no limite diário da IA.</p></div><button class="btn" data-act="limparTeste">Recomeçar</button></div>
+  <div class="fio sim"><div class="msgs" id="tMsgs"></div>
+   <form class="comp" id="fTeste"><textarea id="tTexto" maxlength="1000" placeholder="Ex.: Vocês entregam no sábado?" aria-label="Mensagem de teste" rows="1"></textarea><button class="btn pri">Enviar</button></form></div>
+ </section>
+
+ <section class="view" id="v-relatorios" role="tabpanel">
+  <div class="head"><div><h1>Relatórios</h1><p>Quanto o assistente resolveu sozinho e quando precisou da equipe.</p></div>
+   <div class="row"><input type="date" id="rDe" aria-label="De" style="width:auto"><input type="date" id="rAte" aria-label="Até" style="width:auto"><button class="btn" data-act="relatorio">Ver</button></div></div>
+  <div class="kpis" id="rKpis"></div>
+  <div class="grid g2">
+   <div class="card"><h2>Conversas por dia</h2><div class="dias" id="rDias"></div><div class="leg"><span><i></i>Resolvidas pelo assistente</span><span><i class="t"></i>Passaram para a equipe</span></div></div>
+   <div class="card"><h2>Por que passaram para a equipe</h2><table><tbody id="rMot"></tbody></table></div>
+   <div class="card"><h2>Respostas mais usadas</h2><table><tbody id="rTop"></tbody></table></div>
+  </div>
+ </section>
+
+ <section class="view" id="v-config" role="tabpanel">
+  <div class="head"><div><h1>Configuração</h1><p>Como o assistente se apresenta e quando ele chama alguém da equipe.</p></div></div>
+  <form class="grid g2" id="fCfg">
+   <div class="card">
+    <h2>Assistente</h2>
+    <label class="sw" style="margin-top:12px"><input type="checkbox" id="gAtivo"> Assistente ligado (responde sozinho)</label>
+    <div class="f2"><div><label for="gNome">Nome do assistente</label><input id="gNome" maxlength="40" required></div><div><label for="gEmp">Nome da empresa</label><input id="gEmp" maxlength="80" required></div></div>
+    <label for="gSobre">O que a empresa faz</label><textarea id="gSobre" maxlength="1500" placeholder="Ex.: Mercearia e hortifruti no centro de Passo Fundo, com entrega no mesmo dia."></textarea>
+    <div class="f2"><div><label for="gTom">Jeito de falar</label><select id="gTom"><option value="amigavel">Simpático</option><option value="formal">Formal</option><option value="descontraido">Descontraído</option></select></div><div><label for="gCor">Cor do chat</label><input type="color" id="gCor"></div></div>
+    <label for="gSaud">Primeira mensagem do chat</label><input id="gSaud" maxlength="300" placeholder="Olá! Como posso ajudar?">
+    <label for="gInstr">Orientações extras</label><textarea id="gInstr" maxlength="1500" placeholder="Ex.: Sempre convide o cliente a conhecer a cesta da semana."></textarea>
+   </div>
+   <div class="card">
+    <h2>Passar para a equipe</h2>
+    <label for="gPal">Palavras que chamam uma pessoa (separe por vírgula)</label><input id="gPal" maxlength="300">
+    <label for="gMsgH">Mensagem ao passar para a equipe</label><input id="gMsgH" maxlength="300" placeholder="Vou chamar alguém da nossa equipe…">
+    <label for="gHor">Horário da equipe</label><input id="gHor" maxlength="120" placeholder="seg a sex, 8h às 18h">
+    <p class="help">O assistente também chama a equipe quando não encontra a resposta na base.</p>
+    <h2 style="margin-top:18px">Endereço do chat</h2>
+    <label for="gSlug">Nome no endereço</label><input id="gSlug" maxlength="40" pattern="[a-z0-9][a-z0-9\-]{2,39}" required>
+    <p class="err" id="gErr" role="alert"></p>
+    <div class="row" style="justify-content:flex-end"><button class="btn pri">Salvar</button></div>
+   </div>
+  </form>
+  <div class="grid g2" style="margin-top:14px">
+   <div class="card"><h2>Chat no site</h2><p class="small mute" style="margin-top:4px">Link direto para enviar ao cliente, ou código para colocar o botão de chat no seu site.</p>
+    <label>Link do chat</label><div class="cod"><code id="cLink"></code><button class="btn sm" type="button" data-act="copiar" data-alvo="cLink">Copiar</button></div>
+    <label>Código para o site (antes de &lt;/body&gt;)</label><div class="cod"><code id="cWidget"></code><button class="btn sm" type="button" data-act="copiar" data-alvo="cWidget">Copiar</button></div></div>
+   <div class="card"><h2>WhatsApp</h2><div id="cWhats" style="margin-top:8px"></div></div>
+  </div>
+ </section>
+</main>
+
+<dialog id="dItem" aria-labelledby="diT"><form method="dialog" id="fItem">
+ <h2 id="diT">Pergunta e resposta</h2>
+ <label for="iTit">Pergunta ou assunto</label><input id="iTit" maxlength="160" required placeholder="Ex.: Vocês entregam no sábado?">
+ <label for="iCon">Resposta</label><textarea id="iCon" maxlength="4000" required style="min-height:140px" placeholder="Escreva a resposta completa, com valores, horários e condições."></textarea>
+ <label class="chk" style="margin-top:12px"><input type="checkbox" id="iAtv"> Usar esta resposta</label>
+ <p class="err" id="iErr" role="alert"></p>
+ <div class="acts"><button class="btn" value="x" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<dialog id="dImp" aria-labelledby="dimT"><form method="dialog" id="fImp">
+ <h2 id="dimT">Importar em lote</h2>
+ <p class="small mute" style="margin-top:6px">Cole perguntas e respostas. Primeira linha é a pergunta, as seguintes a resposta. Deixe uma linha em branco entre cada uma.</p>
+ <textarea id="impTxt" style="min-height:220px;margin-top:10px" placeholder="Vocês entregam no sábado?&#10;Sim, das 8h às 12h, com taxa de R$ 6,00.&#10;&#10;Aceitam Pix?&#10;Sim, Pix, dinheiro e cartão."></textarea>
+ <p class="err" id="impErr" role="alert"></p>
+ <div class="acts"><button class="btn" value="x" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Importar</button></div>
+</form></dialog>
+
+<dialog id="dCont" aria-labelledby="dctT"><form method="dialog" id="fCont">
+ <h2 id="dctT">Contato</h2>
+ <label for="ctNome">Nome</label><input id="ctNome" maxlength="80">
+ <label for="ctObs">Anotações</label><textarea id="ctObs" maxlength="600"></textarea>
+ <p class="err" id="ctErr" role="alert"></p>
+ <div class="acts"><button class="btn" value="x" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body></html>

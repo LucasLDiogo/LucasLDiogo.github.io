@@ -9,7 +9,7 @@ const ALIASES = {
 };
 // Produtos com login: cada um no próprio endereço. dir = pasta em /works/, entrada = página principal.
 const PRODUTOS = {
-  "agentworks.lldworks.com.br": { slug: "agentworks", nome: "AgentWorks", cor: "#0E9F6E", dir: "portfolio/demos", entrada: "agentworks.html", frase: "Atendimento no WhatsApp com IA, base de conhecimento e passagem para humano." },
+  "agentworks.lldworks.com.br": { slug: "agentworks", nome: "AgentWorks", cor: "#0E9F6E", dir: "agentworks", entrada: "index.html", frase: "Assistente com IA no site e no WhatsApp: responde pela sua base e chama a equipe quando precisa." },
   "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "salesworks", entrada: "index.html", frase: "Loja online com pedidos no WhatsApp, estoque e CRM de clientes." },
   "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "serviceworks", entrada: "index.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
   "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "linkworks", entrada: "index.html", frase: "Link na bio com páginas, estatísticas e proteção." },
@@ -137,6 +137,7 @@ const BACKENDS = {
   serviceworks: { binding: "SERVICEWORKS", host: "sw.interno", painel: true },
   linkworks: { binding: "LINKWORKS", host: "lw.interno", painel: true },
   salesworks: { binding: "SALESWORKS", host: "sl.interno", painel: true },
+  agentworks: { binding: "AGENTWORKS", host: "ag.interno", painel: true, corpoMax: 256 * 1024 },
   rhworks: { binding: "RHWORKS", host: "rh.interno", corpoMax: 4 * 1024 * 1024 },
 };
 // LinkWorks: linkworks.lldworks.com.br/<endereço> é a página pública; /<endereço>/l/<id> conta o clique.
@@ -148,6 +149,9 @@ const SL_RESERVADO = /^(entrar|sair|api|pub|index|admin|painel|loja|lojas|favico
 // A loja/vitrine "demo" é pública e o painel dela também (modo leitura): pedido ou agendamento de verdade ali
 // exporia nome e WhatsApp do visitante. Nela o fluxo inteiro funciona, menos o envio final.
 const DEMO_PUBLICO = /^\/api\/publico\/demo(\/|$)/;
+// AgentWorks: /c/<endereço> é o chat público (pode abrir dentro do botão no site do cliente, por isso aceita iframe);
+// /webhook/whatsapp recebe os avisos da Meta (a assinatura é conferida no Worker do produto).
+const AG_CHAT = /^\/c\/([a-z0-9][a-z0-9-]{2,39})\/?$/;
 const jsonErro = (s, erro) => new Response(JSON.stringify({ erro }), { status: s, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SEG } });
 async function backend(req, env, url, p, s, caminho = url.pathname) {
   const b = BACKENDS[p.slug], alvo = b && env[b.binding];
@@ -157,7 +161,7 @@ async function backend(req, env, url, p, s, caminho = url.pathname) {
     if (o && o !== url.origin) return jsonErro(403, "Origem inválida");
   }
   const h = new Headers();
-  for (const k of ["content-type", "accept"]) if (req.headers.get(k)) h.set(k, req.headers.get(k));
+  for (const k of ["content-type", "accept", "x-hub-signature-256"]) if (req.headers.get(k)) h.set(k, req.headers.get(k));
   h.set("x-lw-ip", req.headers.get("CF-Connecting-IP") || "?");
   if (!s) for (const k of ["user-agent", "referer"]) if (req.headers.get(k)) h.set(k, req.headers.get(k).slice(0, 500));
   if (s) {
@@ -188,6 +192,15 @@ async function produto(req, env, url, p, sessaoFixa = null) {
     if ((p.slug === "serviceworks" || p.slug === "salesworks") && path.startsWith("/api/publico/")) {
       if (DEMO_PUBLICO.test(path) && req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Esta é uma demonstração: o envio está desativado. Contrate o seu para receber pedidos e agendamentos de verdade.");
       return backend(req, env, url, p, null);
+    }
+    if (p.slug === "agentworks") {
+      if (path.startsWith("/api/publico/") || path === "/webhook/whatsapp") return backend(req, env, url, p, null);
+      if (AG_CHAT.test(path)) {
+        if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
+        const r = await origem(req, "agentworks/chat.html", 60), h = new Headers(r.headers);
+        h.delete("X-Frame-Options"); h.set("Content-Security-Policy", "frame-ancestors *");
+        return new Response(r.body, { status: r.status, headers: h });
+      }
     }
     const sl = p.slug === "salesworks" && path.match(SL_LOJA);
     if (sl && !SL_RESERVADO.test(sl[1])) {
