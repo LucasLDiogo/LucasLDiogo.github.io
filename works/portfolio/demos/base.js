@@ -52,6 +52,8 @@ window.LW = (() => {
     nav.innerHTML = views.map((v, i) => `<button class="tab${i ? '' : ' on'}" role="tab" data-i="${i}">${v.dataset.tab}</button>`).join('');
     views[0].classList.add('on');
     nav.onclick = e => { const b = e.target.closest('.tab'); if (b) show(+b.dataset.i); };
+    // No endereço do produto (ex.: serviceworks.lldworks.com.br) o login é feito no servidor: entra direto e "Sair" encerra a sessão real.
+    if (window.LW_AUTH) { $('#sair').onclick = () => { location.href = '/sair'; }; $('#sair').title = 'Sair · ' + window.LW_AUTH.email; return go(); }
     $('#sair').onclick = () => { ss.set('lw_sess', ''); location.hash = ''; location.reload(); };
     if (location.hash === '#painel' || ss.get('lw_sess') === '1') go(); else $('#app').hidden = true;
   }
