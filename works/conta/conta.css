@@ -46,3 +46,9 @@ input:focus{outline:3px solid color-mix(in oklab,var(--p) 30%,transparent);borde
 .rodape{text-align:center;color:var(--mute);font-size:13px;margin-top:28px}
 .rodape a{margin:0 6px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.h2{font-size:17px;margin:4px 0 10px}
+.versoes{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));margin-bottom:22px}
+.versao{display:flex;flex-direction:column;gap:3px;text-align:left;border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px 16px;cursor:pointer;font:inherit;color:inherit;transition:border-color .15s,box-shadow .15s}
+.versao span{font-size:13px;color:var(--mute,#5B6478)}
+.versao:hover{border-color:color-mix(in srgb,var(--p,#1240E0) 50%,var(--line))}
+.versao[aria-checked=true]{border-color:var(--p,#1240E0);box-shadow:0 0 0 4px color-mix(in srgb,var(--p,#1240E0) 15%,transparent)}

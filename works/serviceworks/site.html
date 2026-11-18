@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; base-uri 'none'">
+<title>ServiceWorks · Agenda, CRM, caixa e WhatsApp para pet shop, salão, barbearia e clínica</title>
+<meta name="description" content="Sistema completo para negócios de serviço: agenda online, vitrine com o seu nome, CRM, caixa com estoque e comissão, promoções no WhatsApp, agente de IA e pagamento online. Versões para pet shop, salão e estética, barbearia e clínica.">
+<meta name="theme-color" content="#7C3AED">
+<meta property="og:title" content="ServiceWorks · O sistema completo do seu negócio de serviços">
+<meta property="og:description" content="Agenda, CRM, caixa, estoque, promoções, WhatsApp com IA e pagamento online. Pet shop, salão, barbearia e clínica.">
+<link rel="icon" href="/pub/icone.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap">
+<link rel="stylesheet" href="/pub/site.css">
+<script src="/pub/gsap.min.js" defer></script>
+<script src="/pub/ScrollTrigger.min.js" defer></script>
+<script src="/pub/site.js" defer></script>
+</head>
+<body data-v="pet">
+<a class="pular" href="#planos">Pular para os planos</a>
+<header class="topo">
+ <a class="marca" href="/" aria-label="ServiceWorks, início"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#7C3AED"/><rect fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" x="14" y="17" width="36" height="33" rx="5"/><path fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M14 27h36M23 13v8M41 13v8M25 38l5 5 9-10"/></svg><span>Service<b>Works</b></span></a>
+ <nav aria-label="Seções"><a href="#recursos">Recursos</a><a href="#versoes">Versões</a><a href="#planos">Planos</a><a href="#duvidas">Dúvidas</a></nav>
+ <div class="acoes"><a class="b ghost" href="/entrar">Entrar</a><a class="b pri" href="#planos">Assinar</a></div>
+</header>
+
+<main>
+<section class="hero">
+ <div class="hero-txt">
+  <p class="eti">Sistema completo para negócios de serviço</p>
+  <h1><span class="h1a">Agenda cheia,</span> <span class="h1b">cliente voltando</span> <span class="h1c">e caixa no controle.</span></h1>
+  <p class="lead" id="heroLead">Agenda online com o nome do seu negócio, CRM, caixa com estoque e comissão, promoções no WhatsApp, agente com IA e pagamento online, tudo num só lugar.</p>
+  <div class="seg" role="tablist" aria-label="Escolha o seu negócio" id="seg">
+   <button role="tab" data-v="pet" aria-selected="true">🐾 Pet shop</button>
+   <button role="tab" data-v="beleza" aria-selected="false">💅 Salão e estética</button>
+   <button role="tab" data-v="barber" aria-selected="false">✂️ Barbearia</button>
+   <button role="tab" data-v="clinica" aria-selected="false">🩺 Clínica</button>
+  </div>
+  <div class="cta"><a class="b pri grande" id="ctaHero" href="#planos">Ver planos para pet shop</a><a class="b grande" id="demoHero" href="https://serviceworks-demo.lldworks.com.br/pet" target="_blank" rel="noopener">Ver demonstração</a></div>
+  <p class="nota">Sem fidelidade · cancele quando quiser · suporte no WhatsApp</p>
+ </div>
+ <div class="hero-vis" aria-hidden="true">
+  <div class="tela">
+   <div class="tela-top"><i></i><i></i><i></i><span id="mkNome">Pet Feliz · Painel</span></div>
+   <div class="tela-corpo">
+    <div class="mk-kpis"><div><small>Faturamento no mês</small><b data-num="18450">R$ 18.450</b></div><div><small>Agenda ocupada</small><b>86%</b></div><div><small>Clientes que voltam</small><b>72%</b></div></div>
+    <div class="mk-ag" id="mkAg"></div>
+   </div>
+  </div>
+  <div class="flut f1"><b>✓ Banho e tosa · Thor</b><span>agendado pela vitrine · 14h</span></div>
+  <div class="flut f2"><b>💬 Agente de WhatsApp</b><span>“Tem horário amanhã?” → respondido</span></div>
+  <div class="flut f3"><b>R$ 89,90 recebido</b><span>Pix pelo link · comanda fechada</span></div>
+ </div>
+</section>
+
+<section class="faixa" aria-label="Números">
+ <div><b>24h</b><span>agenda aberta na sua vitrine</span></div><div><b>1 link</b><span>nome-da-sua-loja.lldworks.com.br</span></div><div><b>0 planilhas</b><span>estoque, comissão e caixa no app</span></div><div><b>5 min</b><span>para começar com o guia</span></div>
+</section>
+
+<section id="recursos" class="sec">
+ <p class="eti">Tudo o que o seu negócio precisa</p>
+ <h2>Do primeiro “oi” no WhatsApp até o cliente voltar</h2>
+ <div class="recursos" id="recursosLista"></div>
+</section>
+
+<section id="versoes" class="sec versoes">
+ <p class="eti">Feito para o seu ramo</p>
+ <h2 id="verTitulo">Versão Pet shop</h2>
+ <div class="ver-grid"><ul class="ver-lista" id="verLista"></ul><div class="ver-card" id="verCard"></div></div>
+</section>
+
+<section class="sec como">
+ <p class="eti">Como funciona</p>
+ <h2>Comece hoje, sem instalar nada</h2>
+ <ol class="passos">
+  <li><b>1</b><h3>Escolha a versão e o plano</h3><p>Pet shop, salão, barbearia ou clínica. Básico, Pro ou Premium.</p></li>
+  <li><b>2</b><h3>Cadastre e confirme o e-mail</h3><p>Você confirma o e-mail antes de pagar, para o acesso chegar certo.</p></li>
+  <li><b>3</b><h3>Pague por Pix ou cartão</h3><p>O acesso é liberado na hora, com o seu e-mail e a senha que você escolheu.</p></li>
+  <li><b>4</b><h3>Siga o guia de 5 minutos</h3><p>Logo, serviços, horários e equipe. A vitrine com o seu nome já fica no ar.</p></li>
+ </ol>
+</section>
+
+<section id="planos" class="sec planos">
+ <p class="eti">Planos</p>
+ <h2>Escolha o tamanho certo para o seu negócio</h2>
+ <p class="sub" id="planosSub">Preços da versão <b id="planosVer">Pet shop</b>. Mesma qualidade em todos: o que muda é o que vem junto.</p>
+ <div class="seg seg2" role="tablist" aria-label="Versão" id="seg2"></div>
+ <div class="cards-planos" id="cardsPlanos"><p class="carregando">Carregando planos…</p></div>
+ <p class="nota">Os outros apps do plano (WhatsApp, link na bio, Instagram) entram com o mesmo e-mail e senha.</p>
+</section>
+
+<section id="duvidas" class="sec duvidas">
+ <p class="eti">Dúvidas</p>
+ <h2>Perguntas frequentes</h2>
+ <div class="faq">
+  <details><summary>Preciso instalar alguma coisa?</summary><p>Não. Funciona no navegador do computador e do celular. Seus clientes agendam pela vitrine, sem baixar app.</p></details>
+  <details><summary>Como fica o endereço da minha vitrine?</summary><p>Você escolhe: <b>nome-da-sua-loja.lldworks.com.br</b>. É o link para colocar no Instagram, no WhatsApp e no Google.</p></details>
+  <details><summary>Como funciona o pagamento online dos meus clientes?</summary><p>Nos planos Pro e Premium você conecta a sua conta do Mercado Pago (o app mostra o passo a passo). O dinheiro cai direto na sua conta: link de pagamento na comanda e sinal no agendamento pela vitrine, por Pix ou cartão.</p></details>
+  <details><summary>O agente de WhatsApp responde sozinho?</summary><p>Sim, com IA e pelas perguntas e respostas que você cadastra. Quando não sabe, passa para a sua equipe. Ele vem nos planos Pro e Premium; a conexão com o número oficial do WhatsApp é feita junto com você.</p></details>
+  <details><summary>Como é o site do plano Premium?</summary><p>Depois que você cadastra logo, endereço e serviços, pede o site no app. A equipe LLD Works cria em até 5 dias úteis, integrado à vitrine, ao WhatsApp, ao Instagram e ao Google Maps.</p></details>
+  <details><summary>Posso trocar de plano ou cancelar?</summary><p>Pode, a qualquer momento, sem multa. Se a assinatura parar, os seus dados ficam guardados e voltam quando você reativar.</p></details>
+  <details><summary>Meus dados e os dos meus clientes estão seguros?</summary><p>Ficam na nuvem da Cloudflare, com senha guardada só como código (hash), conexão protegida e cada loja isolada das outras. Veja a <a href="/privacidade">Política de Privacidade</a>.</p></details>
+ </div>
+</section>
+
+<section class="sec final">
+ <h2>Pronto para encher a agenda?</h2>
+ <p>Escolha o plano e comece hoje. Em 5 minutos a sua vitrine está no ar.</p>
+ <div class="cta"><a class="b pri grande" href="#planos">Ver planos</a><a class="b grande branco" href="https://wa.me/5554999999999?text=Quero%20conhecer%20o%20ServiceWorks" id="ctaZap" target="_blank" rel="noopener">Falar no WhatsApp</a></div>
+</section>
+</main>
+
+<footer class="rod">
+ <div><b>ServiceWorks</b> · uma solução <a href="https://produtos.lldworks.com.br" target="_blank" rel="noopener">LLD Works</a></div>
+ <div class="links"><a href="/entrar">Entrar</a><a href="/recuperar">Esqueci a senha</a><a href="/termos">Termos de Uso</a><a href="/privacidade">Privacidade</a></div>
+</footer>
+</body></html>

@@ -22,6 +22,9 @@
     inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
     gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
     mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/>',
+    globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
+    heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
     wa: '<path d="M3 21l1.7-5A9 9 0 1 1 8 19.3z"/>', key: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L21 2M17 6l3 3"/>',
   };
   const svg = (n) => `<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n] || ""}</svg></span>`;
@@ -369,9 +372,59 @@
     const cp = f.querySelector("[data-copiar]"); if (cp) cp.onclick = () => navigator.clipboard.writeText(cod).then(() => toast("Código copiado"), () => toast("Selecione e copie", true));
     dlg.showModal();
   }
+  // ---------- sites sob demanda (plano Premium) ----------
+  const SITE_ST = { solicitado: ["Pedido recebido", "warn"], em_criacao: ["Em criação", "warn"], publicado: ["Publicado", "ok"], cancelado: ["Cancelado", "bad"] };
+  V.sites = async () => {
+    const r = await api("sites"), hoje = new Date().toISOString().slice(0, 10);
+    const linhaDados = (d) => [d.vitrine && `<a href="${esc(d.vitrine)}" target="_blank" rel="noopener">Vitrine</a>`, d.instagram && `<a href="${esc(d.instagram)}" target="_blank" rel="noopener">Instagram</a>`, d.facebook && `<a href="${esc(d.facebook)}" target="_blank" rel="noopener">Facebook</a>`, d.maps && `<a href="${esc(d.maps)}" target="_blank" rel="noopener">Mapa</a>`].filter(Boolean).join(" · ");
+    return `<div class="top"><div><h1>Sites sob demanda</h1><p>Clientes do plano Premium pedem o site depois de cadastrar marca, endereço e serviços. Prazo: 5 dias úteis a partir do pedido. Use a logo, as cores, a vitrine e as redes abaixo; ao publicar, cole o link e o cliente vê no app.</p></div></div>
+    ${r.pedidos.filter((s) => s.atrasado).length ? `<div class="note bad mb">${svg("globe")}<div><b>${r.pedidos.filter((s) => s.atrasado).length} site(s) com prazo vencido.</b></div></div>` : ""}
+    <div class="card fade tbl-wrap mb"><div class="pad"><h2>Pedidos</h2></div><table><thead><tr><th>Cliente</th><th>Material</th><th>Situação</th><th>Prazo</th><th></th></tr></thead><tbody>
+    ${r.pedidos.map((s) => { const [l, c] = SITE_ST[s.status] || [s.status, ""], d = s.dados || {};
+      return `<tr><td><a href="#/cliente/${s.cliente_id}"><b>${esc(d.nome || s.cliente)}</b></a><div class="small muted">${esc(s.produto)} · ${esc(d.segmento || "")}</div>${s.telefone ? `<div class="small"><a href="${zap(s.telefone, `Olá! Aqui é o Lucas, da LLD Works, sobre o seu site.`)}" target="_blank" rel="noopener">${svg("wa")}${telBR(s.telefone)}</a></div>` : ""}</td>
+        <td class="small">${d.logo ? `<a class="btn sm" href="${esc(d.logo)}" target="_blank" rel="noopener" download>${svg("download")}Logo</a> ` : ""}${d.banner ? `<a class="btn sm ghost" href="${esc(d.banner)}" target="_blank" rel="noopener" download>Banner</a>` : ""}
+          <div style="margin-top:6px">${linhaDados(d)}</div>${d.cor ? `<div><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${esc(d.cor)};vertical-align:-1px"></span> ${esc(d.cor)}</div>` : ""}
+          ${d.endereco ? `<div class="muted">${esc(d.endereco)}</div>` : ""}${d.dominio_desejado ? `<div>Domínio desejado: <b>${esc(d.dominio_desejado)}</b></div>` : ""}${d.observacoes ? `<div class="muted">“${esc(d.observacoes)}”</div>` : ""}</td>
+        <td><span class="pill ${c}">${l}</span>${s.url ? `<div class="small"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a></div>` : ""}</td>
+        <td class="small">${s.status === "publicado" ? `publicado ${dataBR(s.publicado_em)}` : `<b${s.atrasado ? ' style="color:var(--bad,#c0262d)"' : ""}>${dataBR(s.prazo)}</b>`}<div class="muted">pedido ${dataBR(s.solicitado_em)}</div></td>
+        <td><div class="acts">${s.status === "solicitado" ? `<button class="btn sm" data-act="siteSt" data-id="${s.id}" data-st="em_criacao">Começar</button>` : ""}
+          ${s.status !== "publicado" && s.status !== "cancelado" ? `<button class="btn sm pri" data-act="sitePub" data-id="${s.id}" data-url="${esc(s.url || "")}">Publicar</button>` : `<button class="btn sm" data-act="sitePub" data-id="${s.id}" data-url="${esc(s.url || "")}">Trocar link</button>`}
+          ${s.status !== "cancelado" ? `<button class="btn sm ghost danger" data-act="siteSt" data-id="${s.id}" data-st="cancelado">Cancelar</button>` : ""}</div></td></tr>`; }).join("") || '<tr><td colspan="5" class="empty">Nenhum pedido de site ainda.</td></tr>'}
+    </tbody></table></div>
+    <div class="card fade tbl-wrap"><div class="pad"><h2>Premium sem pedido</h2><p class="small muted" style="margin:4px 0 0">Assinam o Premium mas ainda não completaram o cadastro para pedir o site. Um empurrão pelo WhatsApp costuma resolver.</p></div><table><thead><tr><th>Cliente</th><th>Configuração</th><th></th></tr></thead><tbody>
+    ${r.aguardando.map((a) => `<tr><td><a href="#/cliente/${a.cliente_id}"><b>${esc(a.cliente)}</b></a><div class="small muted">${esc(a.produto)} · ${esc(a.plano)}</div></td><td>${a.guia_pct == null ? '<span class="small muted">ainda não entrou</span>' : `<div class="bar"><i style="width:${a.guia_pct}%"></i></div><span class="small">${a.guia_pct}%</span>`}</td>
+      <td>${a.telefone ? `<a class="btn sm" href="${zap(a.telefone, `Olá! Aqui é o Lucas, da LLD Works. Para eu criar o seu site, falta só completar logo, endereço e serviços no app. Posso te ajudar agora?`)}" target="_blank" rel="noopener">${svg("wa")}Chamar</a>` : ""}</td></tr>`).join("") || '<tr><td colspan="3" class="empty">Nenhum.</td></tr>'}
+    </tbody></table></div>`;
+  };
+
+  // ---------- sucesso do cliente: risco de cancelar e oportunidade de subir de plano ----------
+  const NIVEL = { alto: ["Risco alto", "bad"], medio: ["Atenção", "warn"], ok: ["Saudável", "ok"] };
+  V.sucesso = async () => {
+    const [r, prods] = await Promise.all([api("saude-clientes"), produtos()]), t = r.totais;
+    return `<div class="top"><div><h1>Sucesso do cliente</h1><p>Quem pode cancelar e quem está pronto para crescer. A configuração e o uso chegam dos apps; clique em <b>Chamar</b> para mandar a mensagem pronta.</p></div></div>
+    <div class="grid g4 mb">
+      <div class="card pad kpi"><span>Receita mensal (MRR)</span><b>${brl(t.mrr_centavos)}</b></div>
+      <div class="card pad kpi"><span>Risco alto</span><b style="color:var(--bad,#c0262d)">${t.alto}</b></div>
+      <div class="card pad kpi"><span>Atenção</span><b>${t.medio}</b></div>
+      <div class="card pad kpi"><span>Oportunidades</span><b style="color:var(--ok,#0e7a4a)">${t.oportunidades}</b></div>
+    </div>
+    <div class="note mb">${svg("heart")}<div><b>Rotina sugerida:</b> todo dia, chame quem está em risco alto (nunca entrou, pagamento atrasado, 14+ dias sem entrar). Toda semana, ofereça o plano acima para quem aparece com oportunidade. No 1º e no 7º dia de cada cliente novo, ofereça 10 minutos para configurar junto.</div></div>
+    <div class="card fade tbl-wrap"><table><thead><tr><th>Cliente</th><th>Produto e plano</th><th>Uso</th><th>Situação</th><th>O que fazer</th><th></th></tr></thead><tbody>
+    ${r.clientes.map((c) => { const [l, k] = NIVEL[c.nivel], s = c.saude || {};
+      return `<tr><td><a href="#/cliente/${c.cliente_id}"><b>${esc(c.nome)}</b></a><div class="small muted">desde ${dataBR(c.criado_em)}</div></td>
+        <td>${prodTag(c.produto, prods)}<div class="small muted">${esc(c.plano || "sem plano")} · ${esc(c.status)}${c.vence_em ? ` até ${dataBR(c.vence_em)}` : ""}</div></td>
+        <td class="small">${c.ultimo_acesso ? `último acesso ${dataBR(c.ultimo_acesso)}` : "<b>nunca entrou</b>"}${s.guia_pct != null ? `<div>configuração ${s.guia_pct}%</div>` : ""}${s.agendamentos_7d != null ? `<div>${s.agendamentos_7d} agendamentos em 7 dias · ${s.vendas_30d || 0} vendas em 30</div>` : ""}</td>
+        <td><span class="pill ${k}">${l}</span></td>
+        <td class="small">${c.motivos.map((m) => `<div>• ${esc(m)}</div>`).join("")}${c.oportunidades.map((o) => `<div style="color:var(--ok,#0e7a4a)">↑ ${esc(o)}</div>`).join("")}${!c.motivos.length && !c.oportunidades.length ? '<span class="muted">nada pendente</span>' : ""}</td>
+        <td>${c.whatsapp ? `<a class="btn sm" href="${c.whatsapp}" target="_blank" rel="noopener">${svg("wa")}Chamar</a>` : ""}</td></tr>`; }).join("") || '<tr><td colspan="6" class="empty">Nenhum cliente pagante ainda.</td></tr>'}
+    </tbody></table></div>`;
+  };
+
   async function badgeCadastros() {
     try { const l = await api("cadastros?etapa=pagamento"); const n = l.filter((c) => c.avisou_pagamento_em).length + (await api("cadastros?etapa=email")).filter((c) => Date.now() - Date.parse(c.criado_em) < 3 * 864e5).length;
       const b = $("#nCad"); if (b) { b.hidden = !n; b.textContent = n; } } catch {}
+    try { const r = await api("resumo"), b = $("#nSite"); if (b) { b.hidden = !r.sites_pendentes; b.textContent = r.sites_pendentes; b.classList.toggle("bad", !!r.sites_atrasados); } } catch {}
+    try { const r = await api("saude-clientes"), b = $("#nRisco"); if (b) { b.hidden = !r.totais.alto; b.textContent = r.totais.alto; } } catch {}
   }
 
   // ---------- ações ----------
@@ -451,6 +504,10 @@
       campos: [{ nome: "email", rotulo: "E-mail novo", tipo: "email", obrig: true, valor: b.dataset.email, auto: "off" }],
       aoEnviar: async (d) => { await api(`usuarios/${b.dataset.id}/email`, { method: "PUT", body: d }); toast("E-mail trocado"); render(); } }),
     verEmail: async (b) => verEmail(await api("emails/" + b.dataset.id)),
+    siteSt: async (b) => { if (b.dataset.st === "cancelado" && !confirmar("Cancelar este pedido de site?")) return; await api(`sites/${b.dataset.id}`, { method: "PUT", body: { status: b.dataset.st } }); toast("Pedido atualizado"); render(); badgeCadastros(); },
+    sitePub: (b) => formulario({ titulo: "Publicar site", descricao: "Cole o endereço do site no ar. O cliente passa a ver o link no app.", ok: "Marcar como publicado",
+      campos: [{ nome: "url", rotulo: "Endereço do site", tipo: "url", obrig: true, valor: b.dataset.url || "https://", auto: "off" }, { nome: "obs", rotulo: "Observação (opcional)", tipo: "area" }],
+      aoEnviar: async (d) => { await api(`sites/${b.dataset.id}`, { method: "PUT", body: { status: "publicado", url: d.url.trim(), obs: d.obs } }); toast("Site publicado"); render(); badgeCadastros(); } }),
     reenviarEmail: async (b) => { const r = await api(`emails/${b.dataset.id}/reenviar`, { method: "POST", body: {} }); toast(r.status === "enviado" ? "E-mail enviado" : r.status === "sem_provedor" ? "Envio de e-mail ainda desligado" : "Falhou: " + (r.erro || "")); render(); },
     checarAgora: async (b) => { b.disabled = true; try { await api("monitor/agora", { method: "POST" }); toast("Verificação concluída"); render(); } catch (e) { toast(e.message, true); b.disabled = false; } },
   };

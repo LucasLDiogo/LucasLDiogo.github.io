@@ -115,7 +115,7 @@ async function entrar(req, env, url, p) {
   TENTATIVAS.delete(ip);
   const dados = b64u(enc.encode(JSON.stringify({ e: email, p: p.slug, c: r.cliente.id, cn: r.cliente.nome, cs: r.cliente.slug, r: r.usuario.papel, x: Math.floor(Date.now() / 1000) + SESSAO_H * 3600 })));
   const valor = dados + "." + (await hmac(env, dados));
-  return new Response(null, { status: 303, headers: { Location: "/", "Cache-Control": "no-store", "Set-Cookie": `lw_s=${valor}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSAO_H * 3600}`, ...SEG } });
+  return new Response(null, { status: 303, headers: { Location: p.slug === "serviceworks" ? "/app" : "/", "Cache-Control": "no-store", "Set-Cookie": `lw_s=${valor}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSAO_H * 3600}`, ...SEG } });
 }
 function sair() {
   return new Response(null, { status: 303, headers: { Location: "/entrar", "Cache-Control": "no-store", "Set-Cookie": "lw_s=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0", ...SEG } });
@@ -147,7 +147,7 @@ async function demo(req, env, url, p) {
 
 // painel: true = tela própria nova (sem script embutido); corpoMax = maior envio aceito (RHWorks manda currículos).
 const BACKENDS = {
-  serviceworks: { binding: "SERVICEWORKS", host: "sw.interno", painel: true },
+  serviceworks: { binding: "SERVICEWORKS", host: "sw.interno", painel: true, corpoMax: 1024 * 1024 },
   linkworks: { binding: "LINKWORKS", host: "lw.interno", painel: true },
   salesworks: { binding: "SALESWORKS", host: "sl.interno", painel: true },
   agentworks: { binding: "AGENTWORKS", host: "ag.interno", painel: true, corpoMax: 256 * 1024 },
@@ -210,11 +210,18 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   // Vitrine: rotas públicas, sem login, para quem vai comprar ou agendar.
   if (BACKENDS[p.slug]) {
     // Partes públicas dos produtos com backend próprio: arquivos /pub/, vitrine do ServiceWorks e páginas do LinkWorks.
-    const estatico = path.startsWith("/pub/") || (p.slug === "serviceworks" && /^\/v\/[a-z0-9-]{3,40}\/?$/.test(path));
-    if (estatico) {
+    // ServiceWorks: a raiz é o site de venda; o painel fica em /app; a vitrine de cada loja mora em <loja>.lldworks.com.br
+    if (p.slug === "serviceworks") {
+      const v = path.match(/^\/v\/([a-z0-9-]{3,40})\/?$/);
+      if (v) return Response.redirect(`https://${v[1]}.lldworks.com.br/`, 301);
+      if (!sessaoFixa && (path === "/" || path === "/index.html") && (req.method === "GET" || req.method === "HEAD")) return origem(req, "serviceworks/site.html", 60);
+      const aviso = path.match(/^\/webhook\/mp\/(\d{1,9})$/);
+      if (aviso) return req.method === "POST" ? backend(req, env, url, p, null, `/api/aviso-mp/${aviso[1]}`) : new Response("ok");
+    }
+    if (path.startsWith("/pub/")) {
       if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
       if (path.includes("..")) return new Response("Inválido", { status: 400 });
-      return origem(req, p.dir + (path.startsWith("/v/") ? "/vitrine.html" : path), 60);
+      return origem(req, p.dir + path, 60);
     }
     if ((p.slug === "serviceworks" || p.slug === "salesworks") && path.startsWith("/api/publico/")) {
       if (DEMO_PUBLICO.test(path) && req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Esta é uma demonstração: o envio está desativado. Contrate o seu para receber pedidos e agendamentos de verdade.");
@@ -257,7 +264,7 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   }
   if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
   if (path.includes("..")) return new Response("Inválido", { status: 400 });
-  const arq = path === "/" || path === "/index.html" ? "/" + p.entrada : path;
+  const arq = path === "/" || path === "/index.html" || (p.slug === "serviceworks" && (path === "/app" || path === "/app/")) ? "/" + p.entrada : path;
   const r = await origem(req, p.dir + arq, arq === "/" + p.entrada ? 0 : 300);
   if (arq !== "/" + p.entrada || r.status !== 200) return r;
   if (BACKENDS[p.slug]?.painel) { // painel próprio: sem script embutido (CSP); na demonstração, só a faixa de aviso
@@ -329,6 +336,33 @@ function html(body, status = 200, extra = {}) {
   return new Response(body, { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Content-Security-Policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'", ...SEG, ...extra } });
 }
 
+// ---------- Vitrine de cada loja ServiceWorks em <loja>.lldworks.com.br ----------
+const LOJA_RESERVADA = new Set(("www app api admin painel console hub pagar produtos lldworks serviceworks agentworks salesworks linkworks socialworks rhworks pageworks proworks " +
+  "crivo rancho clinica imobiliaria wellington lucasldiogo atende wa mail email smtp ftp ns1 ns2 suporte ajuda status blog loja lojas site sites cdn static assets " +
+  "entrar sair conta assinar recuperar termos privacidade centralagrotransporte").split(" "));
+async function vitrineLoja(req, env, url, slug) {
+  const p = PRODUTOS["serviceworks.lldworks.com.br"], path = url.pathname, leitura = req.method === "GET" || req.method === "HEAD";
+  if (path === "/" || path === "/index.html" || path === "/agendar") {
+    if (!leitura) return new Response("Método não permitido", { status: 405 });
+    const r = await origem(req, "serviceworks/vitrine.html", 60), h = new Headers(r.headers);
+    h.set("Cache-Control", "public, max-age=60"); h.set("X-Frame-Options", "SAMEORIGIN");
+    return new Response(r.body, { status: r.status, headers: h });
+  }
+  if (path.startsWith("/pub/")) {
+    if (!leitura) return new Response("Método não permitido", { status: 405 });
+    if (path.includes("..")) return new Response("Inválido", { status: 400 });
+    return origem(req, "serviceworks" + path, 300);
+  }
+  if ((path === "/logo" || path === "/banner") && leitura) return backend(req, env, url, p, null, `/api/publico/${slug}${path}`);
+  const api = path.match(/^\/api\/publico\/([a-z0-9-]{3,40})(\/.*)?$/);
+  if (api && api[1] === slug) {
+    if (DEMO_PUBLICO.test(path) && !leitura) return jsonErro(403, "Esta é uma demonstração: o envio está desativado.");
+    return backend(req, env, url, p, null);
+  }
+  if (path === "/robots.txt") return new Response("User-agent: *\nAllow: /\n", { headers: { "Content-Type": "text/plain" } });
+  return new Response("Página não encontrada", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -346,7 +380,11 @@ export default {
     if (dm && DEMO_EXEMPLOS[dm[1]]) return Response.redirect(DEMO_EXEMPLOS[dm[1]], 302);
     if (ALIASES[host]) return Response.redirect(ALIASES[host], 302);
     const dir = SITES[host];
-    if (!dir) return new Response("Não encontrado", { status: 404 });
+    if (!dir) {
+      const loja = host.match(/^([a-z0-9][a-z0-9-]{1,38}[a-z0-9])\.lldworks\.com\.br$/);
+      if (loja && !LOJA_RESERVADA.has(loja[1])) return vitrineLoja(req, env, url, loja[1]);
+      return new Response("Não encontrado", { status: 404 });
+    }
     if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
     let path = url.pathname;
     if (path.includes("..")) return new Response("Inválido", { status: 400 });

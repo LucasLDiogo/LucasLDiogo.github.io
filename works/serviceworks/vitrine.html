@@ -9,15 +9,17 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap">
 <link rel="stylesheet" href="/pub/sw.css">
 <link rel="stylesheet" href="/pub/vitrine.css">
+<script src="/pub/gsap.min.js" defer></script>
 <script src="/pub/vitrine.js" defer></script>
 </head><body class="vt">
-<header class="capa">
- <div class="in"><p class="seg" id="vSeg"></p><h1 id="vNome">Carregando agenda…</h1><p id="vSobre"></p>
-  <div class="row" style="margin-top:14px"><span class="chip" id="vEnd" hidden></span><a class="btn sm" id="vWa" target="_blank" rel="noopener" hidden>Falar no WhatsApp</a></div></div>
+<header class="capa" id="capa">
+ <div class="in"><img id="vLogo" class="vlogo" alt="" hidden><div><p class="seg" id="vSeg"></p><h1 id="vNome">Carregando agenda…</h1><p id="vSobre"></p>
+  <div class="row" style="margin-top:14px"><span class="chip" id="vEnd" hidden></span><a class="btn sm" id="vWa" target="_blank" rel="noopener" hidden>Falar no WhatsApp</a><a class="btn sm ghost-w" id="vIg" target="_blank" rel="noopener" hidden>Instagram</a><a class="btn sm ghost-w" id="vFb" target="_blank" rel="noopener" hidden>Facebook</a><a class="btn sm ghost-w" id="vMapa" target="_blank" rel="noopener" hidden>Como chegar</a></div></div></div>
 </header>
 <main class="vmain">
  <div id="vErro" class="card" hidden><h2 id="vErroT"></h2><p class="mute" id="vErroM" style="margin-top:6px"></p></div>
 
+ <section id="vPromos" class="promos" hidden aria-label="Promoções"></section>
  <form id="fluxo" hidden novalidate>
   <section class="passo" id="p1"><h2><span class="n">1</span>Escolha o serviço</h2><div id="lServ"></div></section>
   <section class="passo" id="pPet" hidden><h2><span class="n">2</span>Seu pet</h2>
@@ -34,6 +36,8 @@
    <label for="fNome">Seu nome</label><input id="fNome" autocomplete="name" maxlength="80" required>
    <label for="fWhats">WhatsApp com DDD</label><input id="fWhats" type="tel" inputmode="tel" autocomplete="tel" placeholder="(54) 99999-0000" required>
    <label for="fObs">Observação (opcional)</label><input id="fObs" maxlength="300">
+   <label for="fCupom">Cupom de desconto (opcional)</label><div class="row"><input id="fCupom" maxlength="20" autocapitalize="characters" style="flex:1"><button type="button" class="btn sm" id="fCupomOk">Aplicar</button></div><p class="tiny" id="fCupomMsg"></p>
+   <p class="tiny mute" id="fPolitica" hidden></p>
    <p class="err" id="fErr" role="alert"></p>
    <button class="btn pri full grande" id="fOk">Confirmar agendamento</button>
    <p class="tiny mute" style="margin-top:8px;text-align:center">Seu nome e WhatsApp ficam só com o estabelecimento, para confirmar e lembrar do horário.</p>
@@ -46,6 +50,7 @@
   <p class="mute" id="okResumo" style="margin-top:6px"></p>
   <p style="margin-top:14px">Seu código: <b class="codigo" id="okCod"></b></p>
   <p class="tiny mute">Guarde o código: com ele e o seu WhatsApp você consulta ou cancela.</p>
+  <div class="sinal" id="okSinal" hidden><p><b>Garanta o seu horário</b>: pague o sinal de <b id="okSinalV"></b> por Pix ou cartão.</p><a class="btn pri full grande" id="okSinalL" target="_blank" rel="noopener">Pagar o sinal</a></div>
   <div class="grid" style="margin-top:16px;gap:8px">
    <a class="btn pri full" id="okWa" target="_blank" rel="noopener" hidden>Avisar o estabelecimento no WhatsApp</a>
    <a class="btn full" id="okIcs" download="agendamento.ics">Adicionar à minha agenda</a>
@@ -62,6 +67,8 @@
   </form>
   <div id="cRes"></div>
  </details>
+ <section id="vProdutos" class="card" hidden><h2>Produtos</h2><p class="tiny mute">Peça pelo WhatsApp e retire na loja.</p><div class="prods" id="lProd"></div></section>
+ <section id="vInfo" class="card info" hidden><h2>Horário de atendimento</h2><dl id="lHorario"></dl><p id="vEndCompleto" class="small" style="margin-top:10px"></p></section>
 </main>
 <footer class="rodape">Agenda online por <a href="https://produtos.lldworks.com.br/#serviceworks" target="_blank" rel="noopener">ServiceWorks · LLD Works</a></footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

@@ -28,7 +28,20 @@
 
   // ---------- /assinar ----------
   const NOMES_LIMITE = { profissionais: "profissionais na agenda", produtos: "produtos na loja", atendentes: "atendentes", conversas_mes: "conversas com IA por mês", contas: "perfis do Instagram", vagas_ativas: "vagas abertas ao mesmo tempo", paginas: "páginas" };
-  let S = { plano: null, token: null, email: null, sit: null };
+  let S = { plano: null, versao: null, token: null, email: null, sit: null };
+  const VERSOES = { pet: ["Pet shop", "Banho e tosa, veterinário, hotel"], beleza: ["Salão e estética", "Cabelo, manicure, sobrancelha, estética"], barber: ["Barbearia", "Corte, barba, clube de assinatura"], clinica: ["Clínica", "Consultório, fisioterapia, estética clínica"] };
+  const INCLUI = { agentworks: "Agente de WhatsApp com IA", linkworks: "Link na bio (LinkWorks)", socialworks: "Instagram: posts e respostas automáticas", salesworks: "Loja online", rhworks: "Triagem de currículos" };
+  function itensDoPlano(l) {
+    const out = [];
+    for (const [k, v] of Object.entries(l || {})) {
+      if (k === "inclui" && v && typeof v === "object") Object.keys(v).forEach((x) => out.push(INCLUI[x] || x));
+      else if (k === "pagamento_online") out.push("Pagamento online: Pix e cartão");
+      else if (k === "site") out.push("Site profissional feito pela LLD Works");
+      else if (typeof v === "number") out.push(`até ${v} ${NOMES_LIMITE[k] || k.replace(/_/g, " ")}`);
+    }
+    return out;
+  }
+  const semAcento = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const ETAPAS = ["plano", "dados", "codigo", "pagamento"];
   function mostra(etapa) {
     $$("[data-etapa]").forEach((s) => s.classList.toggle("oculto", s.dataset.etapa !== etapa));
@@ -40,15 +53,26 @@
   }
   const guarda = (t) => { S.token = t; try { sessionStorage.setItem("lw_cad_" + P.produto.slug, t); } catch {} history.replaceState(null, "", "#t=" + t); };
   function desenhaPlanos() {
-    const pre = new URLSearchParams(location.search).get("plano");
-    $("#planos").innerHTML = P.planos.map((p) => `<button type="button" class="plano" data-plano="${p.id}" aria-pressed="false"><b>${esc(p.nome)}</b><span class="preco">${reais(p.preco_centavos)}<small>/${p.ciclo === "anual" ? "ano" : "mês"}</small></span>
-      ${Object.keys(p.limites || {}).length ? `<ul>${Object.entries(p.limites).map(([k, v]) => `<li>até ${esc(v)} ${esc(NOMES_LIMITE[k] || k.replace(/_/g, " "))}</li>`).join("")}</ul>` : "<ul><li>tudo incluso</li></ul>"}</button>`).join("") || '<p class="aviso">Nenhum plano à venda neste momento. Fale com a LLD Works.</p>';
-    if (pre && P.planos.some((p) => String(p.id) === pre)) escolhe(+pre);
+    const q = new URLSearchParams(location.search), pre = q.get("plano"), pv = q.get("versao");
+    if (P.versoes && P.versoes.length) {
+      $("#versoes").classList.remove("oculto");
+      $("#versoesLista").innerHTML = P.versoes.map((v) => `<button type="button" class="versao" role="radio" aria-checked="false" data-ver="${v}"><b>${esc((VERSOES[v] || [v])[0])}</b><span>${esc((VERSOES[v] || ["", ""])[1])}</span></button>`).join("");
+      if (pv && P.versoes.includes(pv)) escolheVersao(pv);
+    }
+    $("#planos").innerHTML = P.planos.map((p) => { const itens = itensDoPlano(p.limites); return `<button type="button" class="plano" data-plano="${p.id}" aria-pressed="false"><b>${esc(p.nome)}</b><span class="preco">${reais(p.preco_centavos)}<small>/${p.ciclo === "anual" ? "ano" : "mês"}</small></span>
+      <ul>${itens.length ? itens.map((t) => `<li>${esc(t)}</li>`).join("") : "<li>tudo incluso</li>"}</ul></button>`; }).join("") || '<p class="aviso">Nenhum plano à venda neste momento. Fale com a LLD Works.</p>';
+    const alvo = pre && P.planos.find((p) => String(p.id) === pre || semAcento(p.nome) === semAcento(pre));
+    if (alvo) escolhe(alvo.id);
+  }
+  function escolheVersao(v) {
+    S.versao = v;
+    $$("[data-ver]").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.ver === v)));
+    $("#irDados").disabled = !S.plano || !S.versao;
   }
   function escolhe(id) {
     S.plano = P.planos.find((p) => p.id === id);
     $$(".plano").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.plano === id)));
-    $("#irDados").disabled = !S.plano;
+    $("#irDados").disabled = !S.plano || (P.versoes && P.versoes.length && !S.versao);
     $("#resumoPlano").innerHTML = `<span>Plano <b>${esc(S.plano.nome)}</b></span><span><b>${reais(S.plano.preco_centavos)}</b>/${S.plano.ciclo === "anual" ? "ano" : "mês"} · <button type="button" class="btn link" data-trocar-plano>trocar</button></span>`;
   }
   function telaPagamento(sit) {
@@ -83,8 +107,9 @@
   }
   document.addEventListener("click", async (e) => {
     const pl = e.target.closest("[data-plano]"); if (pl) return escolhe(+pl.dataset.plano);
+    const vr = e.target.closest("[data-ver]"); if (vr) return escolheVersao(vr.dataset.ver);
     if (e.target.closest("[data-trocar-plano]")) return mostra("plano");
-    if (e.target.closest("#irDados")) { if (S.plano) mostra("dados"); return; }
+    if (e.target.closest("#irDados")) { if (S.plano && (!P.versoes || S.versao)) mostra("dados"); return; }
     if (e.target.closest("#verSenha")) { const i = $("#cSenha"); i.type = i.type === "password" ? "text" : "password"; e.target.closest("#verSenha").textContent = i.type === "password" ? "mostrar" : "esconder"; return; }
     if (e.target.closest("#reenviar")) {
       const b = e.target.closest("#reenviar"); $("#erroCodigo").textContent = "";
@@ -117,7 +142,7 @@
       e.preventDefault(); $("#erroDados").textContent = "";
       const d = Object.fromEntries(new FormData(f).entries());
       try {
-        const r = await ocupado(f.querySelector("button[type=submit]"), () => api("cadastro", { plano_id: S.plano.id, nome: d.nome, empresa: d.empresa, telefone: d.telefone, email: d.email, email_confirma: d.email_confirma, documento: d.documento, senha: d.senha, termos: !!d.termos, novidades: !!d.novidades }));
+        const r = await ocupado(f.querySelector("button[type=submit]"), () => api("cadastro", { plano_id: S.plano.id, versao: S.versao || undefined, nome: d.nome, empresa: d.empresa, telefone: d.telefone, email: d.email, email_confirma: d.email_confirma, documento: d.documento, senha: d.senha, termos: !!d.termos, novidades: !!d.novidades }));
         guarda(r.token); S.email = r.email; $("#emailMostra").textContent = r.email; $("#cSenha").value = "";
         mostra("codigo");
       } catch (x) { $("#erroDados").textContent = x.message; }

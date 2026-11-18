@@ -83,3 +83,6 @@ nav{flex-direction:row;overflow:auto;width:100%}nav a{white-space:nowrap}.me{dis
 .chip:has(input:checked){border-color:var(--co);background:var(--coSoft)}
 .chip input[type=checkbox],.chip input[type=radio]{width:auto;margin:0}
 td .ic{width:15px;height:15px;vertical-align:-3px;margin-right:4px}
+
+.bar{height:6px;border-radius:9px;background:#E6E9F2;overflow:hidden;width:120px;margin-bottom:4px}.bar i{display:block;height:100%;background:var(--pri,#1240E0);border-radius:9px}
+.badge.bad{background:#C0262D}

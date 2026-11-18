@@ -8,7 +8,9 @@
   const semana = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("pt-BR", { timeZone: "UTC", weekday: "short" }).replace(".", "");
   const dataLonga = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("pt-BR", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" });
   const SEG = { barbearia: "Barbearia", salao: "Salão de beleza", clinica: "Clínica", petshop: "Pet shop", outro: "" };
-  const slug = decodeURIComponent(location.pathname.split("/")[2] || "").toLowerCase();
+  // Endereço da loja: <loja>.lldworks.com.br (ou o antigo /v/<loja>)
+  const hostLoja = location.hostname.endsWith(".lldworks.com.br") && !/^(serviceworks|serviceworks-demo)\./.test(location.hostname) ? location.hostname.split(".")[0] : "";
+  const slug = (location.pathname.startsWith("/v/") ? decodeURIComponent(location.pathname.split("/")[2] || "") : hostLoja || new URLSearchParams(location.search).get("loja") || "").toLowerCase();
   const BASE = `/api/publico/${encodeURIComponent(slug)}`;
   const E = { info: null, servico: null, prof: "qualquer", dia: null, hora: null, profDoHorario: {}, porte: null, livre: null };
   const PORTES = [["mini", "Mini", "até 5 kg"], ["pequeno", "Pequeno", "5 a 10 kg"], ["medio", "Médio", "10 a 25 kg"], ["grande", "Grande", "25 a 45 kg"], ["gigante", "Gigante", "mais de 45 kg"]];
@@ -39,9 +41,49 @@
     $("#vNome").textContent = emp.nome; $("#vSeg").textContent = SEG[emp.segmento] || ""; $("#vSobre").textContent = emp.sobre || "";
     if (emp.endereco) { $("#vEnd").textContent = emp.endereco; mostra("#vEnd"); }
     if (emp.whatsapp) { $("#vWa").href = `https://wa.me/${emp.whatsapp}`; mostra("#vWa"); }
+    extras(emp);
     if (!E.info.servicos.length) return erro("Agenda em preparação", "Ainda não há serviços disponíveis para agendar online.");
     desenhaServicos(); mostra("#fluxo");
+    const G = window.gsap; if (G && !matchMedia("(prefers-reduced-motion: reduce)").matches) { G.from("#capa .in > *", { opacity: 0, y: 14, duration: 0.6, stagger: 0.08, ease: "power2.out" }); G.from(".promo-v, .serv", { opacity: 0, y: 10, duration: 0.45, stagger: 0.03, delay: 0.2, ease: "power2.out" }); }
   }
+
+  // Logo, banner, redes, mapa, horário de funcionamento, promoções e produtos.
+  const SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+  function extras(emp) {
+    const base = location.pathname.startsWith("/v/") ? BASE : "";
+    if (emp.tem_logo) { const l = $("#vLogo"); l.src = base ? `${BASE}/logo` : "/logo"; l.alt = emp.nome; mostra("#vLogo"); const ic = document.querySelector('link[rel="icon"]'); if (ic) ic.href = l.src; }
+    if (emp.tem_banner) { $("#capa").style.backgroundImage = `linear-gradient(180deg,rgba(10,8,20,.35),rgba(10,8,20,.75)),url(${base ? `${BASE}/banner` : "/banner"})`; $("#capa").classList.add("com-banner"); }
+    if (emp.instagram) { $("#vIg").href = emp.instagram; mostra("#vIg"); }
+    if (emp.facebook) { $("#vFb").href = emp.facebook; mostra("#vFb"); }
+    const end = [emp.endereco, emp.cidade && `${emp.cidade}${emp.uf ? "/" + emp.uf : ""}`].filter(Boolean).join(" · ");
+    if (end) $("#vEnd").textContent = end;
+    const mapa = emp.maps_url || (end ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${emp.nome} ${end}`)}` : "");
+    if (mapa) { $("#vMapa").href = mapa; mostra("#vMapa"); }
+    if (emp.politica) { $("#fPolitica").textContent = emp.politica; mostra("#fPolitica"); }
+    if (emp.funcionamento?.length) {
+      $("#lHorario").innerHTML = SEMANA.map((d, i) => { const f = emp.funcionamento.find((x) => x.dia_semana === i); return `<dt>${d}</dt><dd>${f ? `${f.inicio} às ${f.fim}` : '<span class="mute">fechado</span>'}</dd>`; }).join("");
+      $("#vEndCompleto").innerHTML = end ? `${esc(end)}${mapa ? ` · <a href="${esc(mapa)}" target="_blank" rel="noopener">ver no mapa</a>` : ""}` : "";
+      mostra("#vInfo");
+    }
+    const cupomUrl = new URLSearchParams(location.search).get("cupom");
+    if (emp.promocoes?.length) {
+      $("#vPromos").innerHTML = emp.promocoes.map((p) => `<div class="promo-v"><span class="selo2">${p.tipo === "percentual" ? `${p.valor}% OFF` : `${brl(p.valor)} OFF`}</span><div><b>${esc(p.titulo)}</b>${p.descricao ? `<p class="small">${esc(p.descricao)}</p>` : ""}<p class="tiny mute">até ${p.fim.slice(8, 10)}/${p.fim.slice(5, 7)}${p.cupom ? ` · cupom <b>${esc(p.cupom)}</b>` : ""}</p></div>${p.cupom ? `<button type="button" class="btn sm" data-cupom="${esc(p.cupom)}">Usar cupom</button>` : ""}</div>`).join("");
+      mostra("#vPromos");
+    }
+    if (cupomUrl) { $("#fCupom").value = cupomUrl.toUpperCase(); E.cupom = cupomUrl.toUpperCase(); }
+    if (emp.produtos?.length) {
+      $("#lProd").innerHTML = emp.produtos.map((p) => `<div class="prod">${p.tem_foto ? `<img src="${BASE}/produto-foto/${p.id}" alt="" loading="lazy">` : `<span class="ph" aria-hidden="true"></span>`}<b>${esc(p.nome)}</b><span class="pr">${brl(p.preco_centavos)}</span>${p.disponivel ? (emp.whatsapp ? `<a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/${emp.whatsapp}?text=${encodeURIComponent(`Olá! Quero ${p.nome} (${brl(p.preco_centavos)}), vi na vitrine.`)}">Pedir</a>` : "") : '<span class="chip">esgotado</span>'}</div>`).join("");
+      mostra("#vProdutos");
+    }
+  }
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-cupom]"); if (!b) return; $("#fCupom").value = b.dataset.cupom; E.cupom = b.dataset.cupom; toast(`Cupom ${b.dataset.cupom} aplicado: escolha o serviço.`); rolar("#p1"); });
+  async function confereCupom() {
+    const c = $("#fCupom").value.trim().toUpperCase(), msg = $("#fCupomMsg"); msg.textContent = ""; E.cupom = c || null;
+    if (!c || !E.servico) return;
+    try { const p = await api(`/cupom?codigo=${encodeURIComponent(c)}&servico=${E.servico.id}`); msg.textContent = `✓ ${p.titulo}: ${p.tipo === "percentual" ? p.valor + "% de desconto" : brl(p.valor) + " de desconto"}`; msg.className = "tiny ok"; }
+    catch (x) { msg.textContent = x.message; msg.className = "tiny err"; E.cupom = null; }
+  }
+  $("#fCupomOk").addEventListener("click", confereCupom);
 
   function desenhaServicos() {
     const cats = new Map();
@@ -133,6 +175,7 @@
     bt.disabled = true; bt.textContent = "Confirmando…";
     try {
       const corpo = { servico_id: E.servico.id, data: E.dia, hora: E.hora, nome, whatsapp: whats, observacoes: $("#fObs").value.trim() };
+      const cup = $("#fCupom").value.trim(); if (cup) corpo.cupom = cup;
       if (E.prof !== "qualquer") corpo.profissional_id = +E.prof;
       if (pet()) {
         const nomePet = $("#fPet").value.trim();
@@ -152,6 +195,7 @@
     $("#okResumo").textContent = `${r.servico}${r.pet ? ` para ${r.pet}` : ""} com ${r.profissional} · ${dataLonga(r.inicio.slice(0, 10))}, às ${r.inicio.slice(11, 16)} · ${brl(r.valor_centavos)}`;
     $("#okCod").textContent = r.codigo;
     if (r.whatsapp_link) { $("#okWa").href = r.whatsapp_link; mostra("#okWa"); }
+    if (r.pagamento && r.pagamento.link) { $("#okSinalV").textContent = brl(r.pagamento.valor_centavos); $("#okSinalL").href = r.pagamento.link; mostra("#okSinal"); }
     const t = (s) => s.replace(/[-:]/g, "") + "00";
     const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//LLD Works//ServiceWorks//PT", "BEGIN:VEVENT", `UID:${r.codigo}-${slug}@serviceworks.lldworks.com.br`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").slice(0, 15)}Z`,
       `DTSTART;TZID=America/Sao_Paulo:${t(r.inicio)}`, `DTEND;TZID=America/Sao_Paulo:${t(r.fim)}`, `SUMMARY:${r.servico} · ${E.info.empresa.nome}`,

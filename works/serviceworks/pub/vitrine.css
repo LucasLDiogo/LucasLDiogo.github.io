@@ -41,3 +41,21 @@
 .rodape{text-align:center;color:var(--mute);font-size:12.5px;padding:8px 12px 28px}
 .rodape a{color:var(--mute)}
 .serv .preco small{display:block;font:500 11.5px Inter,sans-serif;color:var(--mute)}
+
+/* v2: logo, banner, redes, promoções, produtos, horário, sinal */
+.capa .in{display:flex;gap:18px;align-items:center}
+.vlogo{width:84px;height:84px;border-radius:22px;object-fit:contain;background:#fff;padding:6px;box-shadow:0 10px 30px -10px rgba(0,0,0,.4);flex:none}
+.capa.com-banner{background-size:cover!important;background-position:center!important}
+.btn.ghost-w{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff}
+.promos{display:grid;gap:10px;margin-bottom:16px}
+.promo-v{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:16px;background:linear-gradient(135deg,var(--pk),var(--card));border:1px solid color-mix(in oklab,var(--p) 30%,var(--line))}
+.promo-v>div{flex:1}.promo-v p{margin:2px 0 0}
+.selo2{flex:none;font:800 15px Montserrat,sans-serif;color:#fff;background:var(--p);border-radius:12px;padding:10px 12px;text-align:center;min-width:76px}
+.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
+.prod{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.prod img,.prod .ph{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:var(--soft)}
+.prod .pr{color:var(--p);font-weight:700}
+.info dl{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin-top:10px}.info dt{font-weight:600}
+.sinal{margin-top:16px;padding:14px;border-radius:14px;background:var(--pk);text-align:left}
+.tiny.ok{color:var(--ok)}.tiny.err{color:var(--bad)}
+@media (max-width:560px){.capa .in{flex-direction:column;align-items:flex-start}.vlogo{width:68px;height:68px}}

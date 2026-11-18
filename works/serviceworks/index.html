@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;700;800&display=swap">
 <link rel="stylesheet" href="/pub/sw.css">
 <script src="/app.js" defer></script>
+<script src="/pub/gsap.min.js" defer></script>
+<script src="/pub/app2.js" defer></script>
 </head><body>
 <header class="top">
  <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#7C3AED"/><rect fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" x="14" y="17" width="36" height="33" rx="5"/><path fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M14 27h36M23 13v8M41 13v8M25 38l5 5 9-10"/></svg><span>Service<b>Works</b></span></a>
@@ -135,6 +137,7 @@
  <p id="evInfo" class="mute" style="margin-top:6px"></p>
  <p id="evPet" class="aviso" hidden></p>
  <div class="row" style="margin-top:14px">
+  <button type="button" class="btn pri sm" data-act="abrirComanda">Abrir comanda</button>
   <button type="button" class="btn ok sm" data-ev="concluido">Concluído</button>
   <button type="button" class="btn sm" data-ev="faltou">Faltou</button>
   <button type="button" class="btn bad sm" data-ev="cancelado">Cancelar</button>
@@ -228,7 +231,7 @@
 <dialog id="dlgVaga" style="width:min(560px,96vw)"><form method="dialog">
  <h2>Horário liberado</h2>
  <p class="mute" id="vgInfo" style="margin-top:4px"></p>
- <p class="help">Quem costuma fazer esse serviço e não tem nada marcado — os que estão há mais tempo sem vir aparecem primeiro. Toque para oferecer o horário no WhatsApp.</p>
+ <p class="help">Primeiro quem está na lista de espera ou pediu para antecipar, depois quem tem horário mais tarde e pode adiantar, e por fim quem já passou do tempo de costume para voltar. Toque para oferecer no WhatsApp.</p>
  <div id="vgLista" style="margin-top:10px"></div>
  <div class="acts"><button value="x" class="btn">Fechar</button></div>
 </form></dialog>

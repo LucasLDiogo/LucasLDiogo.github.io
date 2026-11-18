@@ -52,7 +52,7 @@
   const S = { emp: null, papel: "admin", servicos: [], profs: [], dia: hojeBR(), agenda: [], bloqueios: [], contatos: [] };
   const admin = () => S.papel === "admin";
   const profNome = (id) => S.profs.find((p) => p.id === id)?.nome || "";
-  const linkVitrine = () => `${location.origin}/v/${S.emp.slug}`;
+  const linkVitrine = () => `https://${S.emp.slug}.lldworks.com.br`;
 
   // ---------- abas ----------
   const CARREGA = { agenda, clientes, servicos, equipe, folgas, pacotes, relatorios: relatorio, config, plano };
@@ -77,7 +77,7 @@
   function modoSegmento() {
     S.pet = S.emp.segmento === "petshop";
     document.body.classList.toggle("pet", S.pet);
-    $("#navCli").textContent = S.pet ? "Tutores e pets" : "Clientes";
+    { const n = $("#navCli"), t = S.pet ? "Tutores e pets" : "Clientes", s = n.querySelector("span"); if (s) s.textContent = t; else n.textContent = t; }
     $("#cliH1").textContent = S.pet ? "Tutores e pets" : "Clientes";
     $("#cliSub").textContent = S.pet ? "Tutores com os pets, histórico, pacotes, atendimentos e faltas." : "Quem já agendou com você, com histórico, atendimentos e faltas.";
   }
@@ -255,14 +255,11 @@
   // horário liberado: sugere quem costuma fazer o serviço e não tem nada marcado
   async function vagaLiberada(a) {
     if (a.inicio < `${hojeBR()}T${agoraHM()}`) return;
-    const lst = await api("GET", `sugestoes?agendamento=${a.id}`);
+    const lst = (await api("GET", `encaixe?agendamento=${a.id}`)).sugestoes;
     if (!lst.length) return;
     const quando = `${fmtDia(a.inicio.slice(0, 10), false)} às ${a.inicio.slice(11, 16)}`;
     $("#vgInfo").textContent = `${a.servico} · ${quando} com ${a.profissional}`;
-    $("#vgLista").innerHTML = lst.map((c) => {
-      const txt = `Oi, ${c.nome.split(" ")[0]}! Abriu um horário de ${a.servico} ${quando} aqui no ${S.emp.nome}. Quer reservar${c.pets ? ` para ${c.pets.split(", ")[0]}` : ""}? É só responder esta mensagem.`;
-      return `<div class="sug"><div><b>${esc(c.nome)}</b>${c.pets ? ` <span class="chip p">${esc(c.pets)}</span>` : ""}<div class="tiny mute">última vez ${fmtDH(c.ultimo)} · ${c.vezes}× este serviço</div></div><a class="btn sm" href="${waLink(c.whatsapp, txt)}" target="_blank" rel="noopener">Oferecer ↗</a></div>`;
-    }).join("");
+    $("#vgLista").innerHTML = lst.map((c) => `<div class="sug"><div><b>${esc(c.nome)}</b> <span class="chip ${c.motivo === "lista de espera" || c.motivo === "quer antecipar" ? "ok" : "p"}">${esc(c.motivo)}</span><div class="tiny mute">${esc(c.detalhe || "")}</div></div><a class="btn sm" href="${c.link}" target="_blank" rel="noopener">Oferecer no WhatsApp ↗</a></div>`).join("");
     $("#dlgVaga").showModal();
   }
   $("#fEv").addEventListener("click", async (e) => {
@@ -592,7 +589,10 @@
     } catch (x) { toast(x.message, true); }
   });
 
+  // ---------- extensões (app2.js: início, caixa, produtos, promoções, espera, integrações...) ----------
+  window.SW = { api, toast, aba, S, esc, brl, reais, centsTxt, hojeBR, somaDias, fmtD, fmtDH, fmtDia, fmtWhats, waLink, abrirCli, CARREGA, admin, agenda, aoEnviar, linkVitrine, evAtual: () => evAtual };
+
   // ---------- início ----------
-  base().then(() => { const v = location.hash.slice(1); aba(CARREGA[v] ? v : "agenda"); }).catch((e) => { $("#empNome").textContent = "Erro ao carregar"; toast(e.message, true); });
+  base().then(() => { const v = location.hash.slice(1); aba(CARREGA[v] ? v : CARREGA.inicio ? "inicio" : "agenda"); }).catch((e) => { $("#empNome").textContent = "Erro ao carregar"; toast(e.message, true); });
   setInterval(() => { if ($("#v-agenda").classList.contains("on") && !document.querySelector("dialog[open]") && document.visibilityState === "visible") agenda().catch(() => {}); }, 60000);
 })();
