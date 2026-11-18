@@ -13,7 +13,7 @@ const PRODUTOS = {
   "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "salesworks", entrada: "index.html", frase: "Loja online com pedidos no WhatsApp, estoque e CRM de clientes." },
   "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "serviceworks", entrada: "index.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
   "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "linkworks", entrada: "index.html", frase: "Link na bio com páginas, estatísticas e proteção." },
-  "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "portfolio/demos", entrada: "socialworks.html", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
+  "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "socialworks", entrada: "index.html", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
   "rhworks.lldworks.com.br": { slug: "rhworks", nome: "RHWorks", cor: "#A16207", dir: "rhworks", entrada: "index.html", frase: "Triagem de currículos com IA: ranking, parecer e roteiro de entrevista.", api: true },
 };
 // Rotas do antigo endereço do Crivo que continuam no Worker "crivo" (IA na nuvem, versão para instalar e vídeo).
@@ -142,6 +142,7 @@ const BACKENDS = {
   linkworks: { binding: "LINKWORKS", host: "lw.interno", painel: true },
   salesworks: { binding: "SALESWORKS", host: "sl.interno", painel: true },
   agentworks: { binding: "AGENTWORKS", host: "ag.interno", painel: true, corpoMax: 256 * 1024 },
+  socialworks: { binding: "SOCIALWORKS", host: "so.interno", painel: true },
   rhworks: { binding: "RHWORKS", host: "rh.interno", corpoMax: 4 * 1024 * 1024 },
 };
 // LinkWorks: linkworks.lldworks.com.br/<endereço> é a página pública; /<endereço>/l/<id> conta o clique.
@@ -197,6 +198,8 @@ async function produto(req, env, url, p, sessaoFixa = null) {
       if (DEMO_PUBLICO.test(path) && req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Esta é uma demonstração: o envio está desativado. Contrate o seu para receber pedidos e agendamentos de verdade.");
       return backend(req, env, url, p, null);
     }
+    // SocialWorks: /webhook/instagram recebe os avisos da Meta (a assinatura é conferida no Worker do produto).
+    if (p.slug === "socialworks" && path === "/webhook/instagram") return backend(req, env, url, p, null);
     if (p.slug === "agentworks") {
       if (path.startsWith("/api/publico/") || path === "/webhook/whatsapp") return backend(req, env, url, p, null);
       if (AG_CHAT.test(path)) {
