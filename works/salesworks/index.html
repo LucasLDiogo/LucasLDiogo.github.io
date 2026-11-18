@@ -1,180 +1,49 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; base-uri 'none'">
-<title>SalesWorks · Painel</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; base-uri 'none'">
+<title>SalesWorks · Painel da loja</title>
+<meta name="theme-color" content="#1B120C">
 <link rel="icon" href="/pub/icone.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="/pub/base.css">
-<style>
-.kb{display:grid;grid-template-columns:repeat(4,minmax(240px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px;align-items:start}
-.kb .col{background:var(--soft);border-radius:var(--r);padding:10px;min-height:180px}
-.kb .col h2{display:flex;align-items:center;gap:8px;font-size:14px;padding:4px 4px 10px}
-.kb .col h2 .chip{margin-left:auto}
-.pc{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer;color:var(--ink);transition:box-shadow .12s,transform .12s}
-.pc:hover{box-shadow:var(--sh);transform:translateY(-1px)}
-.pc .l1{display:flex;gap:8px;align-items:baseline}.pc .l1 b{font:700 14px Montserrat,sans-serif}.pc .l1 .h{margin-left:auto;font-size:12.5px;color:var(--mute)}
-.pc .cl{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-.pc .l3{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}.pc .l3 .v{margin-left:auto;font-weight:700}
-.pc.novo{border-left:4px solid var(--p)}
-.mini{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
-.thumb{width:40px;height:40px;border-radius:10px;object-fit:cover;background:var(--soft);display:block}
-.thumb.v{display:grid;place-items:center;color:var(--mute);font-size:18px}
-.itens{display:grid;gap:6px;margin-top:6px}
-.itens .i{display:grid;grid-template-columns:minmax(0,1fr) 110px 90px 34px;gap:8px;align-items:center}
-.itens .i input{min-height:38px;padding:5px 8px}
-.tot{display:grid;grid-template-columns:1fr auto;gap:4px 16px;margin-top:12px;font-size:14.5px}.tot .g{font:800 18px Montserrat,sans-serif}
-.dias{display:flex;align-items:flex-end;gap:4px;height:170px;padding-top:6px}
-.dias .c{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%;min-width:6px}
-.dias .c i{display:block;width:100%;background:var(--p);border-radius:4px 4px 0 0;min-height:2px}
-.dias .c span{font-size:10.5px;color:var(--mute)}
-.sw{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;margin:0;color:var(--ink);font-weight:600}
-.sw:has(input:checked){border-color:var(--ok);background:color-mix(in oklab,var(--ok) 10%,var(--card))}
-.end{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.end code{font-size:13px;background:var(--soft);border-radius:8px;padding:6px 10px;word-break:break-all}
-.st-novo{background:var(--pk);color:var(--p)}.st-entregue{background:color-mix(in oklab,var(--ok) 15%,var(--card));color:var(--ok)}.st-cancelado{background:color-mix(in oklab,var(--bad) 14%,var(--card));color:var(--bad)}
-@media(max-width:640px){.kb{grid-template-columns:repeat(4,86vw);scroll-snap-type:x mandatory}.kb .col{scroll-snap-align:start}.itens .i{grid-template-columns:minmax(0,1fr) 80px 34px}.itens .i .vt{display:none}}
-</style>
-<script src="/pub/painel.js" defer></script>
-</head><body>
-<header class="top">
- <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#EA580C"/><path fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round" d="M18 24h28l-2.5 22a3 3 0 0 1-3 2.7H23.5a3 3 0 0 1-3-2.7z"/><path fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" d="M25 28v-6a7 7 0 0 1 14 0v6"/></svg><span>Sales<b>Works</b></span></a>
- <span class="emp" id="nomeTopo">Carregando…</span><span class="sp"></span>
- <span class="chip" id="stLoja" hidden></span>
- <a class="btn sm ghost" id="verLoja" target="_blank" rel="noopener" hidden>Ver minha loja ↗</a>
- <a class="btn sm" href="/sair">Sair</a>
-</header>
-<nav class="nav" role="tablist" aria-label="Seções do painel">
- <button role="tab" data-v="pedidos" aria-selected="true">Pedidos</button>
- <button role="tab" data-v="produtos" aria-selected="false">Produtos e estoque</button>
- <button role="tab" data-v="clientes" aria-selected="false">Clientes</button>
- <button role="tab" data-v="relatorios" aria-selected="false">Relatórios</button>
- <button role="tab" data-v="loja" aria-selected="false" data-adm>Minha loja</button>
- <button role="tab" data-v="plano" aria-selected="false">Plano</button>
-</nav>
-<main>
- <section class="view on" id="v-pedidos" role="tabpanel">
-  <div class="kpis" id="kpis"></div>
-  <div class="head"><div><h1>Pedidos em andamento</h1><p>Clique no pedido para ver os itens, falar com o cliente ou mudar a situação. A lista se atualiza sozinha a cada 30 segundos.</p></div>
-   <div class="row"><button class="btn" data-act="atualizar">↻ Atualizar</button><button class="btn pri" data-act="novoPedido">+ Pedido de balcão</button></div></div>
-  <div class="kb" id="kb"></div>
-  <div class="card" style="margin-top:16px"><div class="row sb"><h2>Finalizados (hoje e ontem)</h2><span class="mute small" id="finInfo"></span></div><div class="scroll"><table><thead><tr><th>Pedido</th><th>Cliente</th><th>Quando</th><th>Situação</th><th class="n">Total</th></tr></thead><tbody id="fin"></tbody></table></div></div>
- </section>
-
- <section class="view" id="v-produtos" role="tabpanel">
-  <div class="head"><div><h1>Produtos e estoque</h1><p>Deixe o estoque em branco para não controlar. Produto sem estoque aparece como “esgotado” na loja.</p></div>
-   <div class="row" data-adm><button class="btn" data-act="categorias">Categorias</button><button class="btn pri" data-act="novoProduto">+ Produto</button></div></div>
-  <div class="row" style="margin-bottom:12px"><input id="pBusca" type="search" placeholder="Buscar produto…" style="max-width:320px" aria-label="Buscar produto"><select id="pCat" style="max-width:220px" aria-label="Filtrar por categoria"></select><label class="chk" style="margin:0"><input type="checkbox" id="pBaixo"> Só estoque baixo</label></div>
-  <div class="card scroll"><table><thead><tr><th></th><th>Produto</th><th>Categoria</th><th class="n">Preço</th><th class="n">Estoque</th><th class="n">Vendido 30 dias</th><th></th></tr></thead><tbody id="prods"></tbody></table></div>
- </section>
-
- <section class="view" id="v-clientes" role="tabpanel">
-  <div class="head"><div><h1>Clientes</h1><p>Todo mundo que já pediu, identificado pelo WhatsApp. Clique para ver o histórico e anotar preferências.</p></div></div>
-  <input id="cBusca" type="search" placeholder="Buscar por nome ou WhatsApp…" style="max-width:360px;margin-bottom:12px" aria-label="Buscar cliente">
-  <div class="card scroll"><table><thead><tr><th>Cliente</th><th>WhatsApp</th><th class="n">Pedidos</th><th class="n">Total gasto</th><th class="n">Último pedido</th></tr></thead><tbody id="clis"></tbody></table></div>
- </section>
-
- <section class="view" id="v-relatorios" role="tabpanel">
-  <div class="head"><div><h1>Relatórios</h1><p>Vendas por período, sem contar pedidos cancelados.</p></div>
-   <div class="row"><input type="date" id="rDe" aria-label="De" style="width:auto"><input type="date" id="rAte" aria-label="Até" style="width:auto"><button class="btn" data-act="relatorio">Ver</button><button class="btn" data-act="csv">Baixar pedidos (CSV)</button></div></div>
-  <div class="kpis" id="rKpis"></div>
-  <div class="grid g2">
-   <div class="card"><h2>Faturamento por dia</h2><div class="dias" id="rDias"></div></div>
-   <div class="card"><h2>Produtos mais vendidos</h2><div class="scroll"><table><tbody id="rProd"></tbody></table></div></div>
-   <div class="card"><h2>Melhores clientes</h2><div class="scroll"><table><tbody id="rCli"></tbody></table></div></div>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800;900&display=swap">
+<link rel="stylesheet" href="/pub/painel.css">
+<script src="/pub/gsap.min.js" defer></script>
+<script src="/pub/app.js" defer></script>
+</head>
+<body>
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+<div class="app">
+ <aside class="lado" id="lado" aria-label="Menu do painel">
+  <div class="lado-top">
+   <a class="marca" href="#/inicio"><img src="/pub/icone.svg" alt="" width="34" height="34"><span>Sales<b>Works</b></span></a>
+   <button class="fechar-menu" type="button" aria-label="Fechar menu" data-fechar-menu>✕</button>
   </div>
- </section>
-
- <section class="view" id="v-loja" role="tabpanel">
-  <div class="head"><div><h1>Minha loja</h1><p>Esses dados aparecem para o cliente na loja online.</p></div></div>
-  <form class="grid g2" id="fLoja">
-   <div class="card">
-    <h2>Endereço da loja</h2>
-    <div class="end" style="margin-top:10px"><code id="lEnd"></code><button type="button" class="btn sm" data-act="copiar">Copiar</button></div>
-    <label for="lSlug">Nome no endereço</label><input id="lSlug" maxlength="40" pattern="[a-z0-9][a-z0-9\-]{2,39}" required>
-    <p class="help">Letras minúsculas, números e hífen. Mudar o endereço quebra links já divulgados.</p>
-    <label class="sw" style="margin-top:14px"><input type="checkbox" id="lAberta"> Loja aberta para pedidos</label>
-    <label for="lNome">Nome da loja</label><input id="lNome" maxlength="80" required>
-    <label for="lDesc">Descrição curta</label><textarea id="lDesc" maxlength="400" placeholder="Ex.: Frutas e verduras fresquinhas, entregamos no mesmo dia."></textarea>
-    <div class="f2"><div><label for="lWhats">WhatsApp que recebe os pedidos</label><input id="lWhats" inputmode="tel" placeholder="(54) 99999-0000"></div><div><label for="lCor">Cor da loja</label><input type="color" id="lCor"></div></div>
+  <div class="loja-card" id="lojaCard"><span class="lc-logo" id="lcLogo">S</span><div><b id="lcNome">Sua loja</b><a id="lcLink" href="#" target="_blank" rel="noopener">Abrir minha loja ↗</a></div></div>
+  <nav class="menu" id="menu"></nav>
+  <div class="lado-rod"><a href="#/plano" class="plano-mini" id="planoMini">Plano</a><a href="/sair">Sair</a></div>
+ </aside>
+ <div class="cortina" data-fechar-menu></div>
+ <div class="corpo">
+  <header class="barra">
+   <button class="abrir-menu" type="button" aria-label="Abrir menu" aria-controls="lado" id="abrirMenu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+   <h1 id="titulo">Início</h1>
+   <div class="barra-acoes">
+    <button class="b pri" type="button" id="btNovoPedido"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Novo pedido</span></button>
+    <a class="sino" href="#/pedidos" id="sino" aria-label="Pedidos novos"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><i id="sinoN" hidden>0</i></a>
    </div>
-   <div class="card">
-    <h2>Entrega e pagamento</h2>
-    <div class="f2" style="margin-top:6px"><label class="chk"><input type="checkbox" id="lEnt"> Faz entrega</label><label class="chk"><input type="checkbox" id="lRet"> Cliente pode retirar</label></div>
-    <div class="f2"><div><label for="lTaxa">Taxa de entrega (R$)</label><input id="lTaxa" inputmode="decimal" placeholder="0,00"></div><div><label for="lMin">Pedido mínimo (R$)</label><input id="lMin" inputmode="decimal" placeholder="0,00"></div></div>
-    <label for="lPix">Chave Pix (aparece para quem escolhe Pix)</label><input id="lPix" maxlength="120" placeholder="CNPJ, e-mail, telefone ou chave aleatória">
-    <label for="lEndF">Endereço para retirada</label><input id="lEndF" maxlength="200">
-    <label for="lHor">Horário de funcionamento</label><input id="lHor" maxlength="120" placeholder="Seg a sáb, 8h às 19h">
-    <p class="err" id="lErr" role="alert"></p>
-    <div class="row" style="justify-content:flex-end;margin-top:6px"><button class="btn pri">Salvar</button></div>
-   </div>
-  </form>
- </section>
- <section class="view" id="v-plano" role="tabpanel">
-  <div class="head"><div><h1>Seu plano</h1><p>Situação da assinatura e quanto do plano você está usando.</p></div></div>
-  <div class="card" id="planoBox"><p class="mute">Carregando…</p></div>
- </section>
-</main>
-
-<dialog id="dPed" aria-labelledby="dpT"><form method="dialog" id="fPed">
- <div class="row sb"><h2 id="dpT">Pedido</h2><span class="chip" id="dpSt"></span></div>
- <p class="mute small" id="dpQuando"></p>
- <div class="card" style="margin-top:12px;padding:12px"><b id="dpCli"></b><div class="small mute" id="dpEnd"></div><div class="mini" id="dpZap"></div></div>
- <div class="scroll" style="margin-top:12px"><table><tbody id="dpItens"></tbody></table></div>
- <div class="tot" id="dpTot"></div>
- <label for="dpObs">Observações</label><textarea id="dpObs" maxlength="300"></textarea>
- <label for="dpNovo">Situação</label>
- <select id="dpNovo"><option value="novo">Novo</option><option value="confirmado">Confirmado</option><option value="separacao">Em separação</option><option value="pronto">Pronto / saiu para entrega</option><option value="entregue">Entregue</option><option value="cancelado">Cancelado (devolve o estoque)</option></select>
- <p class="err" id="dpErr" role="alert"></p>
- <div class="acts"><button class="btn" value="x">Fechar</button><button class="btn pri" value="ok">Salvar</button></div>
-</form></dialog>
-
-<dialog id="dNovo" aria-labelledby="dnT" style="width:min(680px,96vw)"><form method="dialog" id="fNovo">
- <h2 id="dnT">Pedido de balcão / telefone</h2>
- <div class="f2"><div><label for="nNome">Nome do cliente</label><input id="nNome" maxlength="80" required list="dlClientes"></div><div><label for="nWhats">WhatsApp</label><input id="nWhats" inputmode="tel" required placeholder="(54) 99999-0000"></div></div>
- <datalist id="dlClientes"></datalist>
- <div class="f2"><div><label for="nTipo">Entrega ou retirada</label><select id="nTipo"><option value="retirada">Retirada no balcão</option><option value="entrega">Entrega</option></select></div><div><label for="nPag">Pagamento</label><select id="nPag"><option value="dinheiro">Dinheiro</option><option value="pix">Pix</option><option value="cartao">Cartão</option></select></div></div>
- <div id="nEndW" hidden><label for="nEnd">Endereço de entrega</label><input id="nEnd" maxlength="300"></div>
- <label>Itens</label>
- <div class="row"><select id="nProd" style="flex:1" aria-label="Produto"></select><input id="nQtd" inputmode="decimal" value="1" style="width:90px" aria-label="Quantidade"><button type="button" class="btn" data-act="addItem">Adicionar</button></div>
- <div class="itens" id="nItens"></div>
- <div class="tot" id="nTot"></div>
- <p class="err" id="nErr" role="alert"></p>
- <div class="acts"><button class="btn" value="x" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Lançar pedido</button></div>
-</form></dialog>
-
-<dialog id="dProd" aria-labelledby="dprT"><form method="dialog" id="fProd">
- <h2 id="dprT">Produto</h2>
- <label for="prNome">Nome</label><input id="prNome" maxlength="100" required>
- <label for="prDesc">Descrição</label><input id="prDesc" maxlength="300">
- <div class="f2"><div><label for="prCat">Categoria</label><select id="prCat"></select></div><div><label for="prUn">Vende por</label><select id="prUn"><option value="un">Unidade</option><option value="kg">Quilo (kg)</option><option value="pct">Pacote</option><option value="cx">Caixa</option><option value="l">Litro</option></select></div></div>
- <div class="f2"><div><label for="prPreco">Preço (R$)</label><input id="prPreco" inputmode="decimal" required></div><div><label for="prPromo">Preço promocional (R$)</label><input id="prPromo" inputmode="decimal" placeholder="opcional"></div></div>
- <div class="f2"><div><label for="prEst">Estoque</label><input id="prEst" inputmode="decimal" placeholder="em branco = não controlar"></div><div><label for="prOrd">Ordem na lista</label><input id="prOrd" inputmode="numeric" placeholder="0"></div></div>
- <label for="prImg">Link da foto (https://…)</label><input id="prImg" maxlength="500" inputmode="url">
- <div class="f2" style="margin-top:10px"><label class="chk"><input type="checkbox" id="prDst"> Destaque no topo</label><label class="chk"><input type="checkbox" id="prAtv"> À venda</label></div>
- <p class="err" id="prErr" role="alert"></p>
- <div class="acts"><button class="btn" value="x" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
-</form></dialog>
-
-<dialog id="dCats" aria-labelledby="dcT"><form method="dialog" id="fCats">
- <h2 id="dcT">Categorias</h2>
- <div class="row" style="margin-top:12px;flex-wrap:nowrap"><input id="cNova" maxlength="60" placeholder="Nova categoria" aria-label="Nova categoria"><button type="button" class="btn pri" data-act="addCat">Adicionar</button></div>
- <div class="itens" id="cLista" style="margin-top:12px"></div>
- <p class="err" id="cErr" role="alert"></p>
- <div class="acts"><button class="btn" value="x">Fechar</button></div>
-</form></dialog>
-
-<dialog id="dCli" aria-labelledby="dclT"><form method="dialog" id="fCli">
- <h2 id="dclT">Cliente</h2>
- <div class="mini" id="clZap"></div>
- <div class="f2"><div><label for="clNome">Nome</label><input id="clNome" maxlength="80" required></div><div><label>WhatsApp</label><input id="clWhats" disabled></div></div>
- <label for="clEnd">Endereço</label><input id="clEnd" maxlength="300">
- <label for="clObs">Anotações (preferências, ponto de referência…)</label><textarea id="clObs" maxlength="600"></textarea>
- <h3 style="margin-top:14px">Pedidos</h3>
- <div class="scroll" style="max-height:220px"><table><tbody id="clPeds"></tbody></table></div>
- <p class="err" id="clErr" role="alert"></p>
- <div class="acts"><button class="btn" value="x" formnovalidate>Fechar</button><button class="btn pri" value="ok">Salvar</button></div>
-</form></dialog>
-
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </header>
+  <main id="conteudo" tabindex="-1"><div class="carregando">Carregando o painel…</div></main>
+ </div>
+</div>
+<nav class="baixo" aria-label="Atalhos">
+ <a href="#/inicio" data-r="inicio"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Início</a>
+ <a href="#/pedidos" data-r="pedidos"><svg viewBox="0 0 24 24"><path d="M6 3h12l2 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7z"/><path d="M4 7h16M9 11h6"/></svg>Pedidos</a>
+ <a href="#/produtos" data-r="produtos"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8"/></svg>Produtos</a>
+ <a href="#/clientes" data-r="clientes"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M17 11a3 3 0 1 0 0-6M21.5 19c-.5-2.6-2-4.2-4-4.7"/></svg>Clientes</a>
+ <button type="button" id="maisBaixo"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Mais</button>
+</nav>
+<div class="gaveta" id="gaveta" role="dialog" aria-modal="true" aria-labelledby="gavetaTitulo" hidden><div class="gaveta-fundo" data-fechar></div><section class="gaveta-caixa"><header><h2 id="gavetaTitulo"></h2><button type="button" class="x" data-fechar aria-label="Fechar">✕</button></header><div class="gaveta-corpo" id="gavetaCorpo"></div></section></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="impressao" aria-hidden="true"></div>
 </body></html>

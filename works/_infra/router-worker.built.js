@@ -3,26 +3,25 @@
 // O console central agora é o LLD Works Hub (Worker lldworks-hub em console.lldworks.com.br).
 const ORIGEM = "https://lucasldiogo.lldworks.com.br/works/";
 const SITES = { "produtos.lldworks.com.br": "portfolio", "lldworks.com.br": "portfolio", "www.lldworks.com.br": "portfolio", "clinica.lldworks.com.br": "clinica", "imobiliaria.lldworks.com.br": "imobiliaria", "wellington.lldworks.com.br": "wellington" };
-const ALIASES = {
-  "pageworks.lldworks.com.br": "https://produtos.lldworks.com.br/#pageworks",
-  "proworks.lldworks.com.br": "https://lucasldiogo.lldworks.com.br/",
-};
+const ALIASES = {};
 // Produtos com login: cada um no próprio endereço. dir = pasta em /works/, entrada = página principal.
 const PRODUTOS = {
   "agentworks.lldworks.com.br": { slug: "agentworks", nome: "AgentWorks", cor: "#0E9F6E", dir: "agentworks", entrada: "index.html", aposLogin: "/painel", frase: "Atendimento com IA no WhatsApp (QR Code ou API oficial): responde, agenda, anota pedidos e chama a equipe." },
-  "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "salesworks", entrada: "index.html", frase: "Loja online com pedidos no WhatsApp, estoque e CRM de clientes." },
+  "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "salesworks", entrada: "index.html", aposLogin: "/app", frase: "Loja online com pedidos no WhatsApp, Pix, entregas, estoque e CRM de clientes." },
   "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "serviceworks", entrada: "index.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
   "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "linkworks", entrada: "index.html", frase: "Link na bio com páginas, estatísticas e proteção." },
   "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "socialworks", entrada: "index.html", aposLogin: "/app", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
+  "pageworks.lldworks.com.br": { slug: "pageworks", nome: "PageWorks", cor: "#2563EB", dir: "pageworks", entrada: "app.html", aposLogin: "/app", sob: true, frase: "Site profissional sob medida: texto, design, publicação, domínio e hospedagem." },
+  "proworks.lldworks.com.br": { slug: "proworks", nome: "ProWorks", cor: "#0891B2", dir: "proworks", entrada: "app.html", aposLogin: "/app", sob: true, frase: "Página de autoridade para profissionais: posicionamento, serviços, resultados e contato." },
   "rhworks.lldworks.com.br": { slug: "rhworks", nome: "RHWorks", cor: "#A16207", dir: "rhworks", entrada: "index.html", aposLogin: "/app", frase: "Triagem de currículos com IA: ranking, parecer e roteiro de entrevista.", api: true },
 };
-// RHWorks e SocialWorks: site de venda na raiz e painel em /app (como o ServiceWorks).
-const PAINEL_EM_APP = new Set(["rhworks", "socialworks"]);
+// RHWorks, SocialWorks, SalesWorks, PageWorks e ProWorks: site de venda na raiz e painel em /app (como o ServiceWorks).
+const PAINEL_EM_APP = new Set(["rhworks", "socialworks", "salesworks", "pageworks", "proworks"]);
 // RHWorks: página pública da vaga (link de candidatura); os leitores de PDF/Word dela ficam em /lib/.
 const RH_VAGA = /^\/vaga\/[a-z0-9]{8}\/?$/;
 // Rotas do antigo endereço do Crivo que continuam no Worker "crivo" (IA na nuvem, versão para instalar e vídeo).
 const CRIVO_ROTAS = /^\/(api\/|Crivo\.zip$|INICIAR-CRIVO\.bat$|CONECTAR-LLAMA\.bat$|video\/|lib\/|marca\/)/;
-const ICONES = {"agentworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#0E9F6E\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M16 20h32a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H30l-9 7v-7h-5a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4z\"/><circle cx=\"24\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"32\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"40\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/></svg>", "salesworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#EA580C\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M17 24h30l-2.5 24a3 3 0 0 1-3 2.7H22.5a3 3 0 0 1-3-2.7z\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M25 28v-6a7 7 0 0 1 14 0v6\"/></svg>", "serviceworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#7C3AED\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><rect fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" x=\"14\" y=\"17\" width=\"36\" height=\"33\" rx=\"5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M14 27h36M23 13v8M41 13v8\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M25 38l5 5 9-10\"/></svg>", "linkworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#DB2777\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M29 35a8 8 0 0 0 11.3 0l6-6a8 8 0 0 0-11.3-11.3l-2.5 2.5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M35 29a8 8 0 0 0-11.3 0l-6 6a8 8 0 0 0 11.3 11.3l2.5-2.5\"/></svg>", "socialworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><defs><linearGradient id=\"lw-socialworks\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#E45656\"/><stop offset=\".55\" stop-color=\"#DC2626\"/><stop offset=\"1\" stop-color=\"#8A1A1C\"/></linearGradient><linearGradient id=\"lw-socialworksr\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".45\"/><stop offset=\".5\" stop-color=\"#fff\" stop-opacity=\".06\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\".18\"/></linearGradient></defs><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"url(#lw-socialworks)\"/><path d=\"M0 16A16 16 0 0 1 16 0h30L0 46z\" fill=\"#fff\" opacity=\".09\"/><rect x=\".75\" y=\".75\" width=\"62.5\" height=\"62.5\" rx=\"15.25\" fill=\"none\" stroke=\"url(#lw-socialworksr)\" stroke-width=\"1.5\"/><g filter=\"none\"><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M32 13c10.5 0 19 7.4 19 16.5S42.5 46 32 46c-2.3 0-4.5-.3-6.5-1L16 49.5l2.6-7.6C15.1 38.9 13 34.4 13 29.5 13 20.4 21.5 13 32 13z\"/><path d=\"M32 38.2s-8.6-5.1-8.6-10.6c0-2.8 2.1-4.8 4.6-4.8 1.7 0 3.1.9 4 2.3.9-1.4 2.3-2.3 4-2.3 2.5 0 4.6 2 4.6 4.8 0 5.5-8.6 10.6-8.6 10.6z\" fill=\"#fff\"/><path d=\"M50.5 8.5l1.4 3.6 3.6 1.4-3.6 1.4-1.4 3.6-1.4-3.6-3.6-1.4 3.6-1.4z\" fill=\"#fff\"/></g></svg>", "rhworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><defs><linearGradient id=\"lw-rhworks\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#B6853E\"/><stop offset=\".55\" stop-color=\"#A16207\"/><stop offset=\"1\" stop-color=\"#663F09\"/></linearGradient><linearGradient id=\"lw-rhworksr\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".45\"/><stop offset=\".5\" stop-color=\"#fff\" stop-opacity=\".06\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\".18\"/></linearGradient></defs><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"url(#lw-rhworks)\"/><path d=\"M0 16A16 16 0 0 1 16 0h30L0 46z\" fill=\"#fff\" opacity=\".09\"/><rect x=\".75\" y=\".75\" width=\"62.5\" height=\"62.5\" rx=\"15.25\" fill=\"none\" stroke=\"url(#lw-rhworksr)\" stroke-width=\"1.5\"/><g filter=\"none\"><circle fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" cx=\"28\" cy=\"28\" r=\"14\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M38.5 38.5 50 50\"/><circle cx=\"28\" cy=\"24.5\" r=\"4.2\" fill=\"#fff\"/><path d=\"M19.6 36.2c1.6-4.2 4.7-6.3 8.4-6.3s6.8 2.1 8.4 6.3a14 14 0 0 1-16.8 0z\" fill=\"#fff\"/><path d=\"M48 10.5l1.5 3.9 3.9 1.5-3.9 1.5L48 21.3l-1.5-3.9-3.9-1.5 3.9-1.5z\" fill=\"#fff\"/></g></svg>"};
+const ICONES = {"agentworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#0E9F6E\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M16 20h32a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H30l-9 7v-7h-5a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4z\"/><circle cx=\"24\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"32\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"40\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/></svg>", "salesworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#EA580C\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M17 24h30l-2.5 24a3 3 0 0 1-3 2.7H22.5a3 3 0 0 1-3-2.7z\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M25 28v-6a7 7 0 0 1 14 0v6\"/></svg>", "serviceworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#7C3AED\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><rect fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" x=\"14\" y=\"17\" width=\"36\" height=\"33\" rx=\"5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M14 27h36M23 13v8M41 13v8\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M25 38l5 5 9-10\"/></svg>", "linkworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#DB2777\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M29 35a8 8 0 0 0 11.3 0l6-6a8 8 0 0 0-11.3-11.3l-2.5 2.5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M35 29a8 8 0 0 0-11.3 0l-6 6a8 8 0 0 0 11.3 11.3l2.5-2.5\"/></svg>", "socialworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><defs><linearGradient id=\"lw-socialworks\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#E45656\"/><stop offset=\".55\" stop-color=\"#DC2626\"/><stop offset=\"1\" stop-color=\"#8A1A1C\"/></linearGradient><linearGradient id=\"lw-socialworksr\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".45\"/><stop offset=\".5\" stop-color=\"#fff\" stop-opacity=\".06\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\".18\"/></linearGradient></defs><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"url(#lw-socialworks)\"/><path d=\"M0 16A16 16 0 0 1 16 0h30L0 46z\" fill=\"#fff\" opacity=\".09\"/><rect x=\".75\" y=\".75\" width=\"62.5\" height=\"62.5\" rx=\"15.25\" fill=\"none\" stroke=\"url(#lw-socialworksr)\" stroke-width=\"1.5\"/><g filter=\"none\"><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M32 13c10.5 0 19 7.4 19 16.5S42.5 46 32 46c-2.3 0-4.5-.3-6.5-1L16 49.5l2.6-7.6C15.1 38.9 13 34.4 13 29.5 13 20.4 21.5 13 32 13z\"/><path d=\"M32 38.2s-8.6-5.1-8.6-10.6c0-2.8 2.1-4.8 4.6-4.8 1.7 0 3.1.9 4 2.3.9-1.4 2.3-2.3 4-2.3 2.5 0 4.6 2 4.6 4.8 0 5.5-8.6 10.6-8.6 10.6z\" fill=\"#fff\"/><path d=\"M50.5 8.5l1.4 3.6 3.6 1.4-3.6 1.4-1.4 3.6-1.4-3.6-3.6-1.4 3.6-1.4z\" fill=\"#fff\"/></g></svg>", "rhworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><defs><linearGradient id=\"lw-rhworks\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#B6853E\"/><stop offset=\".55\" stop-color=\"#A16207\"/><stop offset=\"1\" stop-color=\"#663F09\"/></linearGradient><linearGradient id=\"lw-rhworksr\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".45\"/><stop offset=\".5\" stop-color=\"#fff\" stop-opacity=\".06\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\".18\"/></linearGradient></defs><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"url(#lw-rhworks)\"/><path d=\"M0 16A16 16 0 0 1 16 0h30L0 46z\" fill=\"#fff\" opacity=\".09\"/><rect x=\".75\" y=\".75\" width=\"62.5\" height=\"62.5\" rx=\"15.25\" fill=\"none\" stroke=\"url(#lw-rhworksr)\" stroke-width=\"1.5\"/><g filter=\"none\"><circle fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" cx=\"28\" cy=\"28\" r=\"14\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M38.5 38.5 50 50\"/><circle cx=\"28\" cy=\"24.5\" r=\"4.2\" fill=\"#fff\"/><path d=\"M19.6 36.2c1.6-4.2 4.7-6.3 8.4-6.3s6.8 2.1 8.4 6.3a14 14 0 0 1-16.8 0z\" fill=\"#fff\"/><path d=\"M48 10.5l1.5 3.9 3.9 1.5-3.9 1.5L48 21.3l-1.5-3.9-3.9-1.5 3.9-1.5z\" fill=\"#fff\"/></g></svg>", "pageworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\" width=\"64\" height=\"64\"><defs><linearGradient id=\"lw-pageworks\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#5585EF\"/><stop offset=\".55\" stop-color=\"#2563EB\"/><stop offset=\"1\" stop-color=\"#194096\"/></linearGradient><linearGradient id=\"lw-pageworksr\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".45\"/><stop offset=\".5\" stop-color=\"#fff\" stop-opacity=\".06\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\".18\"/></linearGradient></defs><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"url(#lw-pageworks)\"/><path d=\"M0 16A16 16 0 0 1 16 0h30L0 46z\" fill=\"#fff\" opacity=\".09\"/><rect x=\".75\" y=\".75\" width=\"62.5\" height=\"62.5\" rx=\"15.25\" fill=\"none\" stroke=\"url(#lw-pageworksr)\" stroke-width=\"1.5\"/><g filter=\"none\"><rect fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" x=\"12\" y=\"16\" width=\"40\" height=\"32\" rx=\"5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 25h40\"/><circle cx=\"18\" cy=\"20.5\" r=\"1.6\" fill=\"#fff\"/><circle cx=\"23\" cy=\"20.5\" r=\"1.6\" fill=\"#fff\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M20 33h16M20 40h24\"/></g></svg>", "proworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\" width=\"64\" height=\"64\"><defs><linearGradient id=\"lw-proworks\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3EA9C3\"/><stop offset=\".55\" stop-color=\"#0891B2\"/><stop offset=\"1\" stop-color=\"#075C73\"/></linearGradient><linearGradient id=\"lw-proworksr\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".45\"/><stop offset=\".5\" stop-color=\"#fff\" stop-opacity=\".06\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\".18\"/></linearGradient></defs><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"url(#lw-proworks)\"/><path d=\"M0 16A16 16 0 0 1 16 0h30L0 46z\" fill=\"#fff\" opacity=\".09\"/><rect x=\".75\" y=\".75\" width=\"62.5\" height=\"62.5\" rx=\"15.25\" fill=\"none\" stroke=\"url(#lw-proworksr)\" stroke-width=\"1.5\"/><g filter=\"none\"><circle fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" cx=\"32\" cy=\"26\" r=\"8\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M17 49c2-8 8-12 15-12s13 4 15 12\"/><path d=\"M45 12l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z\" fill=\"#fff\"/></g></svg>"};
 const SEG = {
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   "X-Content-Type-Options": "nosniff",
@@ -61,7 +60,7 @@ function telaLogin(p, erro = "", email = "", acao = null, logado = null) {
   const ic = ICONES[p.slug] || "";
   const [pre] = p.nome.split("Works");
   const painel = p.aposLogin || (p.slug === "serviceworks" ? "/app" : "/");
-  const site = ["agentworks", "serviceworks", "linkworks", "rhworks", "socialworks"].includes(p.slug) ? "/" : `https://produtos.lldworks.com.br/#${p.slug}`;
+  const site = ["agentworks", "serviceworks", "linkworks"].includes(p.slug) || PAINEL_EM_APP.has(p.slug) ? "/" : `https://produtos.lldworks.com.br/#${p.slug}`;
   const formulario = logado ? `<div class="ja" role="status"><div class="av" aria-hidden="true">${esc((logado.e || "?").slice(0, 1).toUpperCase())}</div>
 <h2>Você já está conectado</h2><p class="mute">Entrou como <b>${esc(logado.e)}</b>${logado.cn ? ` · ${esc(logado.cn)}` : ""}.</p>
 <a class="btn" href="${esc(painel)}">Continuar para o painel →</a><a class="btn sec" href="/sair">Entrar com outra conta</a></div>`
@@ -172,8 +171,7 @@ function sair() {
 const DEMO_SESSAO = { e: "demo@lldworks.com.br", c: 1, cn: "LLD Works · Demonstração", cs: "demo", r: "admin", demo: true };
 // ServiceWorks tem duas demonstrações: barbearia (padrão) e pet shop; /pet e /barbearia trocam (cookie lw_demo, sem dado pessoal).
 const DEMO_PET = { e: "demo-pet@lldworks.com.br", c: 2, cn: "LLD Works · Demonstração Pet", cs: "demo-pet", r: "admin", demo: true, pet: true };
-const DEMO_EXEMPLOS = { pageworks: "https://clinica.lldworks.com.br/", proworks: "https://wellington.lldworks.com.br/" };
-const faixaDemo = (p, s = {}) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="${PAINEL_EM_APP.has(p.slug) ? `https://${p.slug}.lldworks.com.br/#planos` : `https://produtos.lldworks.com.br/#${p.slug}`}" style="color:#fff">Quero o meu ${esc(p.nome)}</a>${p.slug === "serviceworks" ? ` · <a href="${s.pet ? "/barbearia" : "/pet"}" style="color:#fff">Ver ${s.pet ? "barbearia" : "pet shop"}</a>` : ""}</div>`;
+const faixaDemo = (p, s = {}) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="${PAINEL_EM_APP.has(p.slug) ? `https://${p.slug}.lldworks.com.br/#planos` : `https://produtos.lldworks.com.br/#${p.slug}`}" style="color:#fff">Quero o meu ${esc(p.nome)}</a>${p.slug === "serviceworks" ? ` · <a href="${s.pet ? "/barbearia" : "/pet"}" style="color:#fff">Ver ${s.pet ? "barbearia" : "pet shop"}</a>` : ""}${p.slug === "salesworks" ? ` · <a href="https://loja-demo.lldworks.com.br/" target="_blank" rel="noopener" style="color:#fff">Ver a loja</a>` : ""}</div>`;
 async function demo(req, env, url, p) {
   const path = url.pathname;
   if (CONTA_PAGINAS[path]) return Response.redirect(`https://${p.slug}.lldworks.com.br${path}${url.search}`, 302); // cadastro e senha só no endereço real
@@ -181,6 +179,12 @@ async function demo(req, env, url, p) {
   if (p.slug === "serviceworks" && (path === "/pet" || path === "/barbearia"))
     return new Response(null, { status: 302, headers: { Location: "/", "Cache-Control": "no-store", "Set-Cookie": `lw_demo=${path === "/pet" ? "pet" : "barbearia"}; Path=/; Secure; SameSite=Lax; Max-Age=86400` } });
   if (p.slug === "rhworks") return rhDemo(req, url, p);
+  if (p.sob) { // PageWorks/ProWorks: vitrine com os sites reais publicados (abas, computador/celular)
+    if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
+    if (path.includes("..")) return new Response("Inválido", { status: 400 });
+    if (path.startsWith("/pub/")) return origem(req, p.dir + path, 300);
+    return path === "/" || path === "/index.html" ? origem(req, `${p.dir}/demo.html`, 60) : Response.redirect(url.origin + "/", 302);
+  }
   if (!BACKENDS[p.slug]?.painel) {
     if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
     if (path.includes("..")) return new Response("Inválido", { status: 400 });
@@ -229,9 +233,10 @@ async function lwTela(env, req, caminho, extra = "") {
   rh.delete("Content-Length");
   return new Response((await r.text()).replace("</body>", extra + "</body>"), { status: 200, headers: rh });
 }
-// SalesWorks: salesworks.lldworks.com.br/<endereço> é a loja online pública.
+// SalesWorks: a loja de cada cliente mora em <loja>.lldworks.com.br; o endereço antigo salesworks.lldworks.com.br/<loja> redireciona.
 const SL_LOJA = /^\/([a-z0-9][a-z0-9-]{2,39})\/?$/;
-const SL_RESERVADO = /^(entrar|sair|api|pub|conta|assinar|recuperar|termos|privacidade|index|admin|painel|loja|lojas|favicon|robots|salesworks|lldworks)$/;
+const SL_RESERVADO = /^(entrar|sair|api|pub|conta|assinar|recuperar|termos|privacidade|index|admin|painel|loja|lojas|favicon|robots|salesworks|lldworks|app|entregas|pedido|webhook)$/;
+const SL_ENTREGAS = /^\/entregas\/[a-f0-9]{16,40}\/?$/;
 // A loja/vitrine "demo" é pública e o painel dela também (modo leitura): pedido ou agendamento de verdade ali
 // exporia nome e WhatsApp do visitante. Nela o fluxo inteiro funciona, menos o envio final.
 const DEMO_PUBLICO = /^\/api\/publico\/demo(-pet)?(\/|$)/;
@@ -279,7 +284,8 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   const path = url.pathname;
   if (path === "/entrar") return req.method === "POST" ? entrar(req, env, url, p) : html(telaLogin(p, "", "", null, sessaoFixa ? null : await sessao(req, env, p)));
   if (path === "/sair") return sair();
-  if (BACKENDS[p.slug]) { const c = await conta(req, env, url, p); if (c) return c; }
+  if (BACKENDS[p.slug] || p.sob) { const c = await conta(req, env, url, p); if (c) return c; }
+  if (p.sob) return sobDemanda(req, env, url, p, sessaoFixa);
   if (p.slug === "agentworks") { const r = await agentworks(req, env, url, p, sessaoFixa); if (r) return r; }
   if (p.slug === "serviceworks" && path.startsWith("/api/integracao/agentworks")) return swIntegracao(req, env, url);
   // LinkWorks v2: raiz sem login = site de venda; /pub, /m (fotos e vídeos dos clientes) e /exemplo vêm do Worker do produto.
@@ -297,8 +303,15 @@ async function produto(req, env, url, p, sessaoFixa = null) {
       const v = path.match(/^\/v\/([a-z0-9-]{3,40})\/?$/);
       if (v) return Response.redirect(`https://${v[1]}.lldworks.com.br/`, 301);
       if (!sessaoFixa && (path === "/" || path === "/index.html") && (req.method === "GET" || req.method === "HEAD")) return origem(req, "serviceworks/site.html", 60);
+    }
+    if (p.slug === "serviceworks" || p.slug === "salesworks") { // aviso de pagamento do Mercado Pago (conta da própria loja)
       const aviso = path.match(/^\/webhook\/mp\/(\d{1,9})$/);
       if (aviso) return req.method === "POST" ? backend(req, env, url, p, null, `/api/aviso-mp/${aviso[1]}`) : new Response("ok");
+    }
+    if (p.slug === "salesworks" && SL_ENTREGAS.test(path)) { // página do entregador (link próprio, sem senha)
+      if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
+      const r = await origem(req, "salesworks/entregas.html", 60), h = new Headers(r.headers); h.set("Referrer-Policy", "no-referrer");
+      return new Response(r.body, { status: r.status, headers: h });
     }
     // RHWorks e SocialWorks: a raiz é o site de venda (planos → /assinar); o painel fica em /app.
     if (PAINEL_EM_APP.has(p.slug) && !sessaoFixa && (path === "/" || path === "/index.html") && (req.method === "GET" || req.method === "HEAD")) {
@@ -340,10 +353,7 @@ async function produto(req, env, url, p, sessaoFixa = null) {
       }
     }
     const sl = p.slug === "salesworks" && path.match(SL_LOJA);
-    if (sl && !SL_RESERVADO.test(sl[1])) {
-      if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
-      return origem(req, "salesworks/loja.html", 60);
-    }
+    if (sl && !SL_RESERVADO.test(sl[1])) return Response.redirect(`https://${sl[1] === "demo" ? "loja-demo" : sl[1]}.lldworks.com.br/`, 301);
     const lw = p.slug === "linkworks" && path.match(LW_PUBLICA);
     if (lw && !LW_RESERVADO.test(lw[1])) {
       if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
@@ -362,6 +372,7 @@ async function produto(req, env, url, p, sessaoFixa = null) {
     const h = new Headers(r.headers); h.set("Cache-Control", "no-store");
     return new Response(r.body, { status: r.status, headers: h });
   }
+  if (p.slug === "salesworks" && !s.demo && (path === "/api/admin/endereco" || path === "/api/admin/publicar")) return slEndereco(req, env, url, p, s);
   if (BACKENDS[p.slug] && path.startsWith("/api/admin/")) return backend(req, env, url, p, s);
   if (BACKENDS[p.slug] && path.startsWith("/api/") && !p.api) return jsonErro(404, "Rota não encontrada");
   if (p.api && CRIVO_ROTAS.test(path) && !path.startsWith("/lib/")) {
@@ -385,6 +396,76 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   const corpo = (await r.text()).replace("</head>", marca + "</head>").replace("</body>", barra + "</body>");
   const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
   return new Response(corpo, { status: 200, headers: h });
+}
+
+// ---------- SalesWorks: endereço livre nos dois produtos que usam <loja>.lldworks.com.br ----------
+async function swTemVitrine(env, slug) {
+  if (!env.SERVICEWORKS || !/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(slug || "")) return false;
+  try { const r = await env.SERVICEWORKS.fetch(new Request(`https://sw.interno/api/publico/${slug}`, { headers: { "x-lw-ip": "roteador" } })); return r.status === 200; } catch { return false; }
+}
+async function slEndereco(req, env, url, p, s) {
+  const ocupado = "Esse endereço já é usado por uma vitrine do ServiceWorks. Escolha outro (por exemplo, nome-loja).";
+  if (url.pathname === "/api/admin/endereco") {
+    const r = await backend(req, env, url, p, s);
+    if (r.status !== 200) return r;
+    const d = await r.json().catch(() => null);
+    if (d && d.livre && (await swTemVitrine(env, d.slug))) return new Response(JSON.stringify({ livre: false, motivo: ocupado }), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SEG } });
+    return new Response(JSON.stringify(d), { status: 200, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SEG } });
+  }
+  if (req.method !== "POST") return backend(req, env, url, p, s);
+  const corpo = await req.arrayBuffer();
+  let b = {}; try { b = JSON.parse(new TextDecoder().decode(corpo)) || {}; } catch {}
+  if (await swTemVitrine(env, String(b.slug || "").toLowerCase())) return jsonErro(409, ocupado);
+  VITRINE.clear();
+  return backend(new Request(req.url, { method: "POST", headers: req.headers, body: corpo }), env, url, p, s);
+}
+
+// ---------- PageWorks e ProWorks: site de venda na raiz, pedido (briefing) e acompanhamento em /app ----------
+// O pedido fica no Hub (/interno/site); a LLD Works cria o site e publica a URL pelo console.
+async function sobDemanda(req, env, url, p, sessaoFixa) {
+  const path = url.pathname, leitura = req.method === "GET" || req.method === "HEAD";
+  if (path.includes("..")) return new Response("Inválido", { status: 400 });
+  if (path === "/" || path === "/index.html") {
+    if (!leitura) return new Response("Método não permitido", { status: 405 });
+    const r = await origem(req, `${p.dir}/site.html`, 0);
+    if (r.status !== 200) return r;
+    const s = await sessao(req, env, p);
+    const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
+    return new Response(s ? (await r.text()).replace("</head>", '<meta name="lw-logado" content="1"></head>') : r.body, { status: 200, headers: h });
+  }
+  if (path.startsWith("/pub/")) return leitura ? origem(req, p.dir + path, 300) : new Response("Método não permitido", { status: 405 });
+  if (path === "/robots.txt") return new Response("User-agent: *\nAllow: /\nDisallow: /app\n", { headers: { "Content-Type": "text/plain" } });
+  const s = sessaoFixa || (await sessao(req, env, p));
+  if (path === "/api/site") {
+    if (!s) return jsonErro(401, "login");
+    if (!env.HUB) return jsonErro(503, "Serviço indisponível. Tente em alguns minutos.");
+    const a = s.demo ? { liberada: false } : await assinaturaHub(env, p, s.c);
+    if (leitura) {
+      let site = null;
+      try { const r = await env.HUB.fetch(`https://hub.interno/interno/site?produto=${p.slug}&cliente=${s.c}`); if (r.ok) site = (await r.json()).site || null; } catch {}
+      return new Response(JSON.stringify({ assinatura: { liberada: !!a.liberada, status: a.status || null, plano: a.plano || null, vence_em: a.vence_em || null }, site }), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SEG } });
+    }
+    if (req.method !== "POST") return jsonErro(405, "Método não permitido");
+    const o = req.headers.get("Origin"); if (o && o !== url.origin) return jsonErro(403, "Origem inválida");
+    if (!a.liberada) return jsonErro(402, "Sua assinatura ainda não está ativa. Conclua o pagamento para enviar o pedido.");
+    const corpo = await req.arrayBuffer();
+    if (corpo.byteLength > 16 * 1024) return jsonErro(413, "Texto grande demais. Resuma um pouco e mande o resto pelo WhatsApp.");
+    let b = {}; try { b = JSON.parse(new TextDecoder().decode(corpo)) || {}; } catch { return jsonErro(400, "Envio inválido."); }
+    const dados = {};
+    for (const [k, v] of Object.entries(b.dados || {}).slice(0, 30)) if (/^[a-z_]{2,30}$/.test(k)) dados[k] = String(v ?? "").slice(0, 2000);
+    dados.email = s.e; dados.conta = s.cn || "";
+    const r = await env.HUB.fetch(new Request("https://hub.interno/interno/site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ produto: p.slug, cliente: s.c, dados }) }));
+    const h = new Headers(r.headers); for (const [k, v] of Object.entries(SEG)) h.set(k, v); h.set("Cache-Control", "no-store");
+    return new Response(r.body, { status: r.status, headers: h });
+  }
+  if (path === "/app" || path === "/app/") {
+    if (!leitura) return new Response("Método não permitido", { status: 405 });
+    if (!s) return Response.redirect(url.origin + "/entrar", 302);
+    const r = await origem(req, `${p.dir}/app.html`, 0), h = new Headers(r.headers); h.set("Cache-Control", "no-store");
+    return new Response(r.body, { status: r.status, headers: h });
+  }
+  if (path.startsWith("/api/")) return jsonErro(404, "Rota não encontrada");
+  return Response.redirect(url.origin + "/", 302);
 }
 
 // ---------- Contas: cadastro (/assinar), senha (/recuperar), Termos e Privacidade ----------
@@ -546,11 +627,48 @@ function html(body, status = 200, extra = {}) {
   return new Response(body, { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Content-Security-Policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'", ...SEG, ...extra } });
 }
 
-// ---------- Vitrine de cada loja ServiceWorks em <loja>.lldworks.com.br ----------
+// ---------- Vitrine de cada loja em <loja>.lldworks.com.br (ServiceWorks ou SalesWorks) ----------
+// Quem é o dono do endereço: loja SalesWorks publicada; senão vitrine do ServiceWorks; senão loja SalesWorks
+// ainda não publicada (tela "em breve" ou prévia). Guardado por 60 s.
+const VITRINE = new Map();
+async function donoVitrine(env, slug) {
+  const c = VITRINE.get(slug);
+  if (c && c.ate > Date.now()) return c.v;
+  let v = "sw";
+  try {
+    let sl = null;
+    if (env.SALESWORKS) { const r = await env.SALESWORKS.fetch(new Request(`https://sl.interno/api/publico/${slug}/existe`, { headers: { "x-lw-ip": "roteador" } })); if (r.ok) sl = await r.json(); }
+    if (sl && sl.publicada) v = "sl";
+    else if (sl && sl.existe && !(await swTemVitrine(env, slug))) v = "sl";
+  } catch {}
+  VITRINE.set(slug, { v, ate: Date.now() + 60e3 }); if (VITRINE.size > 5000) VITRINE.clear();
+  return v;
+}
+async function vitrineSales(req, env, url, slug) {
+  const p = PRODUTOS["salesworks.lldworks.com.br"], path = url.pathname, leitura = req.method === "GET" || req.method === "HEAD";
+  if (path === "/" || path === "/index.html" || /^\/pedido\/[a-f0-9]{16,40}\/?$/.test(path)) {
+    if (!leitura) return new Response("Método não permitido", { status: 405 });
+    const r = await origem(req, "salesworks/loja.html", 60), h = new Headers(r.headers);
+    h.set("Cache-Control", "public, max-age=60"); h.set("X-Frame-Options", "SAMEORIGIN");
+    if (path !== "/" && path !== "/index.html") { h.set("Cache-Control", "no-store"); h.set("Referrer-Policy", "no-referrer"); }
+    return new Response(r.body, { status: r.status, headers: h });
+  }
+  if (path.startsWith("/pub/")) {
+    if (!leitura) return new Response("Método não permitido", { status: 405 });
+    if (path.includes("..")) return new Response("Inválido", { status: 400 });
+    return origem(req, "salesworks" + path, 300);
+  }
+  if ((path === "/logo" || path === "/banner" || path === "/manifest.webmanifest") && leitura) return backend(req, env, url, p, null, `/api/publico/${slug}${path === "/manifest.webmanifest" ? "/manifest" : path}`);
+  const api = path.match(/^\/api\/publico\/([a-z0-9-]{3,40})(\/.*)?$/);
+  if (api && api[1] === slug) return backend(req, env, url, p, null);
+  if (path === "/robots.txt") return new Response("User-agent: *\nAllow: /\nDisallow: /pedido/\n", { headers: { "Content-Type": "text/plain" } });
+  return Response.redirect(url.origin + "/", 302);
+}
 const LOJA_RESERVADA = new Set(("www app api admin painel console hub pagar produtos lldworks serviceworks agentworks salesworks linkworks socialworks rhworks pageworks proworks " +
   "crivo rancho clinica imobiliaria wellington lucasldiogo atende wa mail email smtp ftp ns1 ns2 suporte ajuda status blog loja lojas site sites cdn static assets " +
   "entrar sair conta assinar recuperar termos privacidade centralagrotransporte").split(" "));
 async function vitrineLoja(req, env, url, slug) {
+  if ((await donoVitrine(env, slug)) === "sl") return vitrineSales(req, env, url, slug);
   const p = PRODUTOS["serviceworks.lldworks.com.br"], path = url.pathname, leitura = req.method === "GET" || req.method === "HEAD";
   if (path === "/" || path === "/index.html" || path === "/agendar") {
     if (!leitura) return new Response("Método não permitido", { status: 405 });
@@ -587,7 +705,6 @@ export default {
     if (PRODUTOS[host]) return produto(req, env, url, PRODUTOS[host]);
     const dm = host.match(/^([a-z]+)-demo\.lldworks\.com\.br$/);
     if (dm && PRODUTOS[`${dm[1]}.lldworks.com.br`]) return demo(req, env, url, PRODUTOS[`${dm[1]}.lldworks.com.br`]);
-    if (dm && DEMO_EXEMPLOS[dm[1]]) return Response.redirect(DEMO_EXEMPLOS[dm[1]], 302);
     if (ALIASES[host]) return Response.redirect(ALIASES[host], 302);
     const dir = SITES[host];
     if (!dir) {
@@ -599,6 +716,9 @@ export default {
     let path = url.pathname;
     if (path.includes("..")) return new Response("Inválido", { status: 400 });
     if (path.endsWith("/")) path += "index.html";
-    return origem(req, dir + path);
+    const r = await origem(req, dir + path);
+    if (dir === "portfolio") return r;
+    const h = new Headers(r.headers); h.delete("X-Frame-Options"); h.set("Content-Security-Policy", "frame-ancestors 'self' https://*.lldworks.com.br");
+    return new Response(r.body, { status: r.status, headers: h });
   },
 };

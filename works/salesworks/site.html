@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self'; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; base-uri 'none'">
+<title>SalesWorks · Sua loja online com pedidos, estoque e CRM, sem comissão por venda</title>
+<meta name="description" content="Crie a loja online do seu mercado, hortifruti, padaria ou comércio: link próprio (sualoja.lldworks.com.br), pedidos em quadro, separação, entregadores, estoque, CRM, cupons, financeiro e Pix ou cartão em até 12x. Mensalidade fixa, sem comissão por pedido.">
+<meta name="theme-color" content="#C2410C">
+<meta property="og:title" content="SalesWorks · Sua loja online pronta para vender">
+<meta property="og:description" content="Link próprio, pedidos organizados, estoque, CRM e pagamento online. Sem comissão por pedido.">
+<meta property="og:image" content="https://salesworks.lldworks.com.br/pub/img/og.jpg">
+<link rel="icon" href="/pub/icone.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="/pub/site.css">
+<link rel="preload" as="image" href="/pub/img/sw-hero.webp">
+<script src="/pub/gsap.min.js" defer></script>
+<script src="/pub/ScrollTrigger.min.js" defer></script>
+<script src="/pub/site.js" defer></script>
+</head>
+<body class="sl">
+<a class="pular" href="#planos">Pular para os planos</a>
+<div class="progresso" aria-hidden="true"><i></i></div>
+<header class="topo">
+ <a class="marca" href="/" aria-label="SalesWorks, início"><img src="/pub/icone.svg" alt="" width="38" height="38"><span>Sales<b>Works</b></span></a>
+ <nav aria-label="Seções"><a href="#como">Como funciona</a><a href="#vitrine">A loja</a><a href="#painel">O painel</a><a href="#planos">Planos</a><a href="#duvidas">Dúvidas</a></nav>
+ <div class="acoes"><a class="b ghost" href="/entrar" data-entrar>Entrar</a><a class="b pri" href="#planos">Criar minha loja</a></div>
+</header>
+
+<main>
+<section class="hero">
+ <div class="hero-txt">
+  <p class="eti"><span class="pulso" aria-hidden="true"></span>Loja online + gestão de pedidos</p>
+  <h1 class="titulo"><span class="ln">Sua loja online</span> <span class="ln"><em>vendendo hoje,</em></span> <span class="ln">sem comissão.</span></h1>
+  <p class="lead">Catálogo com fotos, carrinho, entrega ou retirada, Pix e cartão. Do outro lado, um painel que organiza os pedidos, a separação, o entregador, o estoque e os clientes. Tudo no endereço <b>nomedasualoja.lldworks.com.br</b>.</p>
+  <div class="cta"><a class="b pri grande mag" href="#planos">Ver planos e criar a loja <span aria-hidden="true">→</span></a><a class="b grande" href="https://loja-demo.lldworks.com.br" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-loja"/></svg>Ver loja de exemplo</a></div>
+  <ul class="selos"><li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Sem comissão por pedido</li><li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Pix e cartão em até 12x</li><li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>No ar no mesmo dia</li></ul>
+ </div>
+ <div class="hero-vis">
+  <figure class="foto"><img src="/pub/img/sw-hero.webp" alt="Dona de empório sorrindo no balcão com o celular mostrando um pedido novo" width="1600" height="893" fetchpriority="high"></figure>
+  <div class="cartao notif" aria-hidden="true"><span class="sino"><svg class="i"><use href="#i-sino"/></svg></span><div><b>Pedido #128 · R$ 87,40</b><span>Ana P. · Entrega no Centro · Pix ✓</span></div></div>
+  <div class="cartao fone-h" aria-hidden="true"><img src="/pub/img/tela-loja.webp" alt="" width="780" height="1600" loading="eager"></div>
+  <div class="cartao vend" aria-hidden="true"><span>Vendas hoje</span><b>R$ <span class="cont" data-n="1284">0</span></b><small>▲ 18% sobre ontem</small></div>
+ </div>
+</section>
+
+<section class="faixa" aria-label="Destaques">
+ <div><b>1 link</b><span>sualoja.lldworks.com.br para a bio e o WhatsApp</span></div>
+ <div><b>R$ 0</b><span>de comissão sobre os pedidos</span></div>
+ <div><b>12x</b><span>no cartão, direto na sua conta do Mercado Pago</span></div>
+ <div><b>5 min</b><span>para cadastrar 100 produtos pela planilha</span></div>
+</section>
+
+<section id="como" class="sec como">
+ <p class="eti">Como funciona</p>
+ <h2>Do cadastro ao pedido entregue, em quatro passos</h2>
+ <div class="passos-wrap">
+  <ol class="passos">
+   <li class="passo"><span class="num">01</span><div><h3>Cadastre os produtos</h3><p>Foto, preço, custo, promoção e estoque. Vende por unidade, quilo ou caixa, com quantidade mínima. Tem muitos produtos? Suba a planilha.</p></div></li>
+   <li class="passo"><span class="num">02</span><div><h3>Publique com o seu nome</h3><p>Escolha o endereço, como <b>emporio-bom-dia.lldworks.com.br</b>, e divulgue na bio do Instagram, no status e no Google.</p></div></li>
+   <li class="passo"><span class="num">03</span><div><h3>Receba e separe</h3><p>O pedido chega com aviso sonoro num quadro: novo, confirmado, separando, pronto e saiu. A lista de separação evita erro na sacola.</p></div></li>
+   <li class="passo"><span class="num">04</span><div><h3>Entregue e venda de novo</h3><p>O entregador marca a entrega pelo celular. O cliente acompanha tudo pelo link. Quem sumiu volta com uma mensagem pronta e um cupom.</p></div></li>
+  </ol>
+  <div class="palco" aria-hidden="true">
+   <div class="tela">
+    <div class="tela-top"><i></i><i></i><i></i><span>salesworks.lldworks.com.br/app</span></div>
+    <div class="cenas">
+     <div class="cena ativa"><h4>Novo produto</h4><div class="prod-m"><div class="pf"><img src="/pub/img/p-banana.webp" alt=""></div><div><b>Banana prata</b><small>Frutas · vendida por kg</small><p><span>Custo R$ 3,50</span><span>Venda R$ 6,90</span></p><i class="marg">Margem 49%</i></div></div><div class="chips-m"><span>Mínimo 0,5 kg</span><span>De 0,25 em 0,25</span><span>Estoque 38 kg</span></div></div>
+     <div class="cena"><h4>Link da loja</h4><div class="link-m"><svg class="i"><use href="#i-loja"/></svg>emporio-bom-dia.lldworks.com.br</div><div class="pub-m"><span class="ok">✓ Endereço livre</span><span>Publicada agora · pronta para receber pedidos</span></div></div>
+     <div class="cena"><h4>Quadro de pedidos</h4><div class="kb-m"><div><small>Novos</small><p class="pn">#128 · R$ 87,40</p><p>#129 · R$ 42,10</p></div><div><small>Separando</small><p>#126 · R$ 63,00</p></div><div><small>Saiu</small><p>#124 · R$ 118,90</p></div></div></div>
+     <div class="cena"><h4>Clientes para trazer de volta</h4><div class="crm-m"><p><b>Sérgio A.</b><span>45 dias sem comprar · R$ 380 no total</span><i>Chamar no WhatsApp</i></p><p><b>Beatriz N.</b><span>65 dias · R$ 470</span><i>Enviar cupom VOLTA15</i></p></div></div>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="vitrine" class="sec vitrine">
+ <div class="vit-txt">
+  <p class="eti">A loja que o seu cliente vê</p>
+  <h2>Bonita no celular, rápida de comprar e com a sua cara</h2>
+  <p class="sub">Logo, capa e cor da sua marca. O cliente busca, monta o carrinho, informa o CEP e a entrega é calculada por bairro. Paga por Pix, cartão online, dinheiro ou maquininha, e acompanha o pedido pelo link.</p>
+  <ul class="lista-ck"><li>Ofertas, destaques e categorias com rolagem fácil</li><li>Entrega grátis acima de um valor, pedido mínimo e taxa por bairro</li><li>Agendamento de dia e horário, até com a loja fechada</li><li>Preço de atacado, cupom de desconto e produto esgotado automático</li></ul>
+  <div class="cta" style="margin-top:24px"><a class="b pri grande" href="https://loja-demo.lldworks.com.br" target="_blank" rel="noopener">Abrir a loja de exemplo ↗</a></div>
+ </div>
+ <div class="vit-vis"><img class="foto2" src="/pub/img/sw-comprador.webp" alt="Cliente comprando pelo celular no sofá de casa" width="800" height="993" loading="lazy"><div class="fone"><img src="/pub/img/tela-loja.webp" alt="Loja de exemplo Empório Bom Dia aberta no celular" width="780" height="1600" loading="lazy"></div></div>
+</section>
+
+<section id="painel" class="sec painel">
+ <p class="eti">O painel da loja</p>
+ <h2>Tudo o que um comércio precisa para vender online, num lugar só</h2>
+ <div class="abas-p" role="tablist" aria-label="Telas do painel"><button role="tab" aria-selected="true" data-aba="painel">Início</button><button role="tab" aria-selected="false" data-aba="kanban">Pedidos</button><button role="tab" aria-selected="false" data-aba="produtos">Produtos</button></div>
+ <div class="note"><div class="note-top"><i></i><i></i><i></i><span>salesworks.lldworks.com.br/app</span></div><img id="telaPainel" src="/pub/img/tela-painel.webp" alt="Painel do SalesWorks: vendas do dia, gráfico de 14 dias, pedidos em andamento e clientes para trazer de volta" width="1440" height="900" loading="lazy"></div>
+ <p class="nota">Telas reais da loja de demonstração, com dados fictícios. <a href="https://salesworks-demo.lldworks.com.br" target="_blank" rel="noopener">Abrir o painel de demonstração ↗</a></p>
+</section>
+
+<section id="video" class="sec video">
+ <p class="eti">Veja funcionando</p>
+ <h2>Do carrinho do cliente ao pedido no painel, em menos de um minuto</h2>
+ <div class="video-box">
+  <video id="tour" controls playsinline preload="none" poster="/pub/video/tour.jpg" width="1280" height="720"><source src="/pub/video/tour.mp4" type="video/mp4"></video>
+  <button class="play" type="button" aria-label="Assistir ao vídeo do SalesWorks"><svg class="i" aria-hidden="true"><use href="#i-play"/></svg></button>
+ </div>
+ <p class="nota">Gravação da loja e do painel de demonstração, com dados fictícios.</p>
+</section>
+
+<section id="recursos" class="sec">
+ <p class="eti">Recursos</p>
+ <h2>Inspirado em quem já vende de verdade: hortifruti, mercado e padaria</h2>
+ <div class="recursos" id="recursosLista"></div>
+</section>
+
+<section class="sec integra">
+ <div class="int-card">
+  <div><p class="eti claro">Tudo conectado</p><h2>Junte o SalesWorks aos outros apps da LLD Works</h2><p class="sub claro">Nos planos Pro e Premium, os apps entram no pacote e usam o mesmo login.</p></div>
+  <div class="int-grid">
+   <article><img src="https://produtos.lldworks.com.br/logos/agentworks-icon.svg" alt="" width="44" height="44"><h3>AgentWorks</h3><p>Robô com IA no WhatsApp que responde 24 h e manda o link da loja.</p><span class="pl">Pro e Premium</span></article>
+   <article><img src="https://produtos.lldworks.com.br/logos/linkworks-icon.svg" alt="" width="44" height="44"><h3>LinkWorks</h3><p>Link na bio com a sua marca, com a loja como primeiro botão.</p><span class="pl">Pro e Premium</span></article>
+   <article><img src="https://produtos.lldworks.com.br/logos/socialworks-icon.svg" alt="" width="44" height="44"><h3>SocialWorks</h3><p>Posts programados e resposta automática no Direct do Instagram.</p><span class="pl">Premium</span></article>
+   <article><span class="mp">MP</span><h3>Mercado Pago</h3><p>Pix e cartão em até 12x, direto na conta da loja, com baixa automática.</p><span class="pl">Pro e Premium</span></article>
+  </div>
+ </div>
+</section>
+
+<section class="sec comissao">
+ <div class="com-txt"><p class="eti">Sem comissão</p><h2>Plataformas de delivery cobram uma parte de cada pedido. Aqui a mensalidade é fixa.</h2>
+  <p class="sub">Quanto mais você vende, mais compensa: o pedido é seu, o cliente é seu e o contato dele fica no seu CRM.</p>
+  <div class="calc"><label for="calcV">Quanto você vende online por mês?</label><input type="range" id="calcV" min="2000" max="60000" step="1000" value="15000"><output id="calcO">R$ 15.000</output>
+   <p class="calc-r">Uma comissão de 12% sobre esse valor seria <b id="calcC">R$ 1.800</b> por mês. No SalesWorks, a mensalidade é a mesma em qualquer volume de vendas.</p><p class="nota">Simulação ilustrativa: 12% é uma comissão usada só como exemplo; confira as taxas do seu contrato.</p></div></div>
+ <img class="com-foto" src="/pub/img/sw-entrega.webp" alt="Entregador entregando sacola de compras a uma cliente sorridente" width="800" height="993" loading="lazy">
+</section>
+
+<section id="planos" class="sec planos">
+ <p class="eti">Planos</p>
+ <h2>Escolha o plano e publique a sua loja hoje</h2>
+ <p class="sub">Todos têm a loja completa e o painel. Os planos maiores trazem pagamento online e os outros apps no pacote.</p>
+ <div class="cards-planos" id="cardsPlanos"><p class="carregando">Carregando planos…</p></div>
+ <p class="nota">Pagamento por Pix ou cartão em até 12x. Depois do cadastro e do pagamento, o acesso é liberado e você já pode publicar a loja.</p>
+</section>
+
+<section id="duvidas" class="sec duvidas">
+ <p class="eti">Dúvidas</p>
+ <h2>Perguntas frequentes</h2>
+ <div class="faq">
+  <details><summary>Preciso de site ou domínio próprio?</summary><p>Não. A loja já sai com o endereço <b>nomedaloja.lldworks.com.br</b>, com HTTPS. No Premium, a LLD Works ainda cria um site institucional para a sua marca.</p></details>
+  <details><summary>Como recebo os pedidos?</summary><p>No painel, com aviso sonoro e notificação na tela, e o cliente pode avisar no seu WhatsApp com a mensagem pronta do pedido. Você confirma, separa, chama o entregador e marca como entregue.</p></details>
+  <details><summary>Como o cliente paga?</summary><p>Você escolhe: Pix (a sua chave aparece ao fechar o pedido), dinheiro com troco, cartão na maquininha ou pagamento online (Pix e cartão em até 12x) pela sua própria conta do Mercado Pago, nos planos Pro e Premium. O dinheiro cai direto para você.</p></details>
+  <details><summary>Dá para vender por quilo?</summary><p>Dá. Cada produto pode ser vendido por unidade, quilo, grama, litro, pacote, caixa, dúzia ou metro, com quantidade mínima e passo (por exemplo, de 250 g em 250 g).</p></details>
+  <details><summary>E o estoque?</summary><p>Ligue o controle de estoque no produto: cada pedido baixa a quantidade, cancelamento devolve, e o produto aparece como esgotado quando acaba. Entrada de mercadoria, perdas e ajustes ficam registrados.</p></details>
+  <details><summary>Posso testar antes?</summary><p>Pode navegar pela <a href="https://loja-demo.lldworks.com.br" target="_blank" rel="noopener">loja de exemplo</a> e pelo <a href="https://salesworks-demo.lldworks.com.br" target="_blank" rel="noopener">painel de demonstração</a> sem cadastro. Os planos têm período de teste.</p></details>
+  <details><summary>Tem fidelidade?</summary><p>Não. Você pode trocar de plano ou cancelar. Se a assinatura parar, os dados ficam guardados e voltam quando reativar.</p></details>
+ </div>
+</section>
+
+<section class="sec final">
+ <img src="/pub/img/sw-loja.webp" alt="" width="1600" height="893" loading="lazy" class="final-foto">
+ <div class="final-txt">
+  <h2>O seu cliente já está no celular. Coloque a sua loja lá também.</h2>
+  <p>Escolha o plano, cadastre os produtos e publique o link hoje mesmo.</p>
+  <div class="cta"><a class="b pri grande mag" href="#planos">Criar minha loja</a><a class="b grande branco" href="https://loja-demo.lldworks.com.br" target="_blank" rel="noopener">Ver loja de exemplo</a><a class="b grande branco" id="ctaZap" href="#" target="_blank" rel="noopener" hidden>Falar no WhatsApp</a></div>
+ </div>
+</section>
+</main>
+
+<footer class="rod">
+ <div class="rod-marca"><img src="/pub/icone.svg" alt="" width="28" height="28"><span><b>SalesWorks</b> · uma solução <a href="https://produtos.lldworks.com.br" target="_blank" rel="noopener">LLD Works</a></span></div>
+ <div class="links"><a href="/entrar">Entrar</a><a href="/recuperar">Esqueci a senha</a><a href="/termos">Termos de Uso</a><a href="/privacidade">Privacidade</a></div>
+</footer>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></symbol>
+ <symbol id="i-loja" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6"/></g></symbol>
+ <symbol id="i-sino" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></g></symbol>
+</svg>
+</body></html>

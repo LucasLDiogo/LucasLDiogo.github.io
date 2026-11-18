@@ -1,70 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; base-uri 'none'">
-<meta name="description" content="Faça seu pedido online e receba em casa ou retire na loja.">
-<meta name="theme-color" content="#EA580C">
 <title>Loja online</title>
+<meta name="description" content="Faça o seu pedido online.">
+<meta name="theme-color" content="#EA580C">
 <link rel="icon" href="/pub/icone.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap">
-<link rel="stylesheet" href="/pub/base.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap">
 <link rel="stylesheet" href="/pub/loja.css">
+<script src="/pub/gsap.min.js" defer></script>
 <script src="/pub/loja.js" defer></script>
-</head><body class="lj">
-<header class="capa">
- <div class="in"><h1 id="lNome">Carregando a loja…</h1><p id="lDesc"></p>
-  <div class="row" style="margin-top:14px;gap:6px"><span class="chip" id="lSt" hidden></span><span class="chip" id="lHor" hidden></span><span class="chip" id="lEnt" hidden></span><span class="chip" id="lMin" hidden></span></div>
-  <div class="row" style="margin-top:14px"><a class="btn sm" id="lWa" target="_blank" rel="noopener" hidden>Falar no WhatsApp</a><button class="btn sm ghost" type="button" data-act="acompanhar">Acompanhar pedido</button></div></div>
-</header>
-<main class="lmain">
- <div id="lErro" class="card" hidden><h2 id="lErroT"></h2><p class="mute" id="lErroM" style="margin-top:6px"></p></div>
- <div id="catalogo" hidden>
-  <div class="filtro"><input id="busca" type="search" placeholder="Buscar produto…" aria-label="Buscar produto" autocomplete="off"><div class="cats" id="cats" role="group" aria-label="Categorias"></div></div>
-  <div id="lista"></div>
- </div>
- <p class="rod">Loja feita com <a href="https://lldworks.com.br" rel="noopener">SalesWorks · LLD Works</a></p>
-</main>
-
-<div class="barra" id="barra" hidden><button class="btn pri" type="button" data-act="carrinho"><span id="bQtd"></span><span id="bTot"></span></button></div>
-
-<dialog class="sheet" id="dCar" aria-labelledby="dcT"><form method="dialog" id="fCar" novalidate>
- <div class="row sb"><h2 id="dcT">Seu pedido</h2><button class="btn sm ghost" value="x" formnovalidate aria-label="Fechar">✕</button></div>
- <div class="carr" id="carItens"></div>
- <div class="tot" id="carTot"></div>
- <div class="aviso" id="carMin" hidden></div>
- <div id="dados">
-  <h3 style="margin-top:18px">Como você quer receber?</h3>
-  <div class="opts" style="margin-top:8px" id="oTipo"></div>
-  <div id="wEnd"><label for="fEnd">Endereço completo</label><input id="fEnd" maxlength="300" autocomplete="street-address" placeholder="Rua, número, bairro e complemento"></div>
-  <div class="f2"><div><label for="fNome">Seu nome</label><input id="fNome" maxlength="80" autocomplete="name"></div><div><label for="fWhats">WhatsApp com DDD</label><input id="fWhats" type="tel" inputmode="tel" autocomplete="tel" placeholder="(54) 99999-0000"></div></div>
-  <h3 style="margin-top:16px">Pagamento</h3>
-  <div class="opts" style="margin-top:8px" id="oPag"></div>
-  <div id="wTroco" hidden><label for="fTroco">Troco para quanto? (opcional)</label><input id="fTroco" inputmode="decimal" placeholder="Ex.: 100"></div>
-  <label for="fObs">Observações</label><input id="fObs" maxlength="300" placeholder="Ex.: bananas mais verdes, interfone 12">
- </div>
- <p class="err" id="carErr" role="alert"></p>
- <button class="btn pri full" value="ok" id="btFin" style="min-height:52px;font-size:16px;margin-top:6px">Finalizar pedido</button>
-</form></dialog>
-
-<dialog class="sheet" id="dOk" aria-labelledby="doT"><form method="dialog">
- <div class="ok-ic" aria-hidden="true">✓</div>
- <h2 id="doT" style="text-align:center">Pedido recebido!</h2>
- <p class="mute" style="text-align:center;margin-top:6px" id="okTxt"></p>
- <div class="pix" id="okPix" hidden><code id="okChave"></code><button type="button" class="btn sm" data-act="copiaPix">Copiar chave Pix</button></div>
- <div class="grid" style="margin-top:16px;gap:8px">
-  <a class="btn ok full" id="okZap" target="_blank" rel="noopener" hidden style="min-height:50px">Enviar o pedido no WhatsApp da loja</a>
-  <button type="button" class="btn full" data-act="acompanharUlt">Acompanhar este pedido</button>
-  <button class="btn ghost full" value="x">Voltar para a loja</button>
- </div>
-</form></dialog>
-
-<dialog class="sheet" id="dAc" aria-labelledby="daT"><form method="dialog" id="fAc" novalidate>
- <div class="row sb"><h2 id="daT">Acompanhar pedido</h2><button class="btn sm ghost" value="x" formnovalidate aria-label="Fechar">✕</button></div>
- <div class="f2"><div><label for="aCod">Código do pedido</label><input id="aCod" maxlength="8" autocapitalize="characters" placeholder="Ex.: K7Q2MX"></div><div><label for="aWhats">WhatsApp usado no pedido</label><input id="aWhats" type="tel" inputmode="tel"></div></div>
- <p class="err" id="aErr" role="alert"></p>
- <div id="aRes"></div>
- <button class="btn pri full" value="ok" style="margin-top:8px">Consultar</button>
-</form></dialog>
-
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</head>
+<body>
+<div id="app" aria-live="polite"><div class="esqueleto"><div class="sk-capa"></div><div class="sk-l"></div><div class="sk-l c"></div><div class="sk-grade"><i></i><i></i><i></i><i></i></div></div></div>
+<div class="gaveta" id="gaveta" role="dialog" aria-modal="true" aria-labelledby="gTit" hidden><div class="fundo" data-fechar></div><section class="caixa"><header><button type="button" class="volta" id="gVolta" aria-label="Voltar" hidden>←</button><h2 id="gTit"></h2><button type="button" class="x" data-fechar aria-label="Fechar">✕</button></header><div class="g-corpo" id="gCorpo"></div><footer id="gRod"></footer></section></div>
+<div class="toasts" id="toasts" aria-live="assertive"></div>
 </body></html>

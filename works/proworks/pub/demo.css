@@ -1,0 +1,37 @@
+/* vitrine de exemplos ao vivo + painel do cliente (PageWorks/ProWorks) */
+body.demo{min-height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+.d-topo{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;padding:12px clamp(14px,3vw,28px);background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.d-topo .marca{margin-right:4px}
+.d-tag{font-size:12px;font-weight:800;color:var(--p-txt);background:var(--p-soft);padding:5px 11px;border-radius:99px}
+.d-abas,.d-disp{display:inline-flex;gap:4px;padding:4px;border-radius:13px;background:var(--soft);border:1px solid var(--line)}
+.d-abas button,.d-disp button{border:0;background:transparent;padding:8px 14px;border-radius:10px;font:700 14px Inter,sans-serif;color:var(--mute);cursor:pointer}
+.d-abas button[aria-selected=true],.d-disp button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 5px 14px -9px rgba(0,0,0,.45)}
+.d-topo > .b{margin-left:auto}
+.d-palco{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;padding:22px clamp(14px,3vw,28px) 28px;align-items:start}
+.d-moldura{border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--sh);background:#fff;transition:max-width .45s cubic-bezier(.2,.8,.2,1);width:100%;max-width:100%;margin:0 auto}
+.d-moldura.m{max-width:410px;border-radius:40px;padding:10px;background:#0B1220;border:0}
+.d-moldura.m .note-top{display:none}.d-moldura.m iframe{border-radius:30px;height:min(780px,calc(100vh - 170px))}
+.d-moldura .note-top a{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--p-txt);text-decoration:none}
+.d-moldura iframe{display:block;width:100%;height:calc(100vh - 160px);min-height:560px;border:0;background:#fff}
+.d-info{position:sticky;top:92px;display:grid;gap:12px;padding:22px;border-radius:22px;background:#fff;border:1px solid var(--line)}
+.d-info .tag{justify-self:start;font-size:12px;font-weight:800;color:var(--p-txt);background:var(--p-soft);padding:5px 11px;border-radius:99px}
+.d-info h1{font:800 24px/1.2 Montserrat,sans-serif;margin:8px 0 6px}.d-info p{margin:0;color:var(--mute)}.d-info .nota{font-size:13.5px}
+.d-info [hidden]{display:none}
+@media(max-width:1000px){.d-palco{grid-template-columns:1fr}.d-info{position:static}.d-topo > .b{margin-left:0}}
+@media(max-width:640px){.d-disp{display:none}.d-moldura iframe{height:calc(100vh - 200px)}}
+/* painel do cliente */
+.app-main{max-width:920px;margin:0 auto;padding:110px clamp(16px,4vw,32px) 60px}
+.app-h{font:800 clamp(28px,4vw,40px)/1.15 Montserrat,sans-serif;margin:10px 0 24px}
+.app-status,.app-form,.app-ajuda{background:#fff;border:1px solid var(--line);border-radius:22px;padding:clamp(18px,3vw,30px);margin-bottom:20px}
+.app-form h2,.app-ajuda h2{font:800 22px Montserrat,sans-serif;margin:0 0 6px}
+.grade-f{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}.campo{display:grid;gap:6px}.campo.largo{grid-column:1/-1}
+.campo label{font-weight:700;font-size:14px}
+.campo input,.campo textarea{font:500 15px Inter,sans-serif;padding:12px 14px;border:1.5px solid var(--line2);border-radius:12px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.campo input:focus,.campo textarea:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px var(--p-soft)}
+.linha-st{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0}
+.etapas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.etapas div{padding:14px;border-radius:14px;background:var(--soft);border:1px solid var(--line);font-weight:700;font-size:14px;color:var(--mute)}
+.etapas .feito{background:#E3F7EF;border-color:#A7E3C9;color:#08714E}.etapas .agora{background:var(--p-soft);border-color:var(--p);color:var(--p-txt)}
+.aviso{padding:14px 16px;border-radius:14px;background:#FFF7E6;border:1px solid #F5D18A;color:#7A4B00;font-weight:600}
+.ok-m{padding:14px 16px;border-radius:14px;background:#E3F7EF;border:1px solid #A7E3C9;color:#08714E;font-weight:700}
+@media(max-width:640px){.grade-f,.etapas{grid-template-columns:1fr}}
