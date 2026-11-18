@@ -41,7 +41,7 @@
       ${p.vence_em ? `<p class="small mute" style="margin-top:6px">${p.status === "teste" ? "Teste até" : "Vence em"} ${dt(p.vence_em)}</p>` : ""}
       ${!p.liberada ? `<p class="aviso">A assinatura não está liberada: a sua página pública mostra “indisponível”. Fale com a LLD Works para regularizar.</p>` : ""}
       ${lims || '<p class="small mute" style="margin-top:12px">Seu plano não tem limite de uso neste produto.</p>'}
-      <p class="small mute" style="margin-top:16px">Precisa de mais? <a href="https://produtos.lldworks.com.br/#linkworks" target="_blank" rel="noopener">Fale com a LLD Works</a> para mudar de plano.</p>`;
+      <div style="margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px">${p.status === "cortesia" ? "" : '<a class="btn sm pri" href="/assinar">Pagar ou trocar de plano</a><span class="small mute">Pix ou cartão em até 12x</span>'}</div><p class="small mute" style="margin-top:10px">Dúvidas sobre os planos? <a href="https://produtos.lldworks.com.br/#linkworks" target="_blank" rel="noopener">Fale com a LLD Works</a>.</p>`;
   }
   async function previa() { try { $("#previa").srcdoc = await api("GET", "previa", null, true); } catch {} }
 

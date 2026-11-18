@@ -131,7 +131,7 @@
       <div class="card tbl-wrap"><table><thead><tr><th>Produto</th><th>Plano</th><th>Status</th><th>Vence em</th><th>Cobrança</th><th></th></tr></thead><tbody>
       ${d.assinaturas.map((a) => `<tr><td>${prodTag(a.produto, prods)}<div class="links small">${a.url_admin ? `<a href="${esc(a.url_admin)}" target="_blank" rel="noopener">painel</a>` : ""}${a.url_vitrine ? `<a href="${esc(a.url_vitrine)}" target="_blank" rel="noopener">vitrine</a>` : ""}</div></td>
         <td>${a.plano ? `${esc(a.plano)}<div class="small muted">${brl(a.preco_centavos)}/${a.ciclo === "anual" ? "ano" : "mês"}</div>` : '<span class="muted">sem plano</span>'}</td><td>${pill(a.status)}</td><td>${dataBR(a.vence_em)}</td>
-        <td>${a.mp_link ? `<a href="${esc(a.mp_link)}" target="_blank" rel="noopener">link de pagamento</a>` : a.plano ? `<button class="btn sm" data-act="cobranca" data-id="${a.id}">Gerar link Mercado Pago</button>` : "—"}</td>
+        <td>${a.status === "cortesia" ? '<span class="muted small">cortesia · sem cobrança</span>' : `<button class="btn sm" data-act="linkPagamento" data-id="${a.id}">${svg("card")}Link de pagamento</button>`}${a.mp_link ? `<div class="small"><a href="${esc(a.mp_link)}" target="_blank" rel="noopener">recorrência antiga</a></div>` : ""}</td>
         <td><div class="acts"><button class="btn sm" data-act="editarAssinatura" data-id="${a.id}">Editar</button><button class="btn sm" data-act="lancarPagamento" data-id="${a.id}" data-valor="${a.preco_centavos || 0}">Registrar pagamento</button></div></td></tr>`).join("") || '<tr><td colspan="6" class="empty">Nenhum produto ainda. Adicione o primeiro.</td></tr>'}
       </tbody></table></div>`;
     if (abaCliente === "acessos") corpo = `<div class="note mb">${svg("key")}<div>Cada login abre o painel do produto em <b>&lt;produto&gt;.lldworks.com.br</b>. A senha é guardada só como hash (PBKDF2): se o cliente esquecer, gere uma nova.</div></div>
@@ -140,7 +140,7 @@
       ${d.usuarios.map((u) => `<tr><td>${prodTag(u.produto, prods)}</td><td>${esc(u.email)}</td><td>${esc(u.nome || "—")}</td><td>${u.papel === "admin" ? "Administrador" : "Equipe"}</td><td>${u.ativo ? '<span class="pill ok">liberado</span>' : '<span class="pill bad">bloqueado</span>'}</td><td>${dataBR(u.ultimo_acesso)}</td>
         <td><div class="acts"><button class="btn sm" data-act="novaSenha" data-id="${u.id}" data-email="${esc(u.email)}" data-produto="${esc(u.produto)}">Nova senha</button><button class="btn sm" data-act="bloquear" data-id="${u.id}" data-ativo="${u.ativo ? 0 : 1}" data-nome="${esc(u.nome || "")}" data-papel="${u.papel}">${u.ativo ? "Bloquear" : "Liberar"}</button><button class="btn sm danger" data-act="excluirUsuario" data-id="${u.id}">Excluir</button></div></td></tr>`).join("") || '<tr><td colspan="7" class="empty">Nenhum login criado.</td></tr>'}
       </tbody></table></div>`;
-    if (abaCliente === "pagamentos") corpo = tabelaPagamentos(d.pagamentos, prods, false);
+    if (abaCliente === "pagamentos") corpo = tabelaPagamentos(d.pagamentos, prods, false) + tabelaCobrancas(await api("cobrancas?cliente=" + c.id), prods);
     if (abaCliente === "parametros") corpo = `<div class="note mb">${svg("gear")}<div>Parâmetros livres que cada produto lê para este cliente: horário de funcionamento, WhatsApp, cores, mensagens, limites extras etc.</div></div>
       <div class="acts mb"><button class="btn pri" data-act="novoParametro" data-id="${c.id}">${svg("plus")}Adicionar parâmetro</button></div>
       <div class="card tbl-wrap"><table><thead><tr><th>Produto</th><th>Parâmetro</th><th>Valor</th><th></th></tr></thead><tbody>
@@ -153,9 +153,37 @@
       <div class="tabs" role="tablist">${Object.entries(abas).map(([k, l]) => `<button role="tab" class="${k === abaCliente ? "on" : ""}" data-aba="${k}">${l}</button>`).join("")}</div><div class="fade">${corpo}</div>`;
   };
 
+  const STATUS_COB = { aberta: "Aguardando o cliente", paga: "Paga", expirada: "Expirou sem pagar", cancelada: "Não abriu", estornada: "Estornada" };
+  function tabelaCobrancas(lista, prods) {
+    return `<h2 style="margin:26px 0 4px;font-size:16px">Pedidos de pagamento · Mercado Pago</h2><p class="small muted" style="margin:0 0 10px">Cada vez que o cliente escolhe um plano no link, entra um pedido aqui. Pago, ele aparece também na lista acima.</p>
+    <div class="card tbl-wrap"><table><thead><tr><th>Quando</th><th>Produto</th><th>Plano</th><th>Período</th><th class="num">Valor</th><th>Situação</th><th>Pago em</th></tr></thead><tbody>
+    ${lista.map((x) => `<tr><td>${dataBR(x.criado_em)}</td><td>${prodTag(x.produto, prods)}</td><td>${esc(x.plano)}</td><td>${x.meses === 1 ? "1 mês" : x.meses + " meses"}</td><td class="num"><b>${brl(x.valor_centavos)}</b></td>
+      <td><span class="pill ${x.status === "paga" ? "pago" : x.status === "aberta" ? "pendente" : x.status === "estornada" ? "recusado" : "cancelado"}"${x.erro ? ` title="${esc(x.erro)}"` : ""}>${esc(STATUS_COB[x.status] || x.status)}</span></td><td>${dataBR(x.pago_em)}</td></tr>`).join("") || '<tr><td colspan="7" class="empty">Nenhum pedido ainda. Envie o link de pagamento ao cliente.</td></tr>'}
+    </tbody></table></div>`;
+  }
+  function mostrarLink(id, r) {
+    const dlg = $("#dlg"), f = $("#dlgForm");
+    const msg = `Olá! Segue o link para escolher o plano e pagar o ${r.produto}:\n${r.url}\n\nPix com liberação na hora ou cartão em até 12x. O mesmo link serve para as próximas renovações.`;
+    const fone = String(r.telefone || "").replace(/\D/g, "");
+    const wa = fone.length >= 10 ? `https://wa.me/${fone.length <= 11 ? "55" + fone : fone}?text=${encodeURIComponent(msg)}` : "";
+    f.innerHTML = `<header><h2>Link de pagamento · ${esc(r.produto)}</h2><p class="muted small" style="margin:6px 0 0">${esc(r.cliente)} escolhe o plano e paga por Pix ou cartão em até 12x. Aprovado o pagamento, o acesso é liberado e o vencimento avança sozinho.</p></header>
+      <div class="body">${r.mercadopago ? "" : `<div class="note warn mb">${svg("key")}<div>O Mercado Pago ainda não está conectado: o cliente vê os planos, mas o botão de pagar fica desativado. Veja <a href="#/config">Configurações</a>.</div></div>`}
+      <p class="small muted" style="margin:0 0 6px">Link fixo deste cliente (serve todo mês)</p><div class="secret" style="word-break:break-all">${esc(r.url)}</div>
+      <div class="acts mt"><a class="btn sm" href="${esc(r.url)}" target="_blank" rel="noopener">${svg("ext")}Abrir</a>${wa ? `<a class="btn sm" href="${esc(wa)}" target="_blank" rel="noopener">Enviar no WhatsApp</a>` : ""}<button type="button" class="btn sm danger" data-novo>Gerar novo link</button></div>
+      <p class="small muted" style="margin:10px 0 0">"Gerar novo link" desativa o atual: use se o link foi parar com quem não deveria.</p></div>
+      <footer><button type="button" class="btn" data-copiar>Copiar mensagem</button><button type="button" class="btn pri" data-x>Pronto</button></footer>`;
+    f.querySelector("[data-x]").onclick = () => dlg.close();
+    f.querySelector("[data-copiar]").onclick = () => navigator.clipboard.writeText(msg).then(() => toast("Mensagem copiada"), () => toast("Selecione e copie manualmente", true));
+    f.querySelector("[data-novo]").onclick = async () => {
+      if (!confirmar("Gerar um novo link? O link atual deixa de funcionar.")) return;
+      try { const n = await api(`assinaturas/${id}/link/novo`, { method: "POST" }); toast("Novo link gerado"); mostrarLink(id, { ...r, url: n.url }); } catch (e) { toast(e.message, true); }
+    };
+    f.onsubmit = (e) => e.preventDefault();
+    if (!dlg.open) dlg.showModal();
+  }
   function tabelaPagamentos(lista, prods, comCliente) {
     return `<div class="card tbl-wrap"><table><thead><tr><th>#</th>${comCliente ? "<th>Cliente</th>" : ""}<th>Produto</th><th class="num">Valor</th><th>Status</th><th>Método</th><th>Criado</th><th>Pago em</th><th></th></tr></thead><tbody>
-    ${lista.map((p) => `<tr><td class="muted">${p.id}</td>${comCliente ? `<td><a href="#/cliente/${p.cliente_id}">${esc(p.cliente)}</a></td>` : ""}<td>${prodTag(p.produto, prods)}</td><td class="num"><b>${brl(p.valor_centavos)}</b></td><td>${pill(p.status, STATUS_PAG)}</td><td>${esc(p.metodo || "—")}${p.mp_payment_id ? '<div class="small muted">Mercado Pago</div>' : ""}</td><td>${dataBR(p.criado_em)}</td><td>${dataBR(p.pago_em)}</td>
+    ${lista.map((p) => `<tr><td class="muted">${p.id}</td>${comCliente ? `<td><a href="#/cliente/${p.cliente_id}">${esc(p.cliente)}</a></td>` : ""}<td>${prodTag(p.produto, prods)}</td><td class="num"><b>${brl(p.valor_centavos)}</b></td><td>${pill(p.status, STATUS_PAG)}</td><td>${esc(p.mp_payment_id && p.referencia ? p.referencia : p.metodo || "—")}${p.mp_payment_id ? '<div class="small muted">Mercado Pago</div>' : ""}</td><td>${dataBR(p.criado_em)}</td><td>${dataBR(p.pago_em)}</td>
       <td>${p.status !== "pago" ? `<button class="btn sm" data-act="baixar" data-id="${p.id}">Marcar como pago</button>` : `<button class="btn sm ghost" data-act="mudarPagamento" data-id="${p.id}">Alterar</button>`}</td></tr>`).join("") || `<tr><td colspan="${comCliente ? 9 : 8}" class="empty">Nenhum pagamento.</td></tr>`}
     </tbody></table></div>`;
   }
@@ -237,8 +265,9 @@
     return `<div class="top"><div><h1>Configurações</h1><p>Integrações e segurança.</p></div></div>
     <div class="grid g2 fade">
       <div class="card pad"><h2>Mercado Pago</h2>
-        <p>${eu.mercadopago ? '<span class="pill ok">credencial configurada</span>' : '<span class="pill warn">falta a credencial</span>'} ${eu.webhook ? '<span class="pill ok">webhook configurado</span>' : '<span class="pill warn">falta o segredo do webhook</span>'}</p>
-        <ol class="small" style="padding-left:18px;line-height:1.7"><li>No Mercado Pago: <b>Suas integrações → Criar aplicação</b> (pagamentos online, assinaturas).</li><li>Copie o <b>Access Token de produção</b>.</li><li>Em <b>Webhooks</b>, cadastre <code>https://console.lldworks.com.br/webhooks/mercadopago</code> com os eventos <i>Planos e assinaturas</i> e <i>Pagamentos</i>, e copie a <b>assinatura secreta</b>.</li><li>No Cloudflare: Workers → <b>lldworks-hub</b> → Configurações → Variáveis e segredos: crie <code>MP_ACCESS_TOKEN</code> e <code>MP_WEBHOOK_SECRET</code> (tipo Secret).</li></ol>
+        <p>${eu.mercadopago ? '<span class="pill ok">credencial configurada</span>' : '<span class="pill warn">falta a credencial</span>'} ${eu.webhook ? '<span class="pill ok">webhook configurado</span>' : '<span class="pill warn">falta o segredo do webhook</span>'} ${eu.links ? '<span class="pill ok">links de pagamento ativos</span>' : '<span class="pill warn">links de pagamento desligados</span>'}</p>
+        <p class="small">O cliente paga em <b>pagar.lldworks.com.br</b>: escolhe o plano e paga por <b>Pix</b> ou <b>cartão em até 12x</b>. A liberação é automática (aviso do Mercado Pago, retorno do cliente e conferência a cada 5 min).</p>
+        <ol class="small" style="padding-left:18px;line-height:1.7"><li>No Mercado Pago: <b>Suas integrações → Criar aplicação</b> → <i>Pagamentos online</i> → <i>Checkout Pro</i>.</li><li>Copie o <b>Access Token de produção</b>.</li><li>Em <b>Webhooks</b>, cadastre <code>https://console.lldworks.com.br/webhooks/mercadopago</code> com o evento <i>Pagamentos</i> (modo produção) e copie a <b>assinatura secreta</b>.</li><li>No Cloudflare: Workers → <b>lldworks-hub</b> → Configurações → Variáveis e segredos: crie <code>MP_ACCESS_TOKEN</code> e <code>MP_WEBHOOK_SECRET</code> (tipo Secret).</li><li>Na conta do Mercado Pago: tenha uma <b>chave Pix</b> cadastrada (sem ela o Pix não aparece) e defina em <i>Parcelamento</i> quem paga os juros das parcelas.</li></ol>
         <p class="small muted">As chaves ficam só no Cloudflare: nunca passam pelo chat nem pelo navegador.</p></div>
       <div class="card pad"><h2>Segurança</h2><dl class="kv"><dt>Este painel</dt><dd>Cloudflare Access: código no e-mail autorizado a cada 24 h</dd><dt>Login dos clientes</dt><dd>Senha com hash PBKDF2 (100 mil iterações) conferida no servidor; sessão assinada de 8 h; bloqueio após 8 tentativas</dd><dt>Webhook</dt><dd>Assinatura HMAC do Mercado Pago conferida e eventos sem duplicidade</dd><dt>Histórico</dt><dd>Toda alteração registrada em <a href="#/eventos">Histórico</a></dd></dl></div>
     </div>`;
@@ -268,6 +297,7 @@
         aoEnviar: async (d) => { await api("assinaturas/" + a.id, { method: "PUT", body: d }); toast("Assinatura salva"); render(); } });
       void prods;
     },
+    linkPagamento: async (b) => { b.disabled = true; try { mostrarLink(+b.dataset.id, await api(`assinaturas/${b.dataset.id}/link`)); } finally { b.disabled = false; } },
     cobranca: async (b) => { b.disabled = true; try { const r = await api(`assinaturas/${b.dataset.id}/cobranca`, { method: "POST" }); toast("Link de pagamento criado"); await navigator.clipboard.writeText(r.link).catch(() => {}); render(); } catch (e) { toast(e.message, true); b.disabled = false; } },
     lancarPagamento: (b) => formulario({ titulo: "Registrar pagamento", descricao: "Use para Pix, transferência ou dinheiro recebidos fora do Mercado Pago. Marcado como pago, a assinatura fica ativa e o vencimento avança um ciclo.",
       campos: [{ nome: "valor", rotulo: "Valor (R$)", tipo: "number", passo: "0.01", min: 0, obrig: true, valor: (+b.dataset.valor / 100).toFixed(2) },

@@ -984,7 +984,7 @@ pos.plano=async()=>{const box=$('#planoBox');if(!box)return;if(!NUVEM){box.inner
    ${p.vence_em?`<p class="small">${p.status==='teste'?'Teste até':'Vence em'} ${dt(p.vence_em)}</p>`:''}
    ${!p.liberada?'<p class="small" style="color:var(--lo)">A assinatura não está liberada. Fale com a LLD Works para regularizar.</p>':''}
    ${lims}
-   <p class="small" style="margin-top:18px">Vagas pausadas ou encerradas não contam no limite. Precisa de mais? <a href="https://produtos.lldworks.com.br/#rhworks" target="_blank" rel="noopener">Fale com a LLD Works</a> para mudar de plano.</p>`}
+   <p class="small" style="margin-top:18px">Vagas pausadas ou encerradas não contam no limite.</p><div style="margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px">${p.status==='cortesia'?'':'<a class="btn dark" href="/assinar">Pagar ou trocar de plano</a><span class="small">Pix ou cartão em até 12x</span>'}</div><p class="small" style="margin-top:10px">Dúvidas sobre os planos? <a href="https://produtos.lldworks.com.br/#rhworks" target="_blank" rel="noopener">Fale com a LLD Works</a>.</p>`}
  catch(e){box.innerHTML='<p class="small">Não consegui carregar o plano agora. Tente de novo em instantes.</p>'}};
 function vAjuda(){const online=!ehLocal();
  return`<div class="top"><div><h1>Como usar o RHWorks</h1><p>Tudo o que o RH precisa para ir do currículo à entrevista.</p></div></div>

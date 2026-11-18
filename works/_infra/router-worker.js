@@ -181,6 +181,18 @@ async function backend(req, env, url, p, s, caminho = url.pathname) {
   return new Response(r.body, { status: r.status, headers: rh });
 }
 
+// "Pagar ou trocar de plano" (aba Plano dos painéis): leva o cliente logado ao link de pagamento dele no Hub
+// (pagar.lldworks.com.br: escolhe o plano e paga por Pix ou cartão em até 12x). Demonstração não cobra.
+async function assinar(env, p, s) {
+  if (s.demo) return Response.redirect("https://produtos.lldworks.com.br/#" + p.slug, 302);
+  try {
+    const r = await env.HUB.fetch(`https://hub.interno/interno/link-pagamento?produto=${encodeURIComponent(p.slug)}&cliente=${encodeURIComponent(s.c)}`);
+    const d = await r.json();
+    if (r.ok && /^https:\/\/pagar\.lldworks\.com\.br\//.test(d.url || "")) return new Response(null, { status: 303, headers: { Location: d.url, "Cache-Control": "no-store", ...SEG } });
+  } catch {}
+  return new Response("O pagamento online ainda não está disponível. Fale com a LLD Works: lucasldiogo@lldworks.com.br", { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", ...SEG } });
+}
+
 async function produto(req, env, url, p, sessaoFixa = null) {
   const path = url.pathname;
   if (path === "/entrar") return req.method === "POST" ? entrar(req, env, url, p) : html(telaLogin(p));
@@ -222,6 +234,7 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   }
   const s = sessaoFixa || (await sessao(req, env, p));
   if (!s) return path.startsWith("/api/") ? new Response('{"erro":"login"}', { status: 401, headers: { "Content-Type": "application/json" } }) : Response.redirect(url.origin + "/entrar", 302);
+  if (path === "/assinar" && BACKENDS[p.slug]) return assinar(env, p, s);
   if (BACKENDS[p.slug] && path.startsWith("/api/admin/")) return backend(req, env, url, p, s);
   if (BACKENDS[p.slug] && path.startsWith("/api/") && !p.api) return jsonErro(404, "Rota não encontrada");
   if (p.api && CRIVO_ROTAS.test(path) && !path.startsWith("/lib/")) {
