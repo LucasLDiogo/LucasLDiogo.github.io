@@ -9,7 +9,7 @@ const ALIASES = {
 };
 // Produtos com login: cada um no próprio endereço. dir = pasta em /works/, entrada = página principal.
 const PRODUTOS = {
-  "agentworks.lldworks.com.br": { slug: "agentworks", nome: "AgentWorks", cor: "#0E9F6E", dir: "agentworks", entrada: "index.html", frase: "Assistente com IA no site e no WhatsApp: responde pela sua base e chama a equipe quando precisa." },
+  "agentworks.lldworks.com.br": { slug: "agentworks", nome: "AgentWorks", cor: "#0E9F6E", dir: "agentworks", entrada: "index.html", aposLogin: "/painel", frase: "Atendimento com IA no WhatsApp (QR Code ou API oficial): responde, agenda, anota pedidos e chama a equipe." },
   "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "salesworks", entrada: "index.html", frase: "Loja online com pedidos no WhatsApp, estoque e CRM de clientes." },
   "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "serviceworks", entrada: "index.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
   "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "linkworks", entrada: "index.html", frase: "Link na bio com páginas, estatísticas e proteção." },
@@ -115,7 +115,7 @@ async function entrar(req, env, url, p) {
   TENTATIVAS.delete(ip);
   const dados = b64u(enc.encode(JSON.stringify({ e: email, p: p.slug, c: r.cliente.id, cn: r.cliente.nome, cs: r.cliente.slug, r: r.usuario.papel, x: Math.floor(Date.now() / 1000) + SESSAO_H * 3600 })));
   const valor = dados + "." + (await hmac(env, dados));
-  return new Response(null, { status: 303, headers: { Location: p.slug === "serviceworks" ? "/app" : "/", "Cache-Control": "no-store", "Set-Cookie": `lw_s=${valor}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSAO_H * 3600}`, ...SEG } });
+  return new Response(null, { status: 303, headers: { Location: p.aposLogin || (p.slug === "serviceworks" ? "/app" : "/"), "Cache-Control": "no-store", "Set-Cookie": `lw_s=${valor}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSAO_H * 3600}`, ...SEG } });
 }
 function sair() {
   return new Response(null, { status: 303, headers: { Location: "/entrar", "Cache-Control": "no-store", "Set-Cookie": "lw_s=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0", ...SEG } });
@@ -207,6 +207,8 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   if (path === "/entrar") return req.method === "POST" ? entrar(req, env, url, p) : html(telaLogin(p));
   if (path === "/sair") return sair();
   if (BACKENDS[p.slug]) { const c = await conta(req, env, url, p); if (c) return c; }
+  if (p.slug === "agentworks") { const r = await agentworks(req, env, url, p, sessaoFixa); if (r) return r; }
+  if (p.slug === "serviceworks" && path.startsWith("/api/integracao/agentworks")) return swIntegracao(req, env, url);
   // Vitrine: rotas públicas, sem login, para quem vai comprar ou agendar.
   if (BACKENDS[p.slug]) {
     // Partes públicas dos produtos com backend próprio: arquivos /pub/, vitrine do ServiceWorks e páginas do LinkWorks.
@@ -305,21 +307,123 @@ async function conta(req, env, url, p) {
   return new Response(r.body, { status: r.status, headers: h });
 }
 // Assinatura liberada? (cache de 60 s; se o Hub falhar, libera e o login segue valendo)
+// assinaturaHub devolve também o plano (o AgentWorks usa para ligar os módulos certos).
 const LIBERADO = new Map();
-async function liberado(env, p, cliente) {
-  if (!env.HUB || !cliente) return true;
+async function assinaturaHub(env, p, cliente) {
+  if (!env.HUB || !cliente) return { liberada: true };
   const k = `${p.slug}:${cliente}`, c = LIBERADO.get(k);
   if (c && c.ate > Date.now()) return c.v;
-  let v = true;
-  try { const r = await env.HUB.fetch(`https://hub.interno/interno/assinatura?produto=${p.slug}&cliente=${cliente}`); if (r.ok) v = !!(await r.json()).liberada; } catch {}
+  let v = { liberada: true };
+  try { const r = await env.HUB.fetch(`https://hub.interno/interno/assinatura?produto=${p.slug}&cliente=${cliente}`); if (r.ok) { const d = await r.json(); v = d && typeof d === "object" ? d : { liberada: false }; } } catch {}
   LIBERADO.set(k, { v, ate: Date.now() + 60e3 }); if (LIBERADO.size > 5000) LIBERADO.clear();
   return v;
 }
+async function liberado(env, p, cliente) { return !!(await assinaturaHub(env, p, cliente)).liberada; }
 function telaBloqueio(p) {
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Acesso suspenso · ${esc(p.nome)}</title>
 <style>:root{--p:${p.cor}}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#F4F3F8;font:16px/1.55 Inter,system-ui,sans-serif;color:#17142A;padding:20px}.c{background:#fff;border-radius:18px;padding:32px;max-width:460px;box-shadow:0 20px 50px -25px rgba(0,0,0,.35)}h1{font-size:24px;margin:0 0 10px}p{color:#4B4858}a.b{display:inline-block;margin:16px 10px 0 0;padding:12px 18px;border-radius:12px;background:var(--p);color:#fff;font-weight:700;text-decoration:none}a.s{color:var(--p);font-weight:600}</style></head>
 <body><div class="c"><h1>Seu acesso ao ${esc(p.nome)} venceu</h1><p>O período liberado terminou ou a assinatura está suspensa. <b>Seus dados estão guardados</b> e voltam assim que o acesso for renovado.</p>
 <a class="b" href="/assinar">Assinar agora</a><a class="s" href="/sair">Sair</a></div></body></html>`;
+}
+
+// ---------- AgentWorks: o painel e a IA rodam no motor (WhatsApp por QR Code ou API oficial) ----------
+// O motor é o servidor do atendimento (túnel "lld-atende" da Cloudflare, mesmo endereço do console atende.lldworks.com.br).
+// O navegador nunca fala com ele direto:
+// o roteador confere o login no Hub e assina quem é o cliente com MOTOR_KEY (HMAC-SHA256 de horário, método,
+// caminho e cabeçalhos x-lw-*). Sem assinatura válida, o motor recusa. / = site de venda; /painel = acesso direto.
+const AG_MOTOR = "https://atende.lldworks.com.br";
+const AG_SITE = "agentworks/site.html";
+const AG_MOTOR_ROTAS = /^\/(painel\/?$|api\/(sso|painel)\/|chat$|logo\/)/;
+const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+async function hmacHex(chave, texto) {
+  const k = await crypto.subtle.importKey("raw", enc.encode(chave), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  return hex(await crypto.subtle.sign("HMAC", k, enc.encode(texto)));
+}
+async function motor(req, env, url, p, s, caminho = url.pathname) {
+  if (!env.MOTOR_KEY) return jsonErro(503, "Serviço indisponível. Tente em alguns minutos.");
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    const o = req.headers.get("Origin");
+    if (s && o && o !== url.origin) return jsonErro(403, "Origem inválida");
+  }
+  const alvo = caminho + url.search, h = new Headers();
+  for (const k of ["content-type", "accept", "x-hub-signature-256"]) if (req.headers.get(k)) h.set(k, req.headers.get(k));
+  h.set("x-lw-ip", req.headers.get("CF-Connecting-IP") || "?");
+  if (s) {
+    const a = s.demo ? {} : await assinaturaHub(env, p, s.c);
+    const nomes = ["x-lw-cliente", "x-lw-email", "x-lw-papel", "x-lw-slug", "x-lw-nome", "x-lw-demo", "x-lw-plano"];
+    const vals = [String(s.c), s.e || "", s.r || "admin", s.cs || "", encodeURIComponent(s.cn || ""), s.demo ? "1" : "", encodeURIComponent(a.plano || "")];
+    const ts = String(Math.floor(Date.now() / 1000));
+    nomes.forEach((n, i) => h.set(n, vals[i]));
+    h.set("x-lw-ts", ts);
+    h.set("x-lw-motor", await hmacHex(env.MOTOR_KEY, [ts, req.method, alvo, ...vals].join("\n")));
+  }
+  const corpo = req.method === "GET" || req.method === "HEAD" ? undefined : await req.arrayBuffer();
+  if (corpo && corpo.byteLength > 25 * 1024 * 1024) return jsonErro(413, "Envio grande demais.");
+  let r;
+  try { r = await fetch(AG_MOTOR + alvo, { method: req.method, headers: h, body: corpo, redirect: "manual" }); }
+  catch { r = null; }
+  if (!r || r.status === 502 || r.status === 503 || r.status === 530) {
+    if (caminho === "/painel") return html(telaMotorFora(p), 503);
+    return jsonErro(503, "O atendimento está reiniciando. Tente de novo em instantes.");
+  }
+  const rh = new Headers(r.headers);
+  for (const [k, v] of Object.entries(SEG)) rh.set(k, v);
+  rh.set("X-Frame-Options", "DENY");
+  return new Response(r.body, { status: r.status, headers: rh });
+}
+function telaMotorFora(p) {
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="20"><title>${esc(p.nome)} · voltando em instantes</title>
+<style>:root{--p:${p.cor}}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#F3F7F5;font:16px/1.55 Inter,system-ui,sans-serif;color:#10241C;padding:20px}.c{background:#fff;border-radius:18px;padding:32px;max-width:460px;box-shadow:0 20px 50px -25px rgba(0,0,0,.35)}h1{font-size:23px;margin:0 0 10px}p{color:#4B5A54}a{color:var(--p);font-weight:700}</style></head>
+<body><div class="c"><h1>O painel está voltando</h1><p>O servidor do atendimento está reiniciando. Esta página tenta de novo sozinha em 20 segundos. Seus dados e conversas estão guardados.</p><p><a href="/">Voltar ao site</a> · <a href="/sair">Sair</a></p></div></body></html>`;
+}
+async function agentworks(req, env, url, p, sessaoFixa) {
+  const path = url.pathname, leitura = req.method === "GET" || req.method === "HEAD";
+  if (path === "/webhook/meta") return motor(req, env, url, p, null); // a assinatura da Meta é conferida no motor
+  if (path === "/" && !sessaoFixa) { // site de venda e apresentação (planos em #plano, botão leva para /assinar)
+    if (!leitura) return new Response("Método não permitido", { status: 405 });
+    const r = await origem(req, AG_SITE, 0);
+    if (r.status !== 200) return r;
+    const s = await sessao(req, env, p);
+    const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
+    return new Response(s ? (await r.text()).replace("</head>", '<meta name="aw-logado" content="1"></head>') : r.body, { status: 200, headers: h });
+  }
+  const painel = path === "/" || AG_MOTOR_ROTAS.test(path);
+  if (!painel) return null;
+  const s = sessaoFixa || (await sessao(req, env, p));
+  if (!s) return path.startsWith("/api/") || path === "/chat" ? jsonErro(401, "login") : Response.redirect(url.origin + "/entrar", 302);
+  if (s.demo && !leitura) return jsonErro(403, "Demonstração em modo leitura: as alterações estão desativadas. Peça o seu acesso para testar de verdade.");
+  if (!s.demo && !(await liberado(env, p, s.c))) {
+    if (path.startsWith("/api/") || path === "/chat") return jsonErro(402, "Seu acesso venceu. Seus dados estão guardados: assine para continuar.");
+    return html(telaBloqueio(p), 402);
+  }
+  const caminho = path === "/" || path.startsWith("/painel") ? "/painel" : path;
+  const r = await motor(req, env, url, p, s, caminho);
+  if (!s.demo || caminho !== "/painel" || r.status !== 200) return r;
+  const h = new Headers(r.headers); h.delete("Content-Length");
+  return new Response((await r.text()).replace("</body>", faixaDemo(p, s) + "</body>"), { status: 200, headers: h });
+}
+// ServiceWorks como agenda do AgentWorks (módulo pago): o motor chama assinado; o roteador confere a assinatura,
+// as duas assinaturas no Hub e a vitrine do próprio cliente, e repassa para a API pública dela.
+async function swIntegracao(req, env, url) {
+  if (!env.MOTOR_KEY || !env.SERVICEWORKS) return jsonErro(503, "Serviço indisponível. Tente em alguns minutos.");
+  const cliente = req.headers.get("x-aw-cliente") || "", ts = req.headers.get("x-aw-ts") || "", tel = (req.headers.get("x-aw-tel") || "").slice(0, 20);
+  if (!/^\d{1,9}$/.test(cliente) || !(Math.abs(Date.now() / 1000 - Number(ts)) < 300)) return jsonErro(401, "Acesso não autorizado.");
+  const corpo = req.method === "GET" || req.method === "HEAD" ? new Uint8Array(0) : new Uint8Array(await req.arrayBuffer());
+  if (corpo.byteLength > 16 * 1024) return jsonErro(413, "Envio grande demais.");
+  const esperado = await hmacHex(env.MOTOR_KEY, [ts, req.method, url.pathname + url.search, cliente, tel, hex(await crypto.subtle.digest("SHA-256", corpo))].join("\n"));
+  if (!igual(enc.encode(req.headers.get("x-aw-assinatura") || ""), enc.encode(esperado))) return jsonErro(401, "Acesso não autorizado.");
+  const resto = url.pathname.slice("/api/integracao/agentworks".length);
+  if (resto && !/^\/(livres|agendar|agendamento|cancelar)$/.test(resto)) return jsonErro(404, "Rota não encontrada");
+  if (!(await liberado(env, PRODUTOS["serviceworks.lldworks.com.br"], +cliente))) return jsonErro(402, "A assinatura do ServiceWorks não está ativa.");
+  if (!(await liberado(env, PRODUTOS["agentworks.lldworks.com.br"], +cliente))) return jsonErro(402, "A assinatura do AgentWorks não está ativa.");
+  const e = await env.SERVICEWORKS.fetch(new Request("https://sw.interno/api/admin/empresa", { headers: { "x-lw-cliente": cliente, "x-lw-papel": "admin", "x-lw-email": "agentworks@lldworks.com.br", "x-lw-slug": "", "x-lw-nome": "AgentWorks", "x-lw-ip": "agentworks" } }));
+  let emp = null; try { emp = e.ok ? await e.json() : null; } catch {}
+  const slug = emp && (emp.slug || (emp.empresa && emp.empresa.slug));
+  if (!slug) return jsonErro(404, "Este cliente ainda não configurou a vitrine do ServiceWorks.");
+  const h = new Headers({ "x-lw-ip": `agentworks:${cliente}:${tel.replace(/\D/g, "").slice(-13)}` });
+  if (corpo.byteLength) h.set("content-type", "application/json");
+  const r = await env.SERVICEWORKS.fetch(new Request(`https://sw.interno/api/publico/${slug}${resto}${url.search}`, { method: req.method, headers: h, body: corpo.byteLength ? corpo : undefined }));
+  return new Response(r.body, { status: r.status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...SEG } });
 }
 
 // ---------- Conteúdo estático (GitHub Pages em /works/) ----------

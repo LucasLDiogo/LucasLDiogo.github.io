@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AgentWorks — atendimento com IA no WhatsApp | LLD Works</title>
+<meta name="description" content="O WhatsApp do seu negócio respondendo, agendando e anotando pedidos com IA, 24 horas. Conecte por QR Code ou pela API oficial da Meta. Planos a partir de R$ 149/mês.">
+<meta name="theme-color" content="#063B2C">
+<link rel="icon" href="/pub/icone.svg" type="image/svg+xml">
+<meta property="og:title" content="AgentWorks — atendimento com IA no WhatsApp">
+<meta property="og:description" content="Responde, agenda, lembra e chama a sua equipe quando precisa. QR Code ou API oficial.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* AgentWorks · site de venda. Verde AgentWorks (#0E9F6E) sobre verde-noite (#063B2C), verde WhatsApp de acento. */
+:root{--p:#0E9F6E;--p2:#12B981;--noite:#063B2C;--noite2:#04261D;--zap:#25D366;--ink:#0D2119;--mut:#4F6259;--card:#F2F8F5;--line:#DCEBE4;--bg:#fff}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Montserrat,system-ui,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h2{font-size:clamp(28px,3.4vw,42px)}h3{font-size:19px}
+p{margin:0}a{color:inherit}
+.band{padding:clamp(48px,7vw,96px) max(5vw,16px)}
+.wrap{max-width:1200px;margin:0 auto}
+.kicker{display:inline-block;font:700 13px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--p);margin-bottom:12px}
+.lead{color:var(--mut);max-width:68ch;margin-top:14px;font-size:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:999px;font-weight:700;text-decoration:none;border:0;cursor:pointer;font-size:16px;transition:transform .2s,box-shadow .2s,background .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--zap);outline-offset:3px}
+.b-pri{background:var(--zap);color:#052b14;box-shadow:0 12px 30px -12px #25D366aa}
+.b-sec{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22)}
+.b-ver{background:var(--p);color:#fff}
+.b-cla{background:#fff;color:var(--noite);border:1px solid var(--line)}
+
+/* topo fixo */
+.barra{position:sticky;top:0;z-index:40;background:color-mix(in oklab,var(--noite) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08)}
+.barra nav{max-width:1200px;margin:0 auto;padding:10px max(5vw,16px);display:flex;align-items:center;gap:18px}
+.marca{display:flex;align-items:center;gap:10px;font:800 20px Montserrat,sans-serif;color:#fff;text-decoration:none;margin-right:auto}
+.marca svg{width:36px;height:36px}
+.links{display:flex;gap:18px}.links a{color:#cfeee2;text-decoration:none;font-weight:600;font-size:15px}.links a:hover{color:#fff}
+.barra .btn{min-height:40px;padding:0 16px;font-size:15px}
+@media(max-width:900px){.links{display:none}}
+
+/* herói */
+.hero{background:radial-gradient(1100px 620px at 85% -10%,#0E9F6E 0%,transparent 60%),radial-gradient(700px 500px at -10% 110%,#25D36633,transparent),var(--noite);color:#fff}
+.hero .grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(28px,5vw,64px);align-items:center}
+.hero h1{font-size:clamp(32px,3.9vw,50px)}
+.hero h1 em{font-style:normal;color:var(--zap)}
+.hero .sub{font-size:18px;color:#d3f0e4;max-width:58ch;margin-top:18px}
+.acoes{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.selos{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.selos span{font-size:13.5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:6px 12px;color:#e2f6ee}
+.palco{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:center}
+.fone{width:100%;max-width:320px;height:540px;margin:0 auto;border-radius:40px;background:#03170f;padding:11px;box-shadow:0 40px 80px -30px #000c,inset 0 0 0 2px #1d4a39}
+.tela{height:100%;border-radius:30px;overflow:hidden;display:flex;flex-direction:column;background:#efe7dd}
+.tela header{background:#075e54;color:#fff;padding:13px 15px;display:flex;align-items:center;gap:10px}
+.av{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;flex:none}
+.av svg{width:24px;height:24px}
+.tela header b{display:block;font-size:15px}.tela header small{font-size:12px;opacity:.85}
+.conv{flex:1;padding:14px 10px;display:flex;flex-direction:column;gap:8px;overflow:hidden;justify-content:flex-end}
+.m{max-width:86%;padding:8px 11px;border-radius:10px;font-size:14px;line-height:1.42;color:#111b21;box-shadow:0 1px 1px #0002;white-space:pre-line}
+.m.c{align-self:flex-end;background:#d9fdd3}.m.a{align-self:flex-start;background:#fff}
+.m.t{align-self:flex-start;background:#fff;display:flex;gap:4px;padding:12px 14px}
+.m.t i{width:7px;height:7px;border-radius:50%;background:#8696a0;display:block}
+.m.tool{align-self:center;background:#fff8c5;color:#54656f;font-size:12.5px;box-shadow:none}
+.lado{display:grid;gap:14px}
+.agenda{background:#fff;color:var(--ink);border-radius:18px;padding:16px;box-shadow:0 30px 60px -30px #000a}
+.agenda h3{font-size:16px;display:flex;justify-content:space-between}
+.agenda h3 span{font:500 13px Inter,sans-serif;color:var(--mut)}
+.slot{display:grid;grid-template-columns:50px 1fr;gap:10px;align-items:center;border-top:1px solid #e6efea;padding:9px 0;font-size:14px}
+.slot b{font-variant-numeric:tabular-nums}
+.vz{color:#6b8078}.oc{background:#eef7f3;border-left:4px solid var(--p);padding:6px 8px;border-radius:6px}
+.novo{background:#e5fbe9;border-left:4px solid var(--zap);padding:6px 8px;border-radius:6px;font-weight:700}
+.chip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:11px 13px;font-size:14.5px;color:#e6f7f0;transition:background .3s,border-color .3s}
+.chip svg{flex:none;width:20px;height:20px;color:var(--zap)}
+.chip.on{background:rgba(37,211,102,.18);border-color:var(--zap)}
+.nota{font-size:12.5px;color:#a8d9c6;text-align:center}
+@media(max-width:1020px){.hero .grid{grid-template-columns:minmax(0,1fr)}.palco{grid-template-columns:minmax(0,320px) minmax(0,1fr)}}
+@media(max-width:640px){.palco{grid-template-columns:minmax(0,1fr)}.lado .chip{display:none}}
+
+/* recursos */
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:34px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:34px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:34px}
+.rec{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:grid;gap:8px;align-content:start}
+.rec .ic{width:44px;height:44px;border-radius:12px;background:var(--p);display:grid;place-items:center;color:#fff}
+.rec .ic svg{width:23px;height:23px}
+.rec p,.rec li{color:var(--mut);font-size:15px}
+@media(max-width:980px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:620px){.g4,.g2{grid-template-columns:minmax(0,1fr)}}
+
+/* conexão */
+.cx{background:var(--card)}
+.op{background:#fff;border:2px solid var(--line);border-radius:22px;padding:26px;display:grid;gap:12px;align-content:start}
+.op.oficial{border-color:var(--p)}
+.op .tag{justify-self:start;font:700 12.5px Inter,sans-serif;padding:5px 10px;border-radius:999px;background:#E8F7F0;color:#065F46}
+.op ul{margin:0;padding-left:0;list-style:none;display:grid;gap:8px}
+.op li{display:grid;grid-template-columns:22px 1fr;gap:8px;color:var(--mut);font-size:15px}
+.op li::before{content:"✓";color:var(--p);font-weight:800}
+.op li.nao::before{content:"–";color:#9AA9A2}
+
+/* serviceworks */
+.sw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center}
+.sw .caixa{background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;border-radius:24px;padding:26px;display:grid;gap:12px;box-shadow:0 30px 60px -30px #5B21B6aa}
+.sw .linha{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;font-size:15px}
+.sw .linha b{margin-left:auto;font-variant-numeric:tabular-nums}
+@media(max-width:860px){.sw{grid-template-columns:minmax(0,1fr)}}
+
+/* passos */
+.passo{border-top:3px solid var(--p);padding-top:14px}
+.passo .n{font:800 34px Montserrat,sans-serif;color:var(--p)}
+.passo p{color:var(--mut);font-size:15px;margin-top:6px}
+
+/* planos */
+.planos{background:var(--noite);color:#fff}
+.planos .lead{color:#cdeee1}
+.pl{background:#fff;color:var(--ink);border-radius:24px;padding:26px;display:flex;flex-direction:column;gap:14px;position:relative}
+.pl.dest{outline:3px solid var(--zap);transform:translateY(-6px)}
+.pl .fita{position:absolute;top:-13px;left:24px;background:var(--zap);color:#052b14;font:800 12px Inter,sans-serif;padding:5px 12px;border-radius:999px;letter-spacing:.04em}
+.pl .preco{font:800 40px Montserrat,sans-serif;color:var(--noite)}
+.pl .preco small{font:600 15px Inter,sans-serif;color:var(--mut)}
+.pl ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;flex:1}
+.pl li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:15px;color:var(--mut)}
+.pl li::before{content:"✓";color:var(--p);font-weight:800}
+.pl li.lim::before{content:"•";color:var(--p)}
+.pl .btn{width:100%}
+.pag{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:26px;color:#cdeee1;font-size:14.5px}
+.pag span{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 12px}
+.carr{grid-column:1/-1;text-align:center;color:#cdeee1}
+
+/* segurança e faq */
+.seg div{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start}
+.seg svg{width:26px;height:26px;color:var(--p)}
+.seg p{color:var(--mut);font-size:15px}.seg b{display:block;color:var(--ink);margin-bottom:2px}
+.faq{max-width:860px;margin:30px auto 0;display:grid;gap:10px}
+.faq details{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 18px}
+.faq summary{cursor:pointer;font-weight:700;padding:14px 0;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";float:right;color:var(--p);font-size:22px;line-height:1}
+.faq details[open] summary::after{content:"–"}
+.faq p{color:var(--mut);padding:0 0 16px}
+
+.fim{background:radial-gradient(900px 500px at 50% -20%,#0E9F6E,transparent 70%),var(--noite2);color:#fff;text-align:center}
+.fim p{color:#cdeee1;margin:14px auto 26px;max-width:60ch;font-size:17px}
+.fim .acoes{justify-content:center}
+footer{padding:26px max(5vw,16px);font-size:13.5px;color:var(--mut);text-align:center;display:grid;gap:6px}
+footer a{color:var(--p);font-weight:600}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#0E9F6E"/><rect x="2" y="2" width="60" height="60" rx="14" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="2"/><path fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M16 20h32a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H30l-9 7v-7h-5a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4z"/><circle cx="24" cy="32" r="2.6" fill="#fff"/><circle cx="32" cy="32" r="2.6" fill="#fff"/><circle cx="40" cy="32" r="2.6" fill="#fff"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-agenda" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m9 15 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-sino" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2zM10 20a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pessoa" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-loja" viewBox="0 0 24 24"><path d="M4 10v10h16V10M3 10l2-6h14l2 6H3zM9 20v-5h6v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-preco" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8L3 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7.5" cy="8.5" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="i-mega" viewBox="0 0 24 24"><path d="M3 10v4h3l7 4V6L6 10H3zM17 9a4 4 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+  <symbol id="i-grafico" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-robo" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4v4M9 14h.01M15 14h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0V8zM12 17v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-raio" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="barra">
+  <nav aria-label="Principal">
+    <a class="marca" href="#topo"><svg><use href="#logo"/></svg>AgentWorks</a>
+    <div class="links"><a href="#recursos">Recursos</a><a href="#conexao">Conexão</a><a href="#serviceworks">ServiceWorks</a><a href="#plano">Planos</a><a href="#perguntas">Dúvidas</a></div>
+    <a class="btn b-sec" id="entrar" href="/painel">Entrar</a>
+    <a class="btn b-pri" href="#plano">Assinar</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero band" id="topo">
+  <div class="wrap grid">
+    <div>
+      <span class="kicker" style="color:#7CF0B9">AgentWorks · LLD Works</span>
+      <h1>O WhatsApp do seu negócio <em>respondendo, agendando e vendendo</em> sozinho, 24 horas</h1>
+      <p class="sub">Uma assistente com IA que conhece seus serviços, preços, horários e regras. Mostra os horários livres, marca e remarca, anota pedidos, lembra o cliente na véspera e passa para a sua equipe quando precisa de gente.</p>
+      <div class="acoes"><a class="btn b-pri" href="#plano">Ver planos e assinar</a><a class="btn b-sec" href="https://agentworks-demo.lldworks.com.br/" target="_blank" rel="noopener">Ver o painel de demonstração</a></div>
+      <div class="selos"><span>QR Code ou API oficial da Meta</span><span>Pix ou cartão em até 12x</span><span>Painel com login e senha</span></div>
+    </div>
+    <div class="palco" aria-label="Demonstração animada: conversa no WhatsApp e agenda preenchida">
+      <div class="fone"><div class="tela">
+        <header><div class="av"><svg><use href="#logo"/></svg></div><div><b>Pet Shop Patinhas</b><small id="st">online</small></div></header>
+        <div class="conv" id="conv" aria-live="off"></div>
+      </div></div>
+      <div class="lado">
+        <div class="chip" data-k="preco"><svg><use href="#i-preco"/></svg>Responde preço na hora</div>
+        <div class="chip" data-k="hora"><svg><use href="#i-agenda"/></svg>Consulta horários livres</div>
+        <div class="agenda"><h3>Agenda <span>terça</span></h3>
+          <div class="slot"><b>08:00</b><div class="oc">Banho + tosa · Mel</div></div>
+          <div class="slot"><b>09:00</b><div class="oc">Hidratação · Bidu</div></div>
+          <div class="slot"><b>10:00</b><div class="vz" id="slot10">livre</div></div>
+          <div class="slot"><b>11:00</b><div class="vz">livre</div></div></div>
+        <div class="chip" data-k="sino"><svg><use href="#i-sino"/></svg>Lembra na véspera</div>
+        <p class="nota">Conversa de demonstração com dados fictícios.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="recursos">
+  <div class="wrap">
+    <span class="kicker">O que vem no AgentWorks</span>
+    <h2>Atendimento, agenda e vendas no mesmo painel</h2>
+    <p class="lead">Tudo o que o robô faz aparece no painel: você acompanha, assume uma conversa quando quiser e devolve para o robô depois.</p>
+    <div class="g4">
+      <div class="rec"><div class="ic"><svg><use href="#i-robo"/></svg></div><h3>Robô com IA e menu</h3><p>Saudação com o nome do cliente, menu numerado (catálogo, agendar, pedidos, atendente) e IA para o texto livre. Aviso gentil fora do horário.</p></div>
+      <div class="rec"><div class="ic"><svg><use href="#i-chat"/></svg></div><h3>Conversas</h3><p>Todas as conversas em tempo real. Assuma com um toque, responda pelo painel e devolva ao robô.</p></div>
+      <div class="rec"><div class="ic"><svg><use href="#i-agenda"/></svg></div><h3>Agenda</h3><p>Horários, intervalos, feriados, equipes e capacidade. Marca, remarca e cancela com confirmação “sim ou não”.</p></div>
+      <div class="rec"><div class="ic"><svg><use href="#i-sino"/></svg></div><h3>Lembretes</h3><p>Na véspera e no dia, com “1 Confirmar / 2 Reagendar”. Menos faltas, agenda cheia.</p></div>
+      <div class="rec"><div class="ic"><svg><use href="#i-pessoa"/></svg></div><h3>Clientes (CRM)</h3><p>Funil (novo, em atendimento, cliente, recorrente), etiquetas, notas e histórico de cada contato.</p></div>
+      <div class="rec"><div class="ic"><svg><use href="#i-loja"/></svg></div><h3>Catálogo e pedidos</h3><p>Produtos, serviços, preço por variação (ex.: porte), combos e importação por Excel. O robô anota pedidos e avisa o cliente a cada etapa.</p></div>
+      <div class="rec"><div class="ic"><svg><use href="#i-grafico"/></svg></div><h3>Gestão da agenda</h3><p>Ocupação por dia e por equipe, alertas, clientes sumidos e antecipação de horários vagos.</p></div>
+      <div class="rec"><div class="ic"><svg><use href="#i-mega"/></svg></div><h3>Disparos</h3><p>Texto, arte ou vídeo para listas, etiquetas ou grupos, com envio espaçado para proteger o número.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band cx" id="conexao">
+  <div class="wrap">
+    <span class="kicker">Conexão do WhatsApp</span>
+    <h2>Você escolhe como o seu número se conecta</h2>
+    <p class="lead">Comece em minutos pelo QR Code e, quando quiser, troque para a API oficial da Meta no próprio painel. As conversas, clientes e agenda continuam os mesmos.</p>
+    <div class="g2">
+      <div class="op"><span class="tag">Começa na hora</span><h3>📱 QR Code</h3><p style="color:var(--mut)">Use o WhatsApp que o negócio já tem (comum ou Business). Abra “Aparelhos conectados” e escaneie.</p>
+        <ul><li>Ativa em 1 minuto, sem aprovação</li><li>Disparos para grupos e listas</li><li>Ideal para começar e para pequenos negócios</li><li class="nao">Não é oficial: evite disparo em massa para quem não pediu</li></ul></div>
+      <div class="op oficial"><span class="tag">Recomendado para crescer</span><h3>✅ API oficial da Meta</h3><p style="color:var(--mut)">Número verificado na WhatsApp Business Platform, conectado com o seu token e o identificador do número.</p>
+        <ul><li>Sem risco de bloqueio por automação</li><li>Nome do negócio aprovado pela Meta</li><li>Lembretes por modelo aprovado, mesmo após 24 h</li><li class="nao">A Meta cobra pelas mensagens de modelo que você iniciar</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="serviceworks">
+  <div class="wrap sw">
+    <div>
+      <span class="kicker" style="color:#7C3AED">Integração ServiceWorks</span>
+      <h2>Já usa o ServiceWorks? O robô agenda direto na sua agenda</h2>
+      <p class="lead">Barbearia, salão, clínica e pet shop: com a integração ligada, o AgentWorks consulta os horários livres de cada profissional no ServiceWorks e marca, remarca ou cancela lá mesmo. Sem agenda duplicada.</p>
+      <div class="acoes"><a class="btn b-ver" href="#plano">Incluído no Premium</a><a class="btn b-cla" href="https://produtos.lldworks.com.br/#serviceworks" target="_blank" rel="noopener">Conhecer o ServiceWorks</a></div>
+    </div>
+    <div class="caixa" aria-label="Exemplo de horários vindos do ServiceWorks">
+      <b style="font:800 18px Montserrat,sans-serif">Horários livres · amanhã</b>
+      <div class="linha">✂️ Corte · Zé <b>09:00</b></div>
+      <div class="linha">✂️ Corte · Ana <b>10:30</b></div>
+      <div class="linha">🧔 Barba · Zé <b>11:00</b></div>
+      <span style="font-size:13px;opacity:.85">Serviços, preços e profissionais sincronizados com um toque. Exige assinatura ativa dos dois produtos na mesma conta LLD Works.</span>
+    </div>
+  </div>
+</section>
+
+<section class="band cx">
+  <div class="wrap">
+    <span class="kicker">Como começar</span>
+    <h2>Do cadastro ao robô atendendo, no mesmo dia</h2>
+    <div class="g3">
+      <div class="passo"><div class="n">1</div><h3>Escolha o plano</h3><p>Cadastre-se com e-mail e WhatsApp, confirme o código que chega no e-mail e pague por Pix ou cartão em até 12x.</p></div>
+      <div class="passo"><div class="n">2</div><h3>Configure o negócio</h3><p>A configuração guiada leva por marca, horários, catálogo, pagamentos e textos do robô. Dá para testar a conversa no próprio painel.</p></div>
+      <div class="passo"><div class="n">3</div><h3>Conecte o WhatsApp</h3><p>QR Code ou API oficial. A partir daí o robô atende e você acompanha tudo em agentworks.lldworks.com.br/painel.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band planos" id="plano">
+  <div class="wrap">
+    <span class="kicker" style="color:#7CF0B9">Planos</span>
+    <h2>Escolha o plano e comece hoje</h2>
+    <p class="lead">Mensalidade sem fidelidade. Troque de plano quando quiser pelo próprio painel.</p>
+    <div class="g3" id="planos" aria-live="polite"><p class="carr">Carregando planos…</p></div>
+    <div class="pag"><span>💠 Pix</span><span>💳 Cartão em até 12x</span><span>🔒 Pagamento seguro</span><span>Acesso liberado logo após o pagamento</span></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <span class="kicker">Segurança</span>
+    <h2>Feito para não dar dor de cabeça</h2>
+    <div class="g3 seg">
+      <div><svg><use href="#i-escudo"/></svg><p><b>Não inventa preço nem regra</b>O robô responde só pelo que está cadastrado no painel e recusa assunto de fora.</p></div>
+      <div><svg><use href="#i-pessoa"/></svg><p><b>Você assume quando quiser</b>Respondeu pelo celular ou pelo painel, o robô pausa naquela conversa.</p></div>
+      <div><svg><use href="#i-agenda"/></svg><p><b>Cada cliente mexe só no que é dele</b>Remarcar e cancelar exigem o mesmo WhatsApp de quem marcou.</p></div>
+      <div><svg><use href="#i-raio"/></svg><p><b>Resiste a manipulação</b>Pedidos para revelar instruções, dar desconto falso ou fugir do assunto são recusados.</p></div>
+      <div><svg><use href="#i-plug"/></svg><p><b>Login e senha com níveis</b>Dono configura; equipe atende e opera, sem mexer em catálogo, robô ou cobrança.</p></div>
+      <div><svg><use href="#i-escudo"/></svg><p><b>Dados protegidos</b>Conexão HTTPS, token da Meta guardado com criptografia e webhooks com assinatura conferida.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band cx" id="perguntas">
+  <div class="wrap">
+    <span class="kicker">Dúvidas</span>
+    <h2>Perguntas frequentes</h2>
+    <div class="faq">
+      <details><summary>Preciso trocar de número de WhatsApp?</summary><p>Não. Pelo QR Code você usa o número que já tem. Na API oficial, o número precisa estar na WhatsApp Business Platform da Meta (dá para migrar o número atual).</p></details>
+      <details><summary>Posso começar no QR Code e ir para a API oficial depois?</summary><p>Sim. A troca é feita no painel, em “Conectar WhatsApp”. Conversas, clientes, agenda e configurações continuam.</p></details>
+      <details><summary>A IA pode responder errado?</summary><p>Ela responde só com o que você cadastrou (serviços, preços, horários, regras e perguntas frequentes). Quando não sabe, passa para a sua equipe e avisa o responsável.</p></details>
+      <details><summary>Como entro no painel depois de assinar?</summary><p>Pelo endereço agentworks.lldworks.com.br/painel, com o e-mail e a senha que você criou no cadastro. Esqueceu? Use “Esqueci minha senha” na tela de entrada.</p></details>
+      <details><summary>Posso cancelar?</summary><p>Sim, sem fidelidade. Seus dados ficam guardados e voltam se você reativar a assinatura.</p></details>
+      <details><summary>Quem cuida da API oficial da Meta?</summary><p>A Meta cobra pelas mensagens de modelo que o negócio inicia (como lembretes fora da janela de 24 h). A LLD Works ajuda a configurar o número e os modelos.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="band fim">
+  <div class="wrap">
+    <h2>Seu atendimento no WhatsApp, no piloto automático</h2>
+    <p>Pet shop, clínica, salão, barbearia, oficina ou loja: cadastre o seu negócio e o AgentWorks atende do seu jeito.</p>
+    <div class="acoes"><a class="btn b-pri" href="#plano">Escolher meu plano</a><a class="btn b-sec" id="entrar2" href="/painel">Já sou cliente · Entrar</a></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>AgentWorks é um produto <b>LLD Works</b> · <a href="/termos">Termos</a> · <a href="/privacidade">Privacidade</a> · Acesso direto ao painel: <a href="/painel">agentworks.lldworks.com.br/painel</a></span>
+  <span>Desenvolvido por Lucas L. Diogo — LLD Intelligence · 2026</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+"use strict";
+(() => {
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const reais = (c) => ((+c || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const reduz = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const G = typeof gsap !== "undefined" && !reduz ? gsap : null;
+  if (G && typeof ScrollTrigger !== "undefined") G.registerPlugin(ScrollTrigger);
+
+  // já logado: o botão vira "Abrir meu painel"
+  if (document.querySelector('meta[name="aw-logado"]')) { $("#entrar").textContent = "Abrir meu painel"; $("#entrar2").textContent = "Abrir meu painel"; }
+
+  // ---------- planos ao vivo (LLD Works Hub) ----------
+  const RECURSOS = {
+    essencial: ["Robô com IA e menu", "Conversas e atendimento humano", "Clientes (CRM)", "Agenda com lembretes", "Catálogo e combos"],
+    profissional: ["Tudo do Essencial", "Gestão da agenda (ocupação e alertas)", "Pedidos com aviso ao cliente", "Disparos para listas e grupos"],
+    premium: ["Tudo do Profissional", "Integração com o ServiceWorks", "Webhooks para os seus sistemas (pedidos e agendamentos)"],
+  };
+  const NOMES_LIMITE = { atendentes: "usuários no painel", conversas_mes: "conversas com IA por mês" };
+  const chave = (n) => String(n || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const desenhar = (planos) => {
+    const box = $("#planos");
+    if (!planos.length) { box.innerHTML = '<p class="carr">Nenhum plano à venda neste momento. Fale com a LLD Works: lucasldiogo@lldworks.com.br</p>'; return; }
+    const ordem = [...planos].sort((a, b) => a.preco_centavos - b.preco_centavos);
+    const meio = ordem.length === 3 ? ordem[1].id : null;
+    box.innerHTML = ordem.map((p) => {
+      const k = Object.keys(RECURSOS).find((r) => chave(p.nome).includes(r));
+      const lim = Object.entries(p.limites || {}).map(([n, v]) => `<li class="lim">até ${Number(v).toLocaleString("pt-BR")} ${esc(NOMES_LIMITE[n] || n.replace(/_/g, " "))}</li>`).join("");
+      return `<article class="pl ${p.id === meio ? "dest" : ""}">${p.id === meio ? '<span class="fita">MAIS ESCOLHIDO</span>' : ""}<h3>${esc(p.nome)}</h3>
+        <div class="preco">${reais(p.preco_centavos)}<small>/${p.ciclo === "anual" ? "ano" : "mês"}</small></div>
+        <ul>${(RECURSOS[k] || []).map((r) => `<li>${esc(r)}</li>`).join("")}${lim}</ul>
+        <a class="btn ${p.id === meio ? "b-pri" : "b-ver"}" href="/assinar?plano=${encodeURIComponent(p.id)}">Assinar o ${esc(p.nome)}</a></article>`;
+    }).join("");
+    if (G) G.from(".pl", { y: 40, opacity: 0, stagger: .1, duration: .6, ease: "power3.out", scrollTrigger: { trigger: "#planos", start: "top 85%" } });
+  };
+  fetch("/api/conta/produto", { credentials: "same-origin" }).then((r) => r.ok ? r.json() : Promise.reject(r.status))
+    .then((d) => desenhar(d.planos || []))
+    .catch(() => desenhar([{ id: 1, nome: "Essencial", preco_centavos: 14900, ciclo: "mensal", limites: { atendentes: 2 } },
+                           { id: 2, nome: "Profissional", preco_centavos: 24900, ciclo: "mensal", limites: { atendentes: 5 } },
+                           { id: 3, nome: "Premium", preco_centavos: 39900, ciclo: "mensal", limites: { atendentes: 15 } }]));
+
+  // ---------- conversa animada ----------
+  const roteiro = [
+    ["c", "Oi! Quanto é o banho pra um beagle?"],
+    ["a", "Oi! Eu sou a Luna, do Pet Shop Patinhas 🐾 Beagle é porte médio: o banho fica R$ 70,00. Quer marcar?", "preco"],
+    ["c", "Quero! Terça às 10h dá?"],
+    ["tool", "consultando a agenda…", "hora"],
+    ["a", "Terça às 10:00 está livre ✔ Banho (médio), R$ 70,00. Qual o nome do seu cão?"],
+    ["c", "Thor. Pode marcar!"],
+    ["tool", "agendando…", "agenda"],
+    ["a", "Marcado! Terça às 10:00, código AG-7K3M. Na véspera eu te lembro por aqui 😉", "sino"],
+  ];
+  const conv = $("#conv"), slot = $("#slot10"), st = $("#st");
+  const chip = (k) => $$(".chip").forEach((c) => c.classList.toggle("on", c.dataset.k === k));
+  const bolha = (tipo, txt) => { const d = document.createElement("div"); d.className = "m " + tipo; if (tipo === "t") d.innerHTML = "<i></i><i></i><i></i>"; else d.textContent = txt; conv.appendChild(d); while (conv.children.length > 7) conv.firstChild.remove(); return d; };
+  const marcar = () => { slot.className = "novo"; slot.textContent = "Banho · Thor · AG-7K3M"; };
+  if (!G) { roteiro.filter((r) => r[0] !== "tool").slice(-5).forEach((r) => bolha(r[0], r[1])); marcar(); }
+  else {
+    const espera = (s) => new Promise((r) => setTimeout(r, s * 1000));
+    const entra = (el) => G.from(el, { y: 14, opacity: 0, scale: .96, duration: .35, ease: "back.out(1.6)" });
+    (async () => { for (;;) {
+      conv.innerHTML = ""; chip(null); slot.className = "vz"; slot.textContent = "livre";
+      for (const [tipo, txt, k] of roteiro) {
+        if (tipo === "a") { st.textContent = "digitando…"; const t = bolha("t"); entra(t); G.to(t.children, { y: -3, repeat: 5, yoyo: true, stagger: .12, duration: .2 }); await espera(1.1); t.remove(); st.textContent = "online"; }
+        const el = bolha(tipo, txt); entra(el); if (k) chip(k);
+        if (tipo === "tool" && k === "agenda") { await espera(.9); marcar(); G.fromTo(slot, { scale: .6, opacity: 0 }, { scale: 1, opacity: 1, duration: .6, ease: "elastic.out(1,.55)" }); }
+        await espera(tipo === "c" ? 1.3 : 1.6);
+      }
+      await espera(3.5);
+    } })();
+    G.from(".hero h1, .hero .sub, .hero .acoes, .hero .selos", { y: 30, opacity: 0, duration: .8, stagger: .1, ease: "power3.out" });
+    G.from(".fone", { y: 60, rotate: -3, opacity: 0, duration: 1, ease: "power3.out", delay: .2 });
+    G.from(".lado > *", { x: 30, opacity: 0, duration: .6, stagger: .08, delay: .4 });
+    const sobe = (sel, gat) => G.from(sel, { y: 36, opacity: 0, stagger: .08, duration: .6, ease: "power2.out", scrollTrigger: { trigger: gat, start: "top 85%" } });
+    sobe("#recursos .rec", "#recursos .g4"); sobe("#conexao .op", "#conexao .g2"); sobe(".passo", ".passo"); sobe(".seg > div", ".seg"); sobe(".sw .caixa .linha", ".sw .caixa");
+  }
+})();
+</script>
+</body>
+</html>
