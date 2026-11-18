@@ -82,7 +82,7 @@ button:hover{filter:brightness(1.08)}button:active{transform:translateY(1px)}.er
 <p class="err" role="alert">${esc(erro)}${acao ? ` <a href="${esc(acao.href)}">${esc(acao.rot)}</a>` : ""}</p><button type="submit">Entrar</button>
 <p class="links"><a href="/recuperar">Esqueci minha senha</a><a href="/recuperar?primeiro=1">Primeiro acesso</a></p>
 <div class="chips"><span>Senha conferida no servidor</span><span>Sessão de ${SESSAO_H} h</span><span>Conexão protegida (HTTPS)</span></div>
-<p class="demo">Ainda não tem conta? <a href="/assinar"><b>Assine o ${esc(p.nome)}</b></a> · <a href="/termos">Termos</a> · <a href="/privacidade">Privacidade</a></p></form></main></body></html>`;
+<p class="demo">Ainda não tem conta? <a href="/assinar"><b>Assine o ${esc(p.nome)}</b></a> · <a href="/termos">Termos</a> · <a href="/privacidade">Privacidade</a>${p.slug === "linkworks" ? `<br>Cliente do ServiceWorks Pro ou Premium? Use o <b>mesmo e-mail e senha</b>.` : ""}</p></form></main></body></html>`;
 }
 async function entrar(req, env, url, p) {
   if (req.headers.get("Origin") && req.headers.get("Origin") !== url.origin) return new Response("Origem inválida", { status: 403 });
@@ -141,6 +141,7 @@ async function demo(req, env, url, p) {
     if (path.includes("..")) return new Response("Inválido", { status: 400 });
     return origem(req, "portfolio/demos" + (path === "/" || path === "/index.html" ? `/${p.slug}.html` : path), path === "/" ? 0 : 300);
   }
+  if (p.slug === "linkworks" && (path === "/" || path === "/index.html")) return lwTela(env, req, "/ui/venda.html");
   if (path.startsWith("/api/") && req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Demonstração em modo leitura: as alterações estão desativadas. Peça o seu acesso para testar de verdade.");
   return produto(req, env, url, p, p.slug === "serviceworks" && cookie(req, "lw_demo") === "pet" ? DEMO_PET : DEMO_SESSAO);
 }
@@ -155,8 +156,20 @@ const BACKENDS = {
   rhworks: { binding: "RHWORKS", host: "rh.interno", corpoMax: 4 * 1024 * 1024 },
 };
 // LinkWorks: linkworks.lldworks.com.br/<endereço> é a página pública; /<endereço>/l/<id> conta o clique.
-const LW_PUBLICA = /^\/([a-z0-9][a-z0-9_.-]{2,29})(\/l\/\d{1,9})?\/?$/;
-const LW_RESERVADO = /^(entrar|sair|api|pub|conta|assinar|recuperar|termos|privacidade|index\.html|favicon\.ico|robots\.txt)$/;
+const LW_PUBLICA = /^\/([a-z0-9][a-z0-9_.-]{2,29})(\/l\/\d{1,9}|\/contato\.vcf)?\/?$/;
+const LW_RESERVADO = /^(entrar|sair|api|pub|conta|assinar|recuperar|termos|privacidade|index\.html|favicon\.ico|robots\.txt|painel|venda|exemplo|ui|m)$/;
+// LinkWorks v2: telas, mídia (KV) e exemplos vêm do próprio Worker do produto (binding LINKWORKS: /ui, /m, /exemplo).
+async function lwTela(env, req, caminho, extra = "") {
+  if (!env.LINKWORKS) return new Response("Serviço indisponível", { status: 503 });
+  const h = new Headers();
+  for (const k of ["range", "user-agent"]) if (req.headers.get(k)) h.set(k, req.headers.get(k));
+  const r = await env.LINKWORKS.fetch(new Request("https://lw.interno" + caminho, { method: req.method === "HEAD" ? "HEAD" : "GET", headers: h }));
+  const rh = new Headers(r.headers);
+  for (const [k, v] of Object.entries(SEG)) rh.set(k, v);
+  if (!extra || r.status !== 200) return new Response(r.body, { status: r.status, headers: rh });
+  rh.delete("Content-Length");
+  return new Response((await r.text()).replace("</body>", extra + "</body>"), { status: 200, headers: rh });
+}
 // SalesWorks: salesworks.lldworks.com.br/<endereço> é a loja online pública.
 const SL_LOJA = /^\/([a-z0-9][a-z0-9-]{2,39})\/?$/;
 const SL_RESERVADO = /^(entrar|sair|api|pub|conta|assinar|recuperar|termos|privacidade|index|admin|painel|loja|lojas|favicon|robots|salesworks|lldworks)$/;
@@ -175,7 +188,7 @@ async function backend(req, env, url, p, s, caminho = url.pathname) {
     if (o && o !== url.origin) return jsonErro(403, "Origem inválida");
   }
   const h = new Headers();
-  for (const k of ["content-type", "accept", "x-hub-signature-256"]) if (req.headers.get(k)) h.set(k, req.headers.get(k));
+  for (const k of ["content-type", "accept", "x-hub-signature-256", "range"]) if (req.headers.get(k)) h.set(k, req.headers.get(k));
   h.set("x-lw-ip", req.headers.get("CF-Connecting-IP") || "?");
   if (!s) for (const k of ["user-agent", "referer"]) if (req.headers.get(k)) h.set(k, req.headers.get(k).slice(0, 500));
   if (s) {
@@ -183,7 +196,8 @@ async function backend(req, env, url, p, s, caminho = url.pathname) {
     h.set("x-lw-slug", s.cs || ""); h.set("x-lw-nome", encodeURIComponent(s.cn || ""));
   }
   const corpo = req.method === "GET" || req.method === "HEAD" ? undefined : await req.arrayBuffer();
-  if (corpo && corpo.byteLength > (b.corpoMax || 64 * 1024)) return jsonErro(413, "Envio grande demais.");
+  const max = p.slug === "linkworks" && caminho === "/api/admin/midia" ? 10 * 1024 * 1024 + 4096 : b.corpoMax || 64 * 1024; // LinkWorks: vídeo até 10 MB
+  if (corpo && corpo.byteLength > max) return jsonErro(413, max > 5e6 ? "O arquivo pode ter até 10 MB." : "Envio grande demais.");
   const r = await alvo.fetch(new Request(`https://${b.host}${caminho}${url.search}`, { method: req.method, headers: h, body: corpo, redirect: "manual" }));
   const rh = new Headers(r.headers);
   for (const [k, v] of Object.entries(SEG)) rh.set(k, v);
@@ -209,6 +223,13 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   if (BACKENDS[p.slug]) { const c = await conta(req, env, url, p); if (c) return c; }
   if (p.slug === "agentworks") { const r = await agentworks(req, env, url, p, sessaoFixa); if (r) return r; }
   if (p.slug === "serviceworks" && path.startsWith("/api/integracao/agentworks")) return swIntegracao(req, env, url);
+  // LinkWorks v2: raiz sem login = site de venda; /pub, /m (fotos e vídeos dos clientes) e /exemplo vêm do Worker do produto.
+  if (p.slug === "linkworks" && (req.method === "GET" || req.method === "HEAD")) {
+    if (path.startsWith("/pub/") && !path.includes("..")) return lwTela(env, req, "/ui/" + path.slice(5));
+    if (/^\/m\/[A-Za-z0-9_.-]{6,60}$/.test(path)) return lwTela(env, req, path);
+    if (/^\/exemplo\/[a-z0-9-]{2,20}$/.test(path)) return lwTela(env, req, path);
+    if (path === "/" && !sessaoFixa && !(await sessao(req, env, p))) return lwTela(env, req, "/ui/venda.html");
+  }
   // Vitrine: rotas públicas, sem login, para quem vai comprar ou agendar.
   if (BACKENDS[p.slug]) {
     // Partes públicas dos produtos com backend próprio: arquivos /pub/, vitrine do ServiceWorks e páginas do LinkWorks.
@@ -257,6 +278,11 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   if (!s.demo && !(await liberado(env, p, s.c))) {
     if (path.startsWith("/api/")) return jsonErro(402, "Seu acesso venceu. Seus dados estão guardados: assine para continuar.");
     return html(telaBloqueio(p), 402);
+  }
+  if (p.slug === "linkworks" && (path === "/" || path === "/index.html" || path === "/painel") && (req.method === "GET" || req.method === "HEAD")) {
+    const r = await lwTela(env, req, "/ui/painel.html", s.demo ? faixaDemo(p, s) : "");
+    const h = new Headers(r.headers); h.set("Cache-Control", "no-store");
+    return new Response(r.body, { status: r.status, headers: h });
   }
   if (BACKENDS[p.slug] && path.startsWith("/api/admin/")) return backend(req, env, url, p, s);
   if (BACKENDS[p.slug] && path.startsWith("/api/") && !p.api) return jsonErro(404, "Rota não encontrada");
