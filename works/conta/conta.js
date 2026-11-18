@@ -59,7 +59,7 @@
       $("#versoesLista").innerHTML = P.versoes.map((v) => `<button type="button" class="versao" role="radio" aria-checked="false" data-ver="${v}"><b>${esc((VERSOES[v] || [v])[0])}</b><span>${esc((VERSOES[v] || ["", ""])[1])}</span></button>`).join("");
       if (pv && P.versoes.includes(pv)) escolheVersao(pv);
     }
-    $("#planos").innerHTML = P.planos.map((p) => { const itens = itensDoPlano(p.limites); return `<button type="button" class="plano" data-plano="${p.id}" aria-pressed="false"><b>${esc(p.nome)}</b><span class="preco">${reais(p.preco_centavos)}<small>/${p.ciclo === "anual" ? "ano" : "mês"}</small></span>
+    $("#planos").innerHTML = P.planos.map((p) => { const itens = (P.produto && P.produto.slug === "serviceworks" ? ["Agenda, vitrine, CRM, caixa, estoque, promoções e indicadores"] : []).concat(itensDoPlano(p.limites)); return `<button type="button" class="plano" data-plano="${p.id}" aria-pressed="false"><b>${esc(p.nome)}</b><span class="preco">${reais(p.preco_centavos)}<small>/${p.ciclo === "anual" ? "ano" : "mês"}</small></span>
       <ul>${itens.length ? itens.map((t) => `<li>${esc(t)}</li>`).join("") : "<li>tudo incluso</li>"}</ul></button>`; }).join("") || '<p class="aviso">Nenhum plano à venda neste momento. Fale com a LLD Works.</p>';
     const alvo = pre && P.planos.find((p) => String(p.id) === pre || semAcento(p.nome) === semAcento(pre));
     if (alvo) escolhe(alvo.id);
