@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src https:; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; base-uri 'none'">
+<title>SocialWorks · Painel</title>
+<link rel="icon" href="/pub/icone.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="/pub/base.css">
+<style>
+.flt{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.flt button{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:5px 12px;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink);min-height:36px}
+.flt button[aria-pressed=true]{background:var(--p);border-color:var(--p);color:#fff}
+.barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.barra .sp{flex:1}
+.barra select{width:auto;min-width:170px}
+/* calendário */
+.cal{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.cal .sem{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:var(--soft);font-size:12px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.cal .sem span{padding:8px 10px}
+.cal .gr{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.dia{min-height:118px;border-top:1px solid var(--line);border-left:1px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:4px;position:relative}
+.dia:nth-child(7n+1){border-left:0}
+.dia.fora{background:color-mix(in oklab,var(--soft) 55%,var(--card))}.dia.fora .n{opacity:.45}
+.dia.hoje .n{background:var(--p);color:#fff}
+.dia .n{font-size:12.5px;font-weight:700;width:26px;height:26px;display:grid;place-items:center;border-radius:99px}
+.dia .mais{position:absolute;top:5px;right:5px;border:0;background:none;color:var(--mute);font-size:18px;line-height:1;width:28px;height:28px;border-radius:8px;cursor:pointer;opacity:0;transition:opacity .15s}
+.dia:hover .mais,.dia .mais:focus-visible{opacity:1}.dia .mais:hover{background:var(--soft);color:var(--p)}
+.dia.alvo{background:var(--pk);outline:2px dashed var(--p);outline-offset:-3px}
+.pc{display:flex;gap:6px;align-items:center;width:100%;text-align:left;border:0;border-radius:8px;padding:4px 6px;font-size:12.5px;cursor:pointer;background:color-mix(in oklab,var(--c,#DC2626) 13%,var(--card));color:var(--ink);box-shadow:inset 3px 0 0 var(--c,#DC2626)}
+.pc:hover{background:color-mix(in oklab,var(--c,#DC2626) 22%,var(--card))}
+.pc b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}.pc .h{font-size:11.5px;color:var(--mute);flex:none}
+.pc .st{width:8px;height:8px;border-radius:99px;flex:none;background:var(--mute)}
+.st-rascunho{background:#8A8698!important}.st-aprovado{background:#2563EB!important}.st-agendado{background:var(--warn)!important}.st-publicado{background:var(--ok)!important}.st-erro{background:var(--bad)!important}.st-ideia{background:#A855F7!important}
+.leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mute);margin-top:10px}.leg i{display:inline-block;width:9px;height:9px;border-radius:99px;margin-right:5px;vertical-align:0}
+.agenda{display:none}
+@media(max-width:820px){.cal{display:none}.agenda{display:flex;flex-direction:column;gap:10px}#dicaArrastar{display:none}}
+.ag-d h3{font-size:13px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin:8px 0 6px}
+.ag-d .pc{padding:9px 10px;font-size:14px;margin-bottom:6px}
+/* lista de posts */
+.posts{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.pcard .th{aspect-ratio:16/9;background:var(--soft) center/cover no-repeat;display:grid;place-items:center;color:var(--mute);font-size:28px;position:relative}
+.pcard .th .tp{position:absolute;left:8px;top:8px}
+.pcard .cp{padding:12px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.pcard .cp p{color:var(--mute);font-size:13.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.pcard .ac{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 12px;margin-top:auto}
+.pcard .er{font-size:12.5px;color:var(--bad)}
+.chip.c-rascunho{background:color-mix(in oklab,#8A8698 18%,var(--card));color:light-dark(#4B4858,#C7C3D4)}
+.chip.c-aprovado{background:color-mix(in oklab,#2563EB 15%,var(--card));color:#2563EB}
+.chip.c-agendado{background:color-mix(in oklab,var(--warn) 16%,var(--card));color:var(--warn)}
+.chip.c-publicado{background:color-mix(in oklab,var(--ok) 15%,var(--card));color:var(--ok)}
+.chip.c-erro{background:color-mix(in oklab,var(--bad) 14%,var(--card));color:var(--bad)}
+.chip.c-ideia{background:color-mix(in oklab,#A855F7 15%,var(--card));color:#A855F7}
+/* editor de post com prévia */
+dialog.largo{width:min(1040px,96vw)}
+.ed{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px}
+@media(max-width:860px){.ed{grid-template-columns:1fr}.ed .prev{order:-1}}
+.cont{font-size:12px;color:var(--mute);text-align:right;margin-top:3px}.cont.alto{color:var(--bad);font-weight:700}
+.sug{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.sug button{text-align:left;white-space:pre-wrap;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:10px 12px;cursor:pointer;font-size:14px;line-height:1.45;color:var(--ink)}
+.sug button:hover{border-color:var(--p);background:var(--pk)}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.tags button{border:1px solid var(--line);background:var(--soft);border-radius:99px;padding:3px 10px;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.tags button[aria-pressed=true]{background:var(--p);border-color:var(--p);color:#fff}
+.ig{background:#fff;color:#111;border:1px solid #DBDBDB;border-radius:14px;overflow:hidden;font:14px/1.4 -apple-system,"Segoe UI",Inter,sans-serif;position:sticky;top:0}
+.ig .hd{display:flex;align-items:center;gap:9px;padding:10px 12px}
+.ig .av{width:32px;height:32px;border-radius:99px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;background:var(--c,#DC2626);box-shadow:0 0 0 2px #fff,0 0 0 3.5px #E1306C;flex:none}
+.ig .hd b{font-size:13.5px}.ig .hd small{display:block;color:#737373;font-size:11.5px}
+.ig .md{aspect-ratio:1;background:#EFEFEF center/cover no-repeat;display:grid;place-items:center;color:#8E8E8E;font-size:13px;text-align:center;padding:14px;position:relative}
+.ig.v .md{aspect-ratio:9/16;max-height:440px}
+.ig .md .dots{position:absolute;bottom:8px;left:0;right:0;display:flex;gap:4px;justify-content:center}.ig .md .dots i{width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.7)}.ig .md .dots i:first-child{background:#0095F6}
+.ig .md .rl{position:absolute;left:10px;right:10px;bottom:10px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);font-size:13px;text-align:left;white-space:pre-wrap;max-height:40%;overflow:hidden}
+.ig .ic{display:flex;gap:14px;padding:9px 12px 4px}.ig .ic svg{width:24px;height:24px}
+.ig .lg{padding:4px 12px 12px;white-space:pre-wrap;word-break:break-word;font-size:13.5px}
+.ig .lg .ht{color:#00376B}.ig .lg .vm{color:#737373}
+.ig .qd{padding:0 12px 12px;color:#737373;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+/* ideias */
+.ideia{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;margin:0;color:var(--ink);font-weight:400;font-size:14px}
+.ideia:has(input:checked){border-color:var(--p);background:var(--pk)}
+.ideia b{display:block;font-size:14.5px}.ideia p{color:var(--mute);font-size:13.5px;margin-top:3px}
+/* automações e caixa */
+.au{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.au.off{opacity:.55}.au .kw{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.au .rs{font-size:13.5px;color:var(--mute);margin-top:6px;white-space:pre-wrap}
+.caixa{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:14px;align-items:start}
+@media(max-width:860px){.caixa{grid-template-columns:1fr}}
+.ms{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:var(--card);padding:11px 12px;cursor:pointer;color:var(--ink)}
+.ms:hover{background:var(--soft)}.ms[aria-current=true]{background:var(--pk)}.ms.nova{box-shadow:inset 4px 0 0 var(--p)}
+.ms .l1{display:flex;gap:6px;align-items:center}.ms .l1 b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ms .l1 .h{margin-left:auto;font-size:12px;color:var(--mute);flex:none}
+.ms .ul{font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.bolha{background:var(--soft);border-radius:16px 16px 16px 5px;padding:10px 14px;white-space:pre-wrap;max-width:90%;word-break:break-word}
+.bolha.r{background:var(--pk);border-radius:16px 16px 5px 16px;margin-left:auto}
+.lista-ms{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;max-height:calc(100vh - 260px);overflow-y:auto}
+/* relatórios */
+.barras{display:flex;align-items:flex-end;gap:6px;height:160px}
+.barras .c{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:12px}
+.barras .c i{display:block;width:100%;background:var(--p);border-radius:5px 5px 0 0;min-height:2px}.barras .c span{font-size:10.5px;color:var(--mute);margin-top:4px;white-space:nowrap}
+.hz{display:grid;grid-template-columns:110px minmax(0,1fr) 36px;gap:8px;align-items:center;font-size:13.5px;margin-top:8px}.hz .n{text-align:right;font-weight:700}
+/* perfis */
+.perfil{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px}
+.perfil.off{opacity:.55}
+.perfil .tp{display:flex;gap:10px;align-items:center}.perfil .av{width:42px;height:42px;border-radius:99px;display:grid;place-items:center;color:#fff;font:800 17px Montserrat,sans-serif;flex:none}
+.ok-box{padding:10px 12px;border-radius:10px;background:color-mix(in oklab,var(--ok) 11%,var(--card));border:1px solid color-mix(in oklab,var(--ok) 30%,var(--card));font-size:13.5px}
+.passos{margin:8px 0 0 18px;padding:0;font-size:13.5px;color:var(--mute)}.passos li{margin:3px 0}
+@media(max-width:700px){#stIg{display:none}#kpis,#rKpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#kpis .kpi,#rKpis .kpi{padding:11px 12px}#kpis .l,#rKpis .l{font-size:12px;margin-bottom:3px}}
+@media(max-width:420px){.top{gap:8px}.brand span{font-size:17px}.top [data-act=novoPost]{padding:5px 9px}}
+</style>
+<script src="/pub/painel.js" defer></script>
+</head><body>
+<header class="top">
+ <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#DC2626"/><rect x="15" y="15" width="34" height="34" rx="10" fill="none" stroke="#fff" stroke-width="4"/><circle cx="32" cy="32" r="8" fill="none" stroke="#fff" stroke-width="4"/><circle cx="42" cy="22" r="2.6" fill="#fff"/></svg><span>Social<b>Works</b></span></a>
+ <span class="emp" id="nomeTopo">Carregando…</span><span class="sp"></span>
+ <span class="chip" id="stIg" hidden></span>
+ <button class="btn sm pri" data-act="novoPost">+ Novo post</button>
+ <a class="btn sm" href="/sair">Sair</a>
+</header>
+<nav class="nav" role="tablist" aria-label="Seções do painel">
+ <button role="tab" data-v="calendario" aria-selected="true">Calendário</button>
+ <button role="tab" data-v="posts" aria-selected="false">Posts</button>
+ <button role="tab" data-v="ideias" aria-selected="false">Ideias com IA</button>
+ <button role="tab" data-v="automacoes" aria-selected="false">Automações</button>
+ <button role="tab" data-v="caixa" aria-selected="false">Caixa de entrada <span class="chip p" id="badge" hidden></span></button>
+ <button role="tab" data-v="relatorios" aria-selected="false">Relatórios</button>
+ <button role="tab" data-v="config" aria-selected="false">Perfis e conexão</button>
+ <button role="tab" data-v="plano" aria-selected="false">Plano</button>
+</nav>
+<main>
+ <section class="view on" id="v-calendario" role="tabpanel">
+  <div class="kpis" id="kpis"></div>
+  <div class="barra">
+   <button class="btn sm" data-act="mes" data-d="-1" aria-label="Mês anterior">‹</button>
+   <h1 id="calTit" style="min-width:170px;text-align:center">—</h1>
+   <button class="btn sm" data-act="mes" data-d="1" aria-label="Próximo mês">›</button>
+   <button class="btn sm ghost" data-act="mes" data-d="0">Hoje</button>
+   <span class="sp"></span>
+   <select id="calConta" aria-label="Perfil"></select>
+  </div>
+  <div class="cal" id="cal"><div class="sem"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div><div class="gr" id="calGr"></div></div>
+  <div class="agenda" id="agenda"></div>
+  <div class="leg"><span><i class="st-rascunho"></i>Rascunho</span><span><i class="st-aprovado"></i>Aprovado</span><span><i class="st-agendado"></i>Agendado</span><span><i class="st-publicado"></i>Publicado</span><span><i class="st-erro"></i>Com erro</span><span class="tiny" id="dicaArrastar">Arraste um post para outro dia para mudar a data.</span></div>
+ </section>
+
+ <section class="view" id="v-posts" role="tabpanel">
+  <div class="head"><div><h1>Posts</h1><p>Do rascunho à publicação. A equipe escreve; o administrador aprova e agenda.</p></div></div>
+  <div class="barra">
+   <div class="flt" id="pFlt" role="group" aria-label="Filtrar por etapa">
+    <button data-f="" aria-pressed="true">Todos</button><button data-f="ideia" aria-pressed="false">Ideias</button><button data-f="rascunho" aria-pressed="false">Rascunhos</button><button data-f="aprovado" aria-pressed="false">Aprovados</button><button data-f="agendado" aria-pressed="false">Agendados</button><button data-f="publicado" aria-pressed="false">Publicados</button><button data-f="erro" aria-pressed="false">Com erro</button>
+   </div>
+   <span class="sp"></span><select id="pConta" aria-label="Perfil"></select>
+  </div>
+  <div class="posts" id="pLista"></div>
+ </section>
+
+ <section class="view" id="v-ideias" role="tabpanel">
+  <div class="head"><div><h1>Ideias com IA</h1><p>Peça ideias de conteúdo no tom da sua marca. As escolhidas vão para o banco de ideias, prontas para virar post.</p></div></div>
+  <div class="grid g2" style="align-items:start">
+   <form class="card" id="fIdeias">
+    <h2>O que você precisa?</h2>
+    <label for="iConta">Perfil</label><select id="iConta"></select>
+    <div class="f2"><div><label for="iQtd">Quantas ideias</label><select id="iQtd"><option>3</option><option selected>6</option><option>9</option><option>12</option></select></div>
+     <div><label for="iPer">Para quando</label><input id="iPer" maxlength="80" placeholder="Ex.: próximas 2 semanas, Dia das Mães"></div></div>
+    <label for="iFoco">Foco (opcional)</label><input id="iFoco" maxlength="200" placeholder="Ex.: lançamento do kit café da manhã">
+    <p class="help" id="iUso"></p>
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn pri" id="iBtn">✨ Gerar ideias</button></div>
+   </form>
+   <div class="card">
+    <div class="row sb"><h2>Sugestões</h2><button class="btn sm pri" data-act="salvarIdeias" id="iSalvar" hidden>Salvar escolhidas</button></div>
+    <div id="iRes" class="grid" style="margin-top:10px"><div class="empty">As sugestões aparecem aqui. Marque as que gostar e salve.</div></div>
+   </div>
+  </div>
+  <div class="card" style="margin-top:14px"><div class="row sb"><h2>Banco de ideias</h2><span class="chip c-ideia" id="iN"></span></div><div class="posts" id="iBanco" style="margin-top:10px"></div></div>
+ </section>
+
+ <section class="view" id="v-automacoes" role="tabpanel">
+  <div class="head"><div><h1>Automações</h1><p>Quando alguém comenta ou manda direct com uma palavra-chave, o SocialWorks responde na hora.</p></div><button class="btn pri" data-act="novaAuto" data-adm>+ Nova automação</button></div>
+  <div class="aviso" id="auAviso" hidden></div>
+  <div class="grid" id="auLista" style="margin-top:12px"></div>
+  <form class="card" id="fSim" style="margin-top:16px;max-width:760px">
+   <h2>Testar uma automação</h2><p class="small mute" style="margin-top:4px">Escreva um comentário como se fosse um cliente e veja o que seria respondido. Nada é enviado.</p>
+   <div class="f2"><div><label for="sConta">Perfil</label><select id="sConta"></select></div><div><label for="sTipo">Onde</label><select id="sTipo"><option value="comentario">Comentário em post</option><option value="dm">Mensagem no direct</option></select></div><div><label for="sUser">@ do cliente</label><input id="sUser" maxlength="30" value="maria.cliente"></div></div>
+   <label for="sTxt">Mensagem</label><input id="sTxt" maxlength="300" placeholder="Ex.: qual o preço do kit?" required>
+   <div id="sRes" style="margin-top:12px"></div>
+   <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn">Testar</button></div>
+  </form>
+ </section>
+
+ <section class="view" id="v-caixa" role="tabpanel">
+  <div class="head"><div><h1>Caixa de entrada</h1><p>Comentários e mensagens do direct num lugar só. As respondidas pelas automações também aparecem aqui.</p></div></div>
+  <div class="aviso" id="cxAviso" hidden></div>
+  <div class="barra" style="margin-top:10px"><div class="flt" id="cxFlt" role="group" aria-label="Filtrar mensagens"><button data-f="" aria-pressed="true">Em aberto</button><button data-f="nova" aria-pressed="false">Novas</button><button data-f="automatica" aria-pressed="false">Respondidas pela automação</button><button data-f="respondida" aria-pressed="false">Respondidas pela equipe</button><button data-f="arquivada" aria-pressed="false">Arquivadas</button></div></div>
+  <div class="caixa"><div class="lista-ms" id="cxLista"></div><div class="card" id="cxFio"><div class="empty">Escolha uma mensagem para ver e responder.</div></div></div>
+ </section>
+
+ <section class="view" id="v-relatorios" role="tabpanel">
+  <div class="head"><div><h1>Relatórios</h1><p>Constância de publicação, formatos e o que as automações resolveram.</p></div>
+   <div class="row"><input type="date" id="rDe" aria-label="De" style="width:auto"><input type="date" id="rAte" aria-label="Até" style="width:auto"><button class="btn" data-act="relatorio">Ver</button></div></div>
+  <div class="kpis" id="rKpis"></div>
+  <div class="grid g2">
+   <div class="card"><h2>Posts por semana</h2><div class="barras" id="rSem" style="margin-top:12px"></div></div>
+   <div class="card"><h2>Formatos</h2><div id="rTipo"></div><h2 style="margin-top:18px">Pilares de conteúdo</h2><div id="rPilar"></div></div>
+   <div class="card"><h2>Automações que mais responderam</h2><table><tbody id="rAuto"></tbody></table></div>
+   <div class="card"><h2>Mensagens recebidas</h2><table><tbody id="rMsg"></tbody></table></div>
+  </div>
+ </section>
+
+ <section class="view" id="v-config" role="tabpanel">
+  <div class="head"><div><h1>Perfis e conexão</h1><p>Cada perfil do Instagram tem o seu tom de voz, as hashtags fixas e a conexão para publicar e responder.</p></div><button class="btn pri" data-act="novoPerfil" data-adm>+ Novo perfil</button></div>
+  <div class="grid g2" id="perfis"></div>
+ </section>
+
+ <section class="view" id="v-plano" role="tabpanel">
+  <div class="head"><div><h1>Seu plano</h1><p>Situação da assinatura e quanto do plano você está usando.</p></div></div>
+  <div class="card" id="planoBox"><p class="mute">Carregando…</p></div>
+ </section>
+</main>
+
+<dialog id="dPost" class="largo" aria-labelledby="dpT"><form method="dialog" id="fPost">
+ <div class="row sb"><h2 id="dpT">Post</h2><span class="chip" id="pStChip"></span></div>
+ <div class="ed" style="margin-top:6px">
+  <div>
+   <div class="f2"><div><label for="pConta2">Perfil</label><select id="pConta2"></select></div><div><label for="pTipo">Formato</label><select id="pTipo"><option value="feed">Post no feed</option><option value="carrossel">Carrossel</option><option value="reels">Reels</option><option value="story">Story</option></select></div></div>
+   <label for="pTit">Título interno (só a equipe vê)</label><input id="pTit" maxlength="120" required placeholder="Ex.: Lançamento do kit café da manhã">
+   <div class="f2"><div><label for="pData">Data</label><input type="date" id="pData"></div><div><label for="pHora">Hora</label><input type="time" id="pHora" step="300"></div></div>
+   <label for="pPilar">Pilar de conteúdo</label><select id="pPilar"><option value="">—</option><option value="educar">Educar</option><option value="bastidores">Bastidores</option><option value="vender">Vender</option><option value="prova social">Prova social</option><option value="relacionamento">Relacionamento</option></select>
+   <label for="pMidia">Links da imagem ou do vídeo (um por linha)</label><textarea id="pMidia" maxlength="3000" style="min-height:64px" placeholder="https://…/foto.jpg"></textarea>
+   <p class="help">Use links públicos (Dropbox, site da loja, banco de imagens). Imagem JPG; vídeo MP4. Carrossel: de 2 a 10 links.</p>
+   <div class="row sb" style="margin-top:12px"><label for="pLeg" style="margin:0">Legenda</label><button type="button" class="btn sm" data-act="iaLegenda">✨ Sugerir com IA</button></div>
+   <textarea id="pLeg" maxlength="2200" style="min-height:130px;margin-top:5px" placeholder="Primeira linha forte, quebra de linha e uma chamada para ação."></textarea>
+   <div id="pSug"></div>
+   <label for="pTags">Hashtags</label><input id="pTags" maxlength="600" placeholder="#suamarca #seunicho">
+   <div class="cont" id="pCont"></div>
+   <div id="pInfo" class="small mute" style="margin-top:8px"></div>
+   <p class="err" id="pErr" role="alert"></p>
+  </div>
+  <div class="prev"><p class="small mute" style="margin-bottom:6px">Prévia no Instagram</p><div id="pPrev"></div></div>
+ </div>
+ <div class="acts" style="justify-content:space-between">
+  <div class="row"><button type="button" class="btn sm bad" data-act="apagarPost" id="pApagar">Apagar</button><button type="button" class="btn sm" data-act="duplicarPost" id="pDup">Duplicar</button><button type="button" class="btn sm" data-act="marcarPublicado" id="pManual" data-adm>Já publiquei à mão</button></div>
+  <div class="row"><button class="btn" value="x" formnovalidate>Fechar</button><button type="button" class="btn" data-salvar="rascunho" id="pSalvar">Salvar rascunho</button><button type="button" class="btn" data-salvar="aprovado" data-adm>Aprovar</button><button type="button" class="btn pri" data-salvar="agendado" data-adm>Agendar publicação</button></div>
+ </div>
+</form></dialog>
+
+<dialog id="dIA" aria-labelledby="diaT"><form method="dialog" id="fIA">
+ <h2 id="diaT">✨ Sugerir legendas</h2>
+ <label for="aTema">Sobre o que é o post?</label><input id="aTema" maxlength="300" required placeholder="Ex.: pão de fermentação natural saindo do forno às 7h">
+ <label for="aObj">Objetivo (opcional)</label><input id="aObj" maxlength="160" placeholder="Ex.: levar o cliente a encomendar pelo direct">
+ <label for="aDet">Informações que pode usar (opcional)</label><textarea id="aDet" maxlength="600" placeholder="Preço, horário, endereço… a IA não inventa o que não estiver aqui."></textarea>
+ <p class="err" id="aErr" role="alert"></p>
+ <div class="acts"><button class="btn" value="x" formnovalidate>Cancelar</button><button class="btn pri" value="ok" id="aBtn">Gerar 3 opções</button></div>
+</form></dialog>
+
+<dialog id="dAuto" aria-labelledby="dauT"><form method="dialog" id="fAuto">
+ <h2 id="dauT">Automação</h2>
+ <div class="f2"><div><label for="uConta">Perfil</label><select id="uConta"></select></div><div><label for="uGat">Quando alguém</label><select id="uGat"><option value="comentario">comentar em um post</option><option value="dm">mandar mensagem no direct</option></select></div></div>
+ <label for="uNome">Nome da automação</label><input id="uNome" maxlength="80" required placeholder="Ex.: Preço do kit">
+ <label for="uPal">Palavras-chave (separe por vírgula)</label><input id="uPal" maxlength="300" required placeholder="preço, quanto custa, valor">
+ <p class="help">Sem diferença entre maiúsculas e acentos. Vale a palavra inteira.</p>
+ <div id="uPubBox"><label for="uPub">Resposta pública no comentário</label><input id="uPub" maxlength="300" placeholder="Oi {nome}! Te mandei os detalhes no direct 😉"></div>
+ <label for="uDm">Mensagem no direct</label><textarea id="uDm" maxlength="1000" placeholder="Oi {nome}! O kit café da manhã sai por…"></textarea>
+ <p class="help">{nome} vira o @ de quem escreveu.</p>
+ <label class="chk" style="margin-top:12px"><input type="checkbox" id="uAtv" checked> Automação ligada</label>
+ <p class="err" id="uErr" role="alert"></p>
+ <div class="acts"><button type="button" class="btn bad" data-act="apagarAuto" id="uApagar" style="margin-right:auto">Apagar</button><button class="btn" value="x" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<dialog id="dPerfil" aria-labelledby="dpfT"><form method="dialog" id="fPerfil">
+ <h2 id="dpfT">Perfil do Instagram</h2>
+ <div class="f2"><div><label for="fNome">Nome da marca</label><input id="fNome" maxlength="80" required></div><div><label for="fUser">@ no Instagram</label><input id="fUser" maxlength="31" placeholder="suamarca"></div></div>
+ <label for="fNicho">Ramo</label><input id="fNicho" maxlength="120" placeholder="Ex.: padaria artesanal">
+ <label for="fPub">Público</label><input id="fPub" maxlength="200" placeholder="Ex.: famílias do bairro, quem trabalha cedo">
+ <div class="f2"><div><label for="fTom">Tom de voz</label><select id="fTom"><option value="proximo">Próximo e acolhedor</option><option value="profissional">Profissional</option><option value="divertido">Divertido</option><option value="inspirador">Inspirador</option><option value="direto">Direto</option></select></div><div><label for="fCor">Cor no calendário</label><input type="color" id="fCor"></div></div>
+ <label for="fEvitar">Palavras que a IA nunca deve usar</label><input id="fEvitar" maxlength="300" placeholder="Ex.: barato, promoção imperdível">
+ <label for="fTags">Hashtags fixas</label><input id="fTags" maxlength="600" placeholder="#suamarca #suacidade">
+ <p class="err" id="fErr" role="alert"></p>
+ <div class="acts"><button type="button" class="btn bad" data-act="apagarPerfil" id="fApagar" style="margin-right:auto">Remover perfil</button><button class="btn" value="x" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Salvar</button></div>
+</form></dialog>
+
+<dialog id="dCon" aria-labelledby="dcnT"><form method="dialog" id="fCon">
+ <h2 id="dcnT">Conectar o Instagram</h2>
+ <p class="small mute" style="margin-top:6px">A conta precisa ser <b>profissional</b> (Empresa ou Criador) e estar ligada a uma página do Facebook. Os dados vêm do painel de desenvolvedor da Meta; a LLD Works pode fazer essa etapa com você.</p>
+ <label for="cIg">ID da conta do Instagram</label><input id="cIg" inputmode="numeric" maxlength="25" required placeholder="17841400000000000">
+ <label for="cTok">Token de acesso</label><input id="cTok" type="password" autocomplete="off" maxlength="600" required>
+ <p class="help">O token fica guardado com criptografia e nunca aparece de novo na tela.</p>
+ <p class="err" id="cErr" role="alert"></p>
+ <div class="acts"><button class="btn" value="x" formnovalidate>Cancelar</button><button class="btn pri" value="ok">Conectar</button></div>
+</form></dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body></html>
