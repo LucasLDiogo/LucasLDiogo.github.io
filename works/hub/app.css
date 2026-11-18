@@ -1,12 +1,12 @@
 /* LLD Works Console — painel gerencial · identidade v2 (nov/2026)
    Tinta #05060B · Cobalto #2A5BFF · Íon #3DE0FF · Sora (títulos e números) · Inter (texto) · JetBrains Mono (rótulos) */
-@font-face{font-family:Sora;font-weight:700;font-display:swap;src:url(fonts/sora-latin-700-normal.woff2) format("woff2")}
-@font-face{font-family:Sora;font-weight:800;font-display:swap;src:url(fonts/sora-latin-800-normal.woff2) format("woff2")}
-@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(fonts/inter-latin-400-normal.woff2) format("woff2")}
-@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/inter-latin-500-normal.woff2) format("woff2")}
-@font-face{font-family:Inter;font-weight:600;font-display:swap;src:url(fonts/inter-latin-600-normal.woff2) format("woff2")}
-@font-face{font-family:Inter;font-weight:700;font-display:swap;src:url(fonts/inter-latin-700-normal.woff2) format("woff2")}
-@font-face{font-family:"JetBrains Mono";font-weight:500;font-display:swap;src:url(fonts/jetbrains-mono-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:Sora;font-weight:700;font-display:swap;src:url(sora-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:Sora;font-weight:800;font-display:swap;src:url(sora-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:400;font-display:swap;src:url(inter-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(inter-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:600;font-display:swap;src:url(inter-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:700;font-display:swap;src:url(inter-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-weight:500;font-display:swap;src:url(jetbrains-mono-latin-500-normal.woff2) format("woff2")}
 :root{--co:#2A5BFF;--co2:#1E44E0;--coSoft:#E9EEFF;--ion:#3DE0FF;--ink:#0A0D1A;--ink2:#1A2238;--mute:#5A6380;--line:#E4E8F2;--bg:#F5F7FC;--card:#fff;
 --ok:#0E7A50;--okSoft:#E3F6EC;--warn:#A15C00;--warnSoft:#FFF2DB;--bad:#C02626;--badSoft:#FDECEC;--r:16px;--soft:#F1F4FA;
 --grad:linear-gradient(100deg,#9FB4FF 0%,#5E86FF 38%,#3DE0FF 100%);--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;--ease:cubic-bezier(.2,.8,.2,1);
