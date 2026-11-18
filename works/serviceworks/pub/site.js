@@ -88,6 +88,7 @@
     $("#verLista").innerHTML = d.itens.map(([t, s]) => `<li><span class="ck">✓</span><div><b>${esc(t)}</b><span>${esc(s)}</span></div></li>`).join("");
     $("#verCard").innerHTML = `<h3>ServiceWorks ${esc(d.nome)}</h3><p class="quote">${esc(d.frase)}</p><p>Tudo do ServiceWorks, com os detalhes do seu ramo prontos para usar.</p><a class="b branco" href="#planos">Ver planos</a> <a class="b ghost" style="color:#fff" href="${d.demo}" target="_blank" rel="noopener">Ver demonstração →</a>`;
     desenhaPlanos();
+    document.dispatchEvent(new CustomEvent("sw:versao", { detail: { v, nome: d.nome, animar } }));
     if (animar && window.gsap && !calmo) { gsap.from("#mkAg .e", { scale: 0.9, opacity: 0, duration: 0.4, stagger: 0.06, ease: "back.out(2)" }); gsap.from("#verLista li", { x: -12, opacity: 0, duration: 0.35, stagger: 0.05 }); }
   }
 
@@ -117,10 +118,90 @@
     g.to(".f2", { y: 8, duration: 2.8, yoyo: true, repeat: -1, ease: "sine.inOut" });
     g.to(".f3", { y: -6, duration: 2.2, yoyo: true, repeat: -1, ease: "sine.inOut" });
     if (!window.ScrollTrigger) return;
-    g.utils.toArray(".sec h2, .sec .eti").forEach((el) => g.from(el, { y: 24, opacity: 0, duration: 0.6, scrollTrigger: { trigger: el, start: "top 88%" } }));
+    g.utils.toArray(".sec .eti").forEach((el) => g.from(el, { y: 24, opacity: 0, duration: 0.6, scrollTrigger: { trigger: el, start: "top 88%" } }));
     g.from(".rec", { y: 30, opacity: 0, duration: 0.5, stagger: 0.05, ease: "power2.out", scrollTrigger: { trigger: "#recursosLista", start: "top 82%" } });
     g.from(".faixa div", { y: 20, opacity: 0, duration: 0.5, stagger: 0.08, scrollTrigger: { trigger: ".faixa", start: "top 90%" } });
     g.from(".como li", { y: 26, opacity: 0, duration: 0.5, stagger: 0.1, scrollTrigger: { trigger: ".como .passos", start: "top 85%" } });
     g.from(".final", { scale: 0.96, opacity: 0, duration: 0.7, scrollTrigger: { trigger: ".final", start: "top 85%" } });
+  });
+})();
+
+// ---------- v3: fotos por versão, galeria horizontal, letreiro, títulos palavra a palavra, botões magnéticos ----------
+(() => {
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const calmo = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fino = matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const NOMES = { pet: "Pet shop", beleza: "Salão e estética", barber: "Barbearia", clinica: "Clínica" };
+  function versao(v, animar) {
+    $$(".foto-hero img").forEach((im) => im.classList.toggle("on", im.dataset.v === v));
+    const selo = $("#seloFoto"); if (selo) selo.textContent = NOMES[v] || "";
+    const card = $("#verCard"); if (card) card.style.setProperty("--vfoto", `url(/pub/img/v-${v}.webp)`);
+    if (animar && window.gsap && !calmo) {
+      gsap.fromTo(".foto-hero img.on", { scale: 1.12 }, { scale: 1, duration: 1.1, ease: "power3.out" });
+      gsap.fromTo("#verCard", { clipPath: "inset(0 0 100% 0 round 26px)" }, { clipPath: "inset(0 0 0% 0 round 26px)", duration: 0.8, ease: "power3.inOut" });
+    }
+  }
+  document.addEventListener("sw:versao", (e) => versao(e.detail.v, e.detail.animar));
+  versao(document.body.dataset.v || "pet", false);
+
+  // barra de progresso da leitura
+  const barra = $(".progresso i");
+  const prog = () => { const h = document.documentElement.scrollHeight - innerHeight; if (barra) barra.style.transform = `scaleX(${h > 0 ? Math.min(1, scrollY / h) : 0})`; };
+  addEventListener("scroll", prog, { passive: true }); prog();
+
+  // luz que segue o mouse nos cartões de recursos
+  if (fino) document.addEventListener("pointermove", (e) => { const c = e.target.closest && e.target.closest(".rec"); if (!c) return; const r = c.getBoundingClientRect(); c.style.setProperty("--mx", `${e.clientX - r.left}px`); c.style.setProperty("--my", `${e.clientY - r.top}px`); }, { passive: true });
+
+  addEventListener("load", () => {
+    const g = window.gsap; if (!g || calmo) return;
+    const ST = window.ScrollTrigger; if (ST) g.registerPlugin(ST);
+
+    // letreiro infinito
+    const tr = $(".letreiro .trilho");
+    if (tr) { tr.innerHTML += tr.innerHTML; const larg = tr.scrollWidth / 2; g.to(tr, { x: -larg, duration: larg / 70, ease: "none", repeat: -1 }); }
+
+    // foto do hero: entrada, parallax no scroll e leve inclinação com o mouse
+    g.from(".foto-hero", { y: 60, rotate: 9, opacity: 0, duration: 1.1, ease: "power3.out", delay: 0.15 });
+    if (ST) g.to(".foto-hero img", { yPercent: -10, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
+    const vis = $(".hero-vis");
+    if (fino && vis) {
+      const rx = g.quickTo(".foto-hero", "rotationY", { duration: 0.6, ease: "power3" }), ry = g.quickTo(".foto-hero", "rotationX", { duration: 0.6, ease: "power3" });
+      const tx = g.quickTo(".tela", "x", { duration: 0.8, ease: "power3" }), ty = g.quickTo(".tela", "y", { duration: 0.8, ease: "power3" });
+      g.set(".foto-hero", { transformPerspective: 900 });
+      vis.addEventListener("pointermove", (e) => { const r = vis.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5; rx(px * 10); ry(-py * 8); tx(px * -14); ty(py * -10); });
+      vis.addEventListener("pointerleave", () => { rx(0); ry(0); tx(0); ty(0); });
+    }
+
+    // números contando
+    $$("[data-num]").forEach((el) => { const n = +el.dataset.num, o = { v: 0 }; g.to(o, { v: n, duration: 1.6, ease: "power2.out", delay: 0.6, onUpdate: () => (el.textContent = "R$ " + Math.round(o.v).toLocaleString("pt-BR")) }); });
+    $$(".faixa b").forEach((el) => { const m = el.textContent.match(/^(\d+)(.*)$/); if (!m || +m[1] < 2) return; const o = { v: 0 }; g.to(o, { v: +m[1], duration: 1.2, ease: "power2.out", onUpdate: () => (el.textContent = Math.round(o.v) + m[2]), scrollTrigger: ST ? { trigger: ".faixa", start: "top 90%" } : undefined }); });
+
+    // títulos palavra a palavra (o texto continua o mesmo para leitores de tela)
+    $$(".sec h2").forEach((h) => {
+      if (h.dataset.dividido || h.id === "verTitulo") return; h.dataset.dividido = "1";
+      h.innerHTML = h.innerHTML.split(/(\s+)/).map((t) => (/^\s+$/.test(t) || !t ? t : `<span class="palavra">${t}</span>`)).join("");
+      g.from(h.querySelectorAll(".palavra"), { yPercent: 70, opacity: 0, rotate: 4, duration: 0.7, stagger: 0.04, ease: "power3.out", scrollTrigger: ST ? { trigger: h, start: "top 88%" } : undefined });
+    });
+
+    // galeria: rolagem horizontal presa no desktop, com parallax nas fotos
+    const pin = $("#vidaPin"), trilho = $("#vidaTrilho");
+    if (ST && pin && trilho) {
+      const mm = g.matchMedia();
+      mm.add("(min-width: 981px)", () => {
+        const dist = () => Math.max(0, trilho.scrollWidth - innerWidth + 40);
+        const anim = g.to(trilho, { x: () => -dist(), ease: "none", scrollTrigger: { trigger: pin, start: "center center", end: () => "+=" + dist(), pin: true, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1 } });
+        $$(".vf img", trilho).forEach((im) => g.fromTo(im, { xPercent: -6 }, { xPercent: 6, ease: "none", scrollTrigger: { trigger: im.parentNode, containerAnimation: anim, start: "left right", end: "right left", scrub: true } }));
+        $$(".vf figcaption", trilho).forEach((c) => g.from(c, { y: 30, opacity: 0, duration: 0.6, scrollTrigger: { trigger: c.parentNode, containerAnimation: anim, start: "left 80%" } }));
+      });
+      mm.add("(max-width: 980px)", () => { g.from(".vf", { y: 40, opacity: 0, duration: 0.6, stagger: 0.08, scrollTrigger: { trigger: pin, start: "top 85%" } }); });
+      $$("img").forEach((im) => { if (!im.complete) im.addEventListener("load", () => ST.refresh(), { once: true }); });
+    }
+
+    // botões principais magnéticos
+    if (fino) $$(".b.pri.grande, .b.grande").forEach((b) => {
+      const x = g.quickTo(b, "x", { duration: 0.4, ease: "power3" }), y = g.quickTo(b, "y", { duration: 0.4, ease: "power3" });
+      b.addEventListener("pointermove", (e) => { const r = b.getBoundingClientRect(); x((e.clientX - r.left - r.width / 2) * 0.25); y((e.clientY - r.top - r.height / 2) * 0.35); });
+      b.addEventListener("pointerleave", () => { x(0); y(0); });
+    });
   });
 })();
