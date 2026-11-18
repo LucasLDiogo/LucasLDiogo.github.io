@@ -53,36 +53,76 @@ async function sessao(req, env, p) {
   if (s.p !== p.slug || s.x < Date.now() / 1000) return null;
   return s;
 }
-function telaLogin(p, erro = "", email = "", acao = null) {
+function telaLogin(p, erro = "", email = "", acao = null, logado = null) {
   const ic = ICONES[p.slug] || "";
   const [pre] = p.nome.split("Works");
-  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Entrar · ${p.nome}</title><link rel="icon" href="data:image/svg+xml,${encodeURIComponent(ic)}"><style>
-:root{--p:${p.cor}}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);font:16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#0F172A;background:#fff}
-.art{position:relative;overflow:hidden;background:#0B1020;color:#fff;padding:48px clamp(28px,5vw,72px);display:flex;flex-direction:column;justify-content:space-between;gap:40px}
-.art:before{content:"";position:absolute;inset:-30% -20% auto auto;width:620px;height:620px;border-radius:50%;background:radial-gradient(circle,var(--p) 0,transparent 62%);opacity:.55}
-.art:after{content:"";position:absolute;inset:auto auto -35% -25%;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,var(--p) 0,transparent 65%);opacity:.25}
-.art>*{position:relative;z-index:1}.brand{display:flex;align-items:center;gap:12px;font:500 26px/1 Montserrat,Inter,sans-serif;letter-spacing:-.01em}.brand svg{width:44px;height:44px}.brand b{font-weight:800}
-h1{font:800 clamp(30px,3.4vw,44px)/1.1 Montserrat,Inter,sans-serif;margin:0 0 14px;letter-spacing:-.02em}.art p{color:#C7CEE0;max-width:46ch;margin:0}.lld{font-size:13px;color:#8C96B3}
-.frm{display:grid;place-items:center;padding:40px 24px}form{width:min(400px,100%)}h2{font:800 26px/1.2 Montserrat,Inter,sans-serif;margin:0 0 6px}.mute{color:#5B6478;font-size:14.5px;margin:0 0 22px}
-label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}input{width:100%;min-height:50px;border:1.5px solid #D9DEE8;border-radius:12px;padding:12px 14px;font-size:16px;font-family:inherit;transition:border-color .15s,box-shadow .15s}
-input:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px color-mix(in srgb,var(--p) 18%,transparent)}button{margin-top:20px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--p);color:#fff;font:700 16px Inter,sans-serif;cursor:pointer;transition:filter .15s,transform .15s}
-button:hover{filter:brightness(1.08)}button:active{transform:translateY(1px)}.err{color:#C0262D;font-size:14px;min-height:21px;margin:10px 0 0}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
-.links{display:flex;justify-content:space-between;gap:10px;margin:14px 0 0;font-size:14.5px;font-weight:600}.links a,.demo a,.err a{color:var(--p)}
-.chips span{font-size:12.5px;background:#F2F4F8;color:#475069;border-radius:99px;padding:4px 10px}.demo{margin-top:18px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--p) 8%,#fff);border:1px solid color-mix(in srgb,var(--p) 25%,#fff);font-size:13.5px;color:#334}
-@media(max-width:860px){body{grid-template-columns:1fr}.art{padding:32px 24px;gap:22px}.art:after{display:none}}
-@media(prefers-reduced-motion:no-preference){.frm form,.art>*{animation:sobe .6s cubic-bezier(.2,.7,.2,1) both}.art>*:nth-child(2){animation-delay:.08s}.art>*:nth-child(3){animation-delay:.16s}@keyframes sobe{from{opacity:0;transform:translateY(14px)}}}
-</style></head><body>
-<section class="art"><div class="brand">${ic}<span>${pre}<b>Works</b></span></div>
-<div><h1>Entrar no ${esc(p.nome)}</h1><p>${esc(p.frase)}</p></div><p class="lld">Uma solução LLD Works · lldworks.com.br</p></section>
-<main class="frm"><form method="post" action="/entrar" autocomplete="on">
-<h2>Acesse sua conta</h2><p class="mute">Use o e-mail e a senha da sua conta.</p>
-<label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="username" required value="${esc(email)}" autofocus>
-<label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="current-password" required minlength="8">
-<p class="err" role="alert">${esc(erro)}${acao ? ` <a href="${esc(acao.href)}">${esc(acao.rot)}</a>` : ""}</p><button type="submit">Entrar</button>
+  const painel = p.aposLogin || (p.slug === "serviceworks" ? "/app" : "/");
+  const site = ["agentworks", "serviceworks", "linkworks"].includes(p.slug) ? "/" : `https://produtos.lldworks.com.br/#${p.slug}`;
+  const formulario = logado ? `<div class="ja" role="status"><div class="av" aria-hidden="true">${esc((logado.e || "?").slice(0, 1).toUpperCase())}</div>
+<h2>Você já está conectado</h2><p class="mute">Entrou como <b>${esc(logado.e)}</b>${logado.cn ? ` · ${esc(logado.cn)}` : ""}.</p>
+<a class="btn" href="${esc(painel)}">Continuar para o painel →</a><a class="btn sec" href="/sair">Entrar com outra conta</a></div>`
+    : `<form method="post" action="/entrar" autocomplete="on" novalidate>
+<h2>Acesse sua conta</h2><p class="mute">Use o e-mail e a senha que você criou no cadastro.</p>
+<div class="campo"><label for="email">E-mail</label><input id="email" name="email" type="email" inputmode="email" autocomplete="username" required value="${esc(email)}" ${email ? "" : "autofocus"} aria-describedby="erro"></div>
+<div class="campo"><label for="senha">Senha</label><div class="senha"><input id="senha" name="senha" type="password" autocomplete="current-password" required minlength="8" ${email ? "autofocus" : ""} aria-describedby="erro"><button type="button" class="olho" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button></div></div>
+<p class="err" id="erro" role="alert" aria-live="assertive">${esc(erro)}${acao ? ` <a href="${esc(acao.href)}">${esc(acao.rot)}</a>` : ""}</p>
+<button type="submit" class="btn"><span>Entrar</span></button>
 <p class="links"><a href="/recuperar">Esqueci minha senha</a><a href="/recuperar?primeiro=1">Primeiro acesso</a></p>
-<div class="chips"><span>Senha conferida no servidor</span><span>Sessão de ${SESSAO_H} h</span><span>Conexão protegida (HTTPS)</span></div>
-<p class="demo">Ainda não tem conta? <a href="/assinar"><b>Assine o ${esc(p.nome)}</b></a> · <a href="/termos">Termos</a> · <a href="/privacidade">Privacidade</a>${p.slug === "linkworks" ? `<br>Cliente do ServiceWorks Pro ou Premium? Use o <b>mesmo e-mail e senha</b>.` : ""}</p></form></main></body></html>`;
+<p class="demo">Ainda não tem conta? <a href="${p.slug === "agentworks" ? "/#plano" : "/assinar"}"><b>Conheça os planos do ${esc(p.nome)}</b></a>${p.slug === "linkworks" ? `<br>Cliente do ServiceWorks Pro ou Premium? Use o <b>mesmo e-mail e senha</b>.` : ""}</p></form>`;
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Entrar · ${p.nome}</title><meta name="theme-color" content="#070B16"><link rel="icon" href="data:image/svg+xml,${encodeURIComponent(ic)}"><style>
+:root{--p:${p.cor};--p2:color-mix(in oklab,var(--p) 55%,#fff);--noite:#070B16}*{box-sizing:border-box}
+html,body{height:100%}body{margin:0;min-height:100dvh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);font:16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#0F172A;background:#fff}
+.art{position:relative;overflow:hidden;background:var(--noite);color:#fff;padding:44px clamp(28px,5vw,72px);display:flex;flex-direction:column;justify-content:space-between;gap:36px;min-height:100dvh;isolation:isolate}
+.orb{position:absolute;border-radius:50%;filter:blur(8px);z-index:-1;will-change:transform}
+.o1{width:640px;height:640px;right:-200px;top:-220px;background:radial-gradient(circle,var(--p) 0,transparent 64%);opacity:.75}
+.o2{width:520px;height:520px;left:-200px;bottom:-200px;background:radial-gradient(circle,var(--p2) 0,transparent 66%);opacity:.32}
+.o3{width:300px;height:300px;right:12%;bottom:12%;background:radial-gradient(circle,#ffffff 0,transparent 70%);opacity:.08}
+.grade{position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse at 30% 40%,#000 0,transparent 70%)}
+.brand{display:flex;align-items:center;gap:12px;font:500 26px/1 Montserrat,Inter,sans-serif;color:#fff;text-decoration:none}.brand svg{width:46px;height:46px;filter:drop-shadow(0 10px 24px color-mix(in srgb,var(--p) 60%,transparent))}.brand b{font-weight:800}
+h1{font:800 clamp(32px,3.6vw,50px)/1.06 Montserrat,Inter,sans-serif;margin:0 0 16px;letter-spacing:-.025em}h1 em{font-style:normal;background:linear-gradient(90deg,#fff,var(--p2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.art p{color:#C9D1E4;max-width:46ch;margin:0;font-size:17px}
+.lista{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:12px}.lista li{display:flex;gap:12px;align-items:center;color:#E3E9F7;font-size:15.5px}
+.lista i{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--p) 26%,transparent);border:1px solid color-mix(in srgb,var(--p) 50%,transparent);font-style:normal;font-size:15px}
+.rod{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:#8F9AB8}.rod a{color:#C9D1E4}
+.frm{display:grid;place-items:center;padding:40px 24px;background:radial-gradient(900px 500px at 100% 0,color-mix(in srgb,var(--p) 7%,#fff),#fff 60%)}
+form,.ja{width:min(410px,100%)}h2{font:800 28px/1.2 Montserrat,Inter,sans-serif;margin:0 0 6px;letter-spacing:-.01em}.mute{color:#5B6478;font-size:15px;margin:0 0 20px}
+.voltar{display:inline-flex;gap:6px;align-items:center;color:#5B6478;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:26px}.voltar:hover{color:var(--p)}
+.campo{margin-top:14px}label{display:block;font-weight:700;font-size:14px;margin:0 0 6px}
+input{width:100%;min-height:52px;border:1.5px solid #D5DBE7;border-radius:14px;padding:12px 14px;font-size:16px;font-family:inherit;background:#fff;transition:border-color .15s,box-shadow .15s}
+input:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px color-mix(in srgb,var(--p) 20%,transparent)}input[aria-invalid=true]{border-color:#C0262D}
+.senha{position:relative}.senha input{padding-right:96px}.olho{position:absolute;right:8px;top:8px;min-height:36px;padding:0 12px;border:0;border-radius:10px;background:#F1F4F9;color:#33405C;font:600 13px Inter,sans-serif;cursor:pointer}
+.olho:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid var(--p);outline-offset:3px}
+.btn{position:relative;overflow:hidden;margin-top:18px;width:100%;min-height:54px;border:0;border-radius:14px;background:var(--p);color:#fff;font:700 16px Inter,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;box-shadow:0 14px 30px -14px var(--p);transition:filter .15s,transform .15s}
+.btn:hover{filter:brightness(1.07)}.btn:active{transform:translateY(1px)}.btn.sec{background:#fff;color:#1F2A44;border:1.5px solid #D5DBE7;box-shadow:none;margin-top:10px}
+.btn[aria-busy=true] span{opacity:.0}.btn[aria-busy=true]:after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;animation:gira .7s linear infinite}@keyframes gira{to{transform:rotate(360deg)}}
+.err{color:#B42318;font-size:14px;min-height:21px;margin:10px 0 0}.err:empty{margin:0;min-height:0}.err a{color:var(--p);font-weight:700}
+.links{display:flex;justify-content:space-between;gap:10px;margin:20px 0 0;font-size:14.5px;font-weight:600}.links a,.demo a{color:color-mix(in oklab,var(--p) 80%,#000)}
+.selos{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}.selos span{font-size:12.5px;background:#F2F5FA;color:#46526B;border-radius:99px;padding:5px 10px}
+.demo{margin-top:16px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--p) 8%,#fff);border:1px solid color-mix(in srgb,var(--p) 25%,#fff);font-size:14px;color:#334}
+.ja{text-align:center}.ja .av{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:var(--p);color:#fff;font:800 26px Montserrat,sans-serif;box-shadow:0 14px 30px -12px var(--p)}
+@media(max-width:900px){body{grid-template-columns:1fr}.art{min-height:auto;padding:28px 22px 32px;gap:20px}.lista,.o3{display:none}.art p{font-size:15.5px}h1{font-size:30px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<section class="art" aria-label="${esc(p.nome)}"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i><i class="grade"></i>
+<a class="brand" href="${esc(site)}">${ic}<span>${pre}<b>Works</b></span></a>
+<div><h1>Bem-vindo de volta ao <em>${esc(p.nome)}</em></h1><p>${esc(p.frase)}</p>
+<ul class="lista"><li><i>🔒</i>Senha conferida no servidor, conexão protegida</li><li><i>📱</i>Funciona no computador e no celular</li><li><i>💬</i>Suporte da LLD Works quando precisar</li></ul></div>
+<div class="rod"><span>Uma solução LLD Works · lldworks.com.br</span><span><a href="/termos">Termos</a> · <a href="/privacidade">Privacidade</a></span></div></section>
+<main class="frm"><div><a class="voltar" href="${esc(site)}">← Voltar ao site do ${esc(p.nome)}</a>${formulario}
+${logado ? "" : `<div class="selos"><span>Sessão de ${SESSAO_H} h</span><span>HTTPS</span><span>Dados de cada empresa separados</span></div>`}</div></main>
+<script src="/conta/gsap.min.js"></script><script>
+(function(){var f=document.querySelector("form");
+if(f){var b=f.querySelector(".olho"),s=document.getElementById("senha");b.onclick=function(){var v=s.type==="password";s.type=v?"text":"password";b.textContent=v?"Ocultar":"Mostrar";b.setAttribute("aria-pressed",String(v));b.setAttribute("aria-label",v?"Ocultar senha":"Mostrar senha");s.focus();};
+f.addEventListener("submit",function(e){var em=document.getElementById("email"),er=document.getElementById("erro"),ok=true;[em,s].forEach(function(i){i.setAttribute("aria-invalid",String(!i.checkValidity()));if(!i.checkValidity())ok=false;});
+if(!ok){e.preventDefault();er.textContent=!em.checkValidity()?"Confira o e-mail.":"A senha tem pelo menos 8 caracteres.";(em.checkValidity()?s:em).focus();return;}
+var bt=f.querySelector("button[type=submit]");bt.setAttribute("aria-busy","true");bt.disabled=true;});}
+var g=window.gsap;if(!g||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+g.from(".brand",{y:-16,opacity:0,duration:.6,ease:"power3.out"});g.from(".art h1,.art p,.lista li",{y:24,opacity:0,duration:.7,stagger:.08,ease:"power3.out",delay:.1});
+g.from(".frm .voltar,.frm h2,.frm .mute,.campo,.frm .btn,.links,.demo,.selos,.ja .av",{y:18,opacity:0,duration:.55,stagger:.05,ease:"power2.out",delay:.2});
+g.to(".o1",{x:-60,y:50,scale:1.12,duration:8,repeat:-1,yoyo:true,ease:"sine.inOut"});g.to(".o2",{x:70,y:-40,scale:1.18,duration:10,repeat:-1,yoyo:true,ease:"sine.inOut"});g.to(".o3",{x:-40,y:-30,duration:6,repeat:-1,yoyo:true,ease:"sine.inOut"});
+var er0=document.querySelector(".err");if(er0&&er0.textContent.trim())g.fromTo("form",{x:-10},{x:0,duration:.5,ease:"elastic.out(1,.3)"});})();
+</script></body></html>`;
 }
 async function entrar(req, env, url, p) {
   if (req.headers.get("Origin") && req.headers.get("Origin") !== url.origin) return new Response("Origem inválida", { status: 403 });
@@ -218,7 +258,7 @@ async function assinar(env, p, s) {
 
 async function produto(req, env, url, p, sessaoFixa = null) {
   const path = url.pathname;
-  if (path === "/entrar") return req.method === "POST" ? entrar(req, env, url, p) : html(telaLogin(p));
+  if (path === "/entrar") return req.method === "POST" ? entrar(req, env, url, p) : html(telaLogin(p, "", "", null, sessaoFixa ? null : await sessao(req, env, p)));
   if (path === "/sair") return sair();
   if (BACKENDS[p.slug]) { const c = await conta(req, env, url, p); if (c) return c; }
   if (p.slug === "agentworks") { const r = await agentworks(req, env, url, p, sessaoFixa); if (r) return r; }
@@ -313,8 +353,8 @@ const CONTA_PAGINAS = { "/assinar": "conta/assinar.html", "/recuperar": "conta/r
 async function conta(req, env, url, p) {
   const path = url.pathname, leitura = req.method === "GET" || req.method === "HEAD";
   // Cliente já logado em /assinar ("Pagar ou trocar de plano" no painel): vai para o link de pagamento dele, mesmo com o acesso vencido.
-  if (path === "/assinar" && leitura) { const s = await sessao(req, env, p); if (s && !s.demo) return assinar(env, p, s); }
-  if (CONTA_PAGINAS[path] || /^\/conta\/conta\.(css|js)$/.test(path)) {
+  if (path === "/assinar" && leitura && !url.searchParams.has("plano") && !url.searchParams.has("novo")) { const s = await sessao(req, env, p); if (s && !s.demo) return assinar(env, p, s); }
+  if (CONTA_PAGINAS[path] || /^\/conta\/(conta\.(css|js)|gsap\.min\.js)$/.test(path)) {
     if (!leitura) return new Response("Método não permitido", { status: 405 });
     const r = await origem(req, CONTA_PAGINAS[path] || path.slice(1), CONTA_PAGINAS[path] ? 60 : 300), h = new Headers(r.headers);
     h.set("X-Frame-Options", "DENY");
