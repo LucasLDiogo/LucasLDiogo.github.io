@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Manual do ServiceWorks: agenda online, vitrine, clientes, pet shop, pacotes e relatórios.">
+<title>Manual do ServiceWorks</title>
+<link rel="icon" href="/pub/icone.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/pub/sw.css">
+<style>
+body{background:var(--bg)}
+.mn{display:grid;grid-template-columns:250px minmax(0,1fr);gap:40px;max-width:1120px;margin:0 auto;padding:28px clamp(16px,3vw,32px) 80px}
+.ind{position:sticky;top:20px;align-self:start;font-size:14px}
+.ind b{display:block;font:700 12px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:0 0 8px}
+.ind a{display:block;padding:6px 10px;border-radius:8px;color:var(--ink);text-decoration:none}
+.ind a:hover{background:var(--pk);color:var(--p)}
+.doc h1{font:800 clamp(28px,4vw,38px)/1.15 Montserrat,sans-serif;margin:0}
+.doc .lead{font-size:17px;color:var(--mute);margin:10px 0 0;max-width:62ch}
+.doc section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px clamp(18px,3vw,30px);margin-top:20px;scroll-margin-top:16px}
+.doc h2{font:700 21px/1.25 Montserrat,sans-serif;margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.doc h2 .n{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--pk);color:var(--p);font-size:15px;flex:none}
+.doc h3{font:600 16px/1.3 Inter,sans-serif;margin:20px 0 6px}
+.doc p,.doc li{line-height:1.65;max-width:72ch}
+.doc ol,.doc ul{padding-left:22px}.doc li{margin:4px 0}
+.doc table{border-collapse:collapse;width:100%;margin-top:8px;font-size:14.5px}
+.doc th,.doc td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.doc th{font-size:12.5px;color:var(--mute);font-weight:600}
+.dica{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--pk);font-size:14.5px}
+.dica b{color:var(--p)}
+.atencao{margin-top:12px;padding:12px 14px;border-radius:12px;background:color-mix(in oklab,var(--warn) 12%,var(--card));border:1px solid color-mix(in oklab,var(--warn) 28%,var(--card));font-size:14.5px}
+.ui{font:600 13px Inter,sans-serif;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:1px 7px;white-space:nowrap}
+.topo{display:flex;align-items:center;gap:12px;padding:14px clamp(16px,3vw,32px);background:var(--card);border-bottom:1px solid var(--line)}
+.topo .sp{flex:1}
+@media (max-width:860px){.mn{grid-template-columns:1fr}.ind{position:static;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}}
+@media print{.topo,.ind{display:none}.mn{display:block;padding:0}.doc section{break-inside:avoid;border:0;padding:12px 0}}
+</style>
+</head><body>
+<header class="topo">
+ <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true" width="34" height="34"><rect width="64" height="64" rx="16" fill="#7C3AED"/><rect fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" x="14" y="17" width="36" height="33" rx="5"/><path fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M14 27h36M23 13v8M41 13v8M25 38l5 5 9-10"/></svg><span>Service<b>Works</b></span></a>
+ <span class="sp"></span><a class="btn sm" href="/">Abrir o painel</a>
+</header>
+<div class="mn">
+<nav class="ind" aria-label="Índice do manual"><b>Neste manual</b>
+ <a href="#comecar">1. Primeiros passos</a><a href="#agenda">2. Agenda do dia</a><a href="#vitrine">3. Vitrine e agendamento online</a>
+ <a href="#clientes">4. Clientes</a><a href="#pet">5. Pet shop</a><a href="#pacotes">6. Pacotes</a><a href="#recorrencia">7. Retorno de clientes</a>
+ <a href="#folgas">8. Folgas e bloqueios</a><a href="#relatorios">9. Relatórios</a><a href="#acessos">10. Acessos e plano</a><a href="#duvidas">11. Dúvidas frequentes</a>
+</nav>
+<main class="doc">
+<h1>Manual do ServiceWorks</h1>
+<p class="lead">Agenda online, vitrine para o cliente marcar sozinho, ficha de clientes, pacotes e relatórios — para barbearias, salões, clínicas e pet shops. Em 15 minutos a sua agenda está no ar.</p>
+
+<section id="comecar"><h2><span class="n">1</span>Primeiros passos</h2>
+<p>Faça nesta ordem. Cada passo fica numa aba do painel.</p>
+<ol>
+ <li><b>Configurações</b> — nome da empresa, <b>segmento</b> (barbearia, salão, clínica, pet shop ou outro), WhatsApp, endereço, texto “Sobre” e cor da vitrine. O segmento <span class="ui">Pet shop</span> liga o cadastro de pets e o preço por porte.</li>
+ <li><b>Serviços</b> — nome, duração e preço de cada serviço. A <b>duração</b> define quanto tempo o horário fica ocupado. Use <span class="ui">Combo</span> para serviços combinados no mesmo horário (ex.: corte + barba) e o preço promocional quando quiser destacar uma oferta.</li>
+ <li><b>Equipe e horários</b> — cada profissional com os serviços que faz e o horário de cada dia da semana. Para marcar o almoço, use dois turnos (ex.: 09:00–12:00 e 13:00–18:00). Dia sem turno é folga. O botão <span class="ui">Repetir de terça a sexta</span> copia a segunda-feira.</li>
+ <li><b>Endereço da vitrine</b> — em Configurações, escolha o endereço curto (ex.: <code>serviceworks.lldworks.com.br/v/barbearia-do-joao</code>) e defina a antecedência mínima, por quantos dias a agenda fica aberta e de quanto em quanto tempo aparecem os horários.</li>
+ <li><b>Divulgue o link</b> — use <span class="ui">Copiar link</span> e coloque na bio do Instagram, no status e na mensagem automática do WhatsApp.</li>
+</ol>
+<div class="dica"><b>Dica:</b> abra a vitrine pelo botão <span class="ui">Ver vitrine ↗</span> e faça um agendamento de teste com o seu próprio WhatsApp. Depois cancele pelo painel.</div>
+</section>
+
+<section id="agenda"><h2><span class="n">2</span>Agenda do dia</h2>
+<p>A tela inicial mostra o dia com uma coluna por profissional. Área listrada é fora do expediente; “online” indica que o cliente marcou pela vitrine. No topo ficam os números do dia: atendimentos, faturamento previsto, quanto da agenda está ocupada, marcados online e faltas do mês.</p>
+<h3>Marcar um horário</h3>
+<ul>
+ <li>Clique num espaço vazio da coluna do profissional, ou em <span class="ui">+ Novo agendamento</span>.</li>
+ <li>Escolha serviço, profissional, dia e um dos <b>horários livres</b> sugeridos. Para cliente que já existe, digite o nome ou o WhatsApp e escolha na lista; para cliente novo, preencha nome e WhatsApp.</li>
+ <li><b>Encaixe</b>: marque a opção para agendar mesmo num horário ocupado.</li>
+ <li><b>Repetir</b>: para clientes fixos, escolha “toda semana” ou “a cada 2, 3 ou 4 semanas” e quantas vezes (até 12). Se alguma data estiver ocupada, o sistema agenda as outras e mostra quais não couberam.</li>
+</ul>
+<h3>Depois do atendimento</h3>
+<p>Clique no agendamento para marcar <span class="ui">Concluído</span>, <span class="ui">Faltou</span> ou <span class="ui">Cancelar</span>, remarcar (dia, hora ou profissional), escrever uma observação ou abrir o WhatsApp do cliente com a mensagem de confirmação pronta. Se o horário fizer parte de uma série, aparece <span class="ui">Cancelar este e os próximos da série</span>.</p>
+<div class="dica"><b>Horário liberado:</b> ao cancelar um horário futuro, o painel mostra quem costuma fazer aquele serviço e está sem nada marcado — os que estão há mais tempo sem vir aparecem primeiro. Toque em <span class="ui">Oferecer</span> e a mensagem com dia e hora já sai pronta no WhatsApp.</div>
+<p>A agenda se atualiza sozinha a cada minuto, então quem marca pela vitrine aparece sem você recarregar a página.</p>
+</section>
+
+<section id="vitrine"><h2><span class="n">3</span>Vitrine e agendamento online</h2>
+<p>É a página que o seu cliente abre pelo link. Ele escolhe o serviço, o profissional (ou “sem preferência”), o dia e o horário, informa nome e WhatsApp e recebe um <b>código</b>. Pelo celular, também pode salvar o horário na agenda do telefone e avisar você no WhatsApp com uma mensagem pronta.</p>
+<ul>
+ <li>Só aparecem horários que cabem inteiros no expediente, respeitando a duração do serviço, os bloqueios e a antecedência mínima.</li>
+ <li>Dois clientes não conseguem pegar o mesmo horário: se acontecer ao mesmo tempo, o segundo recebe o aviso e escolhe outro.</li>
+ <li>Com o código e o WhatsApp, o cliente <b>consulta ou cancela</b> sozinho até 1 hora antes. Faltando menos, ele é orientado a falar com você.</li>
+ <li>Para evitar abuso, cada WhatsApp pode ter até 3 horários em aberto pela vitrine.</li>
+ <li>Para tirar a vitrine do ar temporariamente (férias, reforma), desmarque <span class="ui">Vitrine aceitando agendamentos</span> em Configurações.</li>
+</ul>
+<div class="atencao">A vitrine mostra só os serviços, os profissionais e os horários livres. Nome e WhatsApp de quem agendou nunca aparecem para outros clientes.</div>
+</section>
+
+<section id="clientes"><h2><span class="n">4</span>Clientes</h2>
+<p>Todo cliente que agenda entra aqui automaticamente, identificado pelo WhatsApp. Na lista você vê atendimentos, faltas e o último horário; ao abrir a ficha, vê o histórico completo, pode anotar preferências e chamar no WhatsApp.</p>
+<p>Use a busca por nome ou número. Clientes sem agendamento também podem ser cadastrados em <span class="ui">+ Cliente</span>.</p>
+</section>
+
+<section id="pet"><h2><span class="n">5</span>Pet shop</h2>
+<p>Com o segmento <span class="ui">Pet shop</span>, a aba Clientes vira <b>Tutores e pets</b> e o sistema passa a trabalhar com o pet em cada agendamento.</p>
+<h3>Pets</h3>
+<p>Na ficha do tutor, use <span class="ui">+ Pet</span> para cadastrar nome, espécie, raça, porte, pelagem, mês de nascimento e <b>cuidados</b> (alergia, temperamento, vacinas). Os cuidados aparecem em destaque sempre que alguém abre o agendamento daquele pet. Quem agenda pela vitrine informa o pet na hora; se o mesmo tutor voltar com o mesmo nome de pet, o cadastro é reaproveitado.</p>
+<h3>Preço e duração por porte</h3>
+<p>Em cada serviço há a tabela <b>Preço e duração por porte</b>. Deixe em branco o porte que segue o padrão do serviço.</p>
+<table><thead><tr><th>Porte</th><th>Peso de referência</th><th>Exemplo de banho</th></tr></thead><tbody>
+ <tr><td>Mini</td><td>até 5 kg</td><td>45 min</td></tr><tr><td>Pequeno</td><td>5 a 10 kg</td><td>50 min</td></tr><tr><td>Médio</td><td>10 a 25 kg</td><td>60 min</td></tr>
+ <tr><td>Grande</td><td>25 a 45 kg</td><td>90 min</td></tr><tr><td>Gigante</td><td>mais de 45 kg</td><td>120 min</td></tr></tbody></table>
+<p>O porte define o tempo que a agenda reserva e o preço cobrado. Na vitrine, o serviço aparece como “a partir de R$…” e o tutor vê o preço do porte dele antes de confirmar.</p>
+</section>
+
+<section id="pacotes"><h2><span class="n">6</span>Pacotes</h2>
+<p>Venda sessões antecipadas — por exemplo “4 banhos no mês” ou “4 cortes”. Funciona para qualquer segmento.</p>
+<ol>
+ <li><b>Crie o pacote à venda</b> (aba Pacotes → <span class="ui">+ Pacote à venda</span>): nome, serviço, número de sessões, validade em dias e preço. O painel mostra quanto sai cada sessão e quanto custaria avulso.</li>
+ <li><b>Venda para o cliente</b> (<span class="ui">Vender pacote</span>, também na ficha do cliente): escolha o cliente, o pet (no pet shop), a data de início e o valor cobrado.</li>
+ <li><b>Agende pelo pacote</b>: no novo agendamento, escolha em <span class="ui">Pagamento</span> o pacote com saldo. Também dá para passar um horário já marcado para o pacote, ou tirá-lo, pelo detalhe do agendamento.</li>
+</ol>
+<table><thead><tr><th>Situação</th><th>O que acontece com a sessão</th></tr></thead><tbody>
+ <tr><td>Agendado ou concluído</td><td>Conta como usada</td></tr><tr><td>Cliente faltou</td><td>Conta como usada</td></tr>
+ <tr><td>Cancelado</td><td>Volta para o pacote</td></tr><tr><td>Depois do vencimento</td><td>Não pode ser usada</td></tr></tbody></table>
+<p>Agendamentos do pacote saem com valor zero na agenda; o valor do pacote entra no relatório na data da venda.</p>
+</section>
+
+<section id="recorrencia"><h2><span class="n">7</span>Retorno de clientes</h2>
+<p>Em Clientes, use o filtro <span class="ui">Sumidos há 30+ / 60+ / 90+ dias</span>: aparecem os clientes que já foram atendidos, não voltaram nesse período e não têm nada marcado. O botão <span class="ui">Chamar de volta</span> abre o WhatsApp com uma mensagem pronta e o link da sua vitrine — no pet shop, citando o nome do pet.</p>
+<div class="dica"><b>Rotina sugerida:</b> toda segunda-feira, abra “Sumidos há 30+ dias” e chame de volta cinco clientes. Combine com o “Horário liberado” para preencher cancelamentos do dia.</div>
+</section>
+
+<section id="folgas"><h2><span class="n">8</span>Folgas e bloqueios</h2>
+<p>Feriado, férias, curso ou consulta médica: em <span class="ui">+ Bloqueio</span>, escolha um profissional ou a empresa toda e o período. Os horários bloqueados somem da vitrine e aparecem marcados na agenda.</p>
+<div class="atencao">Agendamentos já marcados dentro do período continuam valendo. Confira a agenda e avise os clientes antes de bloquear.</div>
+</section>
+
+<section id="relatorios"><h2><span class="n">9</span>Relatórios</h2>
+<p>Escolha o período para ver atendidos e faturado, o que ainda falta atender, faltas (com a taxa de quem deveria vir), cancelados, pacotes vendidos, os serviços mais feitos e o resultado por profissional.</p>
+</section>
+
+<section id="acessos"><h2><span class="n">10</span>Acessos e plano</h2>
+<table><thead><tr><th>O que</th><th>Administrador</th><th>Equipe</th></tr></thead><tbody>
+ <tr><td>Agenda: agendar, remarcar, concluir, cancelar</td><td>Sim</td><td>Sim</td></tr>
+ <tr><td>Clientes, pets e venda de pacotes</td><td>Sim</td><td>Sim</td></tr>
+ <tr><td>Folgas e bloqueios</td><td>Sim</td><td>Sim</td></tr>
+ <tr><td>Serviços, preços, equipe, pacotes à venda e configurações</td><td>Sim</td><td>Só consulta</td></tr></tbody></table>
+<p>Os acessos (e-mail e senha) de cada pessoa são criados pela LLD Works. A aba <b>Plano</b> mostra a situação da assinatura e quantos profissionais ativos o seu plano permite. Se a assinatura vencer, a vitrine mostra “agenda indisponível” até a regularização — os seus dados continuam guardados.</p>
+</section>
+
+<section id="duvidas"><h2><span class="n">11</span>Dúvidas frequentes</h2>
+<h3>O cliente diz que não aparece horário.</h3>
+<p>Confira se o profissional faz aquele serviço (Equipe e horários), se há turno naquele dia, se a duração do serviço cabe no turno e se não há bloqueio. Lembre da antecedência mínima e de por quantos dias a agenda fica aberta.</p>
+<h3>Mudei o endereço da vitrine e o link antigo parou.</h3>
+<p>É esperado: o endereço antigo deixa de existir. Atualize a bio e as mensagens com o novo link.</p>
+<h3>Preciso agendar fora do horário de trabalho.</h3>
+<p>Use o novo agendamento pelo painel com <span class="ui">Encaixe</span>. A vitrine nunca oferece horários fora do expediente.</p>
+<h3>Os dados ficam seguros?</h3>
+<p>Cada empresa só enxerga os próprios dados, o acesso ao painel exige login e a conexão é sempre criptografada. Peça à LLD Works a exportação ou a exclusão dos dados de um cliente quando ele solicitar.</p>
+<h3>Ainda ficou com dúvida?</h3>
+<p>Fale com a LLD Works pelo WhatsApp que você recebeu na contratação, ou pelo site <a href="https://produtos.lldworks.com.br/#serviceworks">produtos.lldworks.com.br</a>.</p>
+</section>
+</main>
+</div>
+</body></html>

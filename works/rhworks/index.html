@@ -374,6 +374,7 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid var(--n
    <a href="#vagas" data-r="vagas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></svg><span>Vagas</span></a>
    <a href="#candidatos" data-r="candidatos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg><span>Candidatos</span></a>
    <a href="#config" data-r="config"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/><circle cx="12" cy="12" r="4"/></svg><span>IA e privacidade</span></a>
+   <a href="#plano" data-r="plano" id="navPlano" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg><span>Plano</span></a>
    <a href="#ajuda" data-r="ajuda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 16.5v.5"/></svg><span>Como usar</span></a>
   </nav>
   <div class="eng" id="eng"></div>
@@ -691,7 +692,7 @@ let rota='painel',arg=null,filtro={rec:'',q:''},sel=new Set();
 function ir(h){if(location.hash===h){lerRota();render()}else location.hash=h}
 function lerRota(){const h=(location.hash||'#painel').slice(1);const m=h.match(/^(vaga|cand|editar)-([a-z0-9]+)$/);if(m){rota=m[1];arg=m[2]}else{rota=h||'painel';arg=null}}
 window.addEventListener('hashchange',()=>{lerRota();sel.clear();filtro={rec:'',q:''};if(rota!=='editar'&&rota!=='nova-vaga')F=null;render();window.scrollTo(0,0)});
-function render(){const V={painel:vPainel,vagas:vVagas,'nova-vaga':vForm,editar:vForm,vaga:vVaga,cand:vCand,candidatos:vCands,config:vConfig,ajuda:vAjuda}[rota]||vPainel;$$('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(rota==='vaga'||rota==='nova-vaga'||rota==='editar'?'vagas':rota==='cand'?'vagas':rota)));$('#view').innerHTML=V()+'<p class="foot">RHWorks · triagem de talentos com IA · '+(NUVEM?'dados na conta da empresa':'os dados ficam neste navegador')+' · <a href="#ajuda">Como usar</a></p>';pos[rota]?.();motorUI()}
+function render(){const V={painel:vPainel,vagas:vVagas,'nova-vaga':vForm,editar:vForm,vaga:vVaga,cand:vCand,candidatos:vCands,config:vConfig,ajuda:vAjuda,plano:vPlano}[rota]||vPainel;const np=$('#navPlano');if(np)np.hidden=!NUVEM;$$('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(rota==='vaga'||rota==='nova-vaga'||rota==='editar'?'vagas':rota==='cand'?'vagas':rota)));$('#view').innerHTML=V()+'<p class="foot">RHWorks · triagem de talentos com IA · '+(NUVEM?'dados na conta da empresa':'os dados ficam neste navegador')+' · <a href="#ajuda">Como usar</a></p>';pos[rota]?.();motorUI()}
 function refrescar(){if($('#ov')){pendRender=true;return}if(['nova-vaga','editar','config'].includes(rota)){motorUI();return}const ae=document.activeElement;if(ae&&ae.id==='notas')return;const y=window.scrollY;render();window.scrollTo(0,y)}
 const pos={};
 function motorUI(){const e=$('#eng');if(!e)return;const ligado=S.cfg.prov!=='local';const st=rodando?'run':!ligado?'':(S._ok===false?'err':S._ok?'ok':'');const sub=rodando?`Lendo currículos… ${fila.length?fila.length+' na fila':''}`:!ligado?(DET.ollama?'Llama encontrado. Clique para ligar.':'Só critérios da vaga. Clique para ligar o Llama.'):S._ok===false?(S.cfg.prov==='cloud'&&S._uso&&!S._uso.disponivel?`Cota de hoje acabou. Renova às ${hora21(S._uso.reinicia)}.`:'Sem conexão. Clique para resolver.'):S._ok?`Conectado · ${modeloMotor()}${S.cfg.prov==='cloud'&&restamTxt()?' · '+restamTxt():''}`:`${modeloMotor()} · clique para testar`;e.innerHTML=`<a href="#config"><b><span class="dot ${st}"></span>${ligado?esc(nomeMotor()):'IA desligada'}</b>${esc(sub)}</a>`}
@@ -970,6 +971,21 @@ async function testar(){const o=$('#tst');if(o)o.innerHTML='<span class="spin"><
  catch(e){S._ok=false;if(o)o.innerHTML=`<span style="color:var(--lo)">${esc(e.message)}</span>`}motorUI()}
 
 /* ============ AJUDA ============ */
+/* ============ plano (assinatura e limites vindos do LLD Works Hub; só com login) ============ */
+function vPlano(){return`<div class="top"><div><h1>Seu plano</h1><p>Situação da assinatura e quanto do plano você está usando.</p></div></div>
+ <section class="card fs mb" id="planoBox"><p class="small">Carregando…</p></section>`}
+pos.plano=async()=>{const box=$('#planoBox');if(!box)return;if(!NUVEM){box.innerHTML='<p class="small">O plano aparece quando você entra pela sua conta em rhworks.lldworks.com.br.</p>';return}
+ try{const r=await fetch('/api/admin/plano',{credentials:'same-origin'});if(r.status===401){location.href='/entrar';return}const p=await r.json();if(!r.ok)throw new Error(p.erro||'erro');
+  const SIT={ativa:['Ativa','ok'],cortesia:['Cortesia','pet'],teste:['Período de teste','mid'],pendente:['Pagamento pendente','mid'],inadimplente:['Pagamento em atraso','lo'],cancelada:['Cancelada','lo'],sem_assinatura:['Sem assinatura','lo'],desconhecida:['Em verificação','']};
+  const [st,cor]=SIT[p.status]||[p.status,''];const dt=d=>`${d.slice(8,10)}/${d.slice(5,7)}/${d.slice(0,4)}`;
+  const lims=Object.entries(p.nomes||{}).map(([k,nome])=>{const max=Number(p.limites?.[k])||0,uso=Number(p.uso?.[k])||0,pct=max?Math.min(100,Math.round(100*uso/max)):0;
+   return`<div style="margin-top:16px"><div style="display:flex;justify-content:space-between;gap:12px"><b>${esc(nome[0].toUpperCase()+nome.slice(1))}</b><span>${uso}${max?` de ${max}`:' · sem limite'}</span></div>${max?`<div class="bar" style="margin-top:6px"><i class="${pct>=100?'lo':pct>=80?'mid':'hi'}" style="width:${Math.max(2,pct)}%"></i></div>`:''}</div>`}).join('');
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><p class="small" style="margin:0">Plano</p><h2 style="margin:2px 0 0">${esc(p.plano||(p.status==='cortesia'?'Cortesia LLD Works':'Plano sob medida'))}</h2></div><span class="chip ${cor}">${st}</span></div>
+   ${p.vence_em?`<p class="small">${p.status==='teste'?'Teste até':'Vence em'} ${dt(p.vence_em)}</p>`:''}
+   ${!p.liberada?'<p class="small" style="color:var(--lo)">A assinatura não está liberada. Fale com a LLD Works para regularizar.</p>':''}
+   ${lims}
+   <p class="small" style="margin-top:18px">Vagas pausadas ou encerradas não contam no limite. Precisa de mais? <a href="https://produtos.lldworks.com.br/#rhworks" target="_blank" rel="noopener">Fale com a LLD Works</a> para mudar de plano.</p>`}
+ catch(e){box.innerHTML='<p class="small">Não consegui carregar o plano agora. Tente de novo em instantes.</p>'}};
 function vAjuda(){const online=!ehLocal();
  return`<div class="top"><div><h1>Como usar o RHWorks</h1><p>Tudo o que o RH precisa para ir do currículo à entrevista.</p></div></div>
  <section class="card fs mb"><h2>O fluxo em 4 passos</h2><ol class="steps plain">

@@ -332,7 +332,7 @@ const P = [
   e:['Agente escopado ao negócio (regra da Meta)','Agendamento integrado ao ServiceWorks','Transferência para humano','Painel de atendimentos e métricas','Base de conhecimento editável','Número oficial da API do WhatsApp'],
   inc:['Configuração no número oficial da empresa','Base de conhecimento montada com você','Testes com perguntas reais','Treinamento da equipe'],
   ob:['“E se o robô responder errado?”','Ele responde só com o que está na base do seu negócio. O que não sabe, passa para uma pessoa da equipe, com todo o histórico da conversa.'],
-  d:'demos/agentworks.html',x:['agentworks.lldworks.com.br','https://agentworks.lldworks.com.br'],xl:'Entrar com login',k:4,
+  d:'https://agentworks-demo.lldworks.com.br',dl:'Abrir demo (painel real)',x:['agentworks.lldworks.com.br','https://agentworks.lldworks.com.br'],xl:'Entrar com login',k:4,
   cap:['Login com senha e 2FA','Conversa: responde, agenda, transfere','Base de conhecimento editável','Histórico de atendimentos']},
  {s:'serviceworks',n:'Service',c:'#7C3AED',st:['pilot','Em piloto · previsão jan–fev/2027'],f:'Agenda online para serviços',impl:490,mes:129,mn:'até 3 profissionais',
   dor:'Minha agenda vive com buraco e cliente que não aparece.',
@@ -343,7 +343,7 @@ const P = [
   e:['Vitrine com combos e promoções','Agenda por profissional com encaixes','Lista de espera automática','Lembretes e confirmação no WhatsApp','CRM de recorrência','Assistente que agenda e remarca'],
   inc:['Cadastro de serviços, preços e profissionais','Vitrine com a sua marca e link para a bio','Confirmação por código no WhatsApp','Treinamento da equipe'],
   ob:['“Meus clientes preferem chamar no WhatsApp.”','Ótimo: o link da agenda vai no WhatsApp e na bio, e o assistente também agenda e remarca pela conversa.'],
-  d:'demos/serviceworks.html',x:['serviceworks.lldworks.com.br','https://serviceworks.lldworks.com.br'],xl:'Entrar com login',k:5,
+  d:'https://serviceworks-demo.lldworks.com.br/barbearia',dl:'Abrir demo: barbearia',d2:'https://serviceworks-demo.lldworks.com.br/pet',d2l:'Abrir demo: pet shop',x:['serviceworks.lldworks.com.br','https://serviceworks.lldworks.com.br'],xl:'Entrar com login',k:5,
   cap:['Login com senha e 2FA','Agenda do dia por profissional','Vitrine pública com reserva segura','Clientes e recorrência','Assistente de agendamento']},
  {s:'salesworks',n:'Sales',c:'#EA580C',st:['pilot','Loja pronta · CRM em piloto, previsão jan–fev/2027'],f:'Loja online com CRM de vendas',impl:790,mes:189,mn:'vitrine, pedidos e CRM',
   dor:'Vendo pelo direct e me perco nos pedidos.',
@@ -354,7 +354,7 @@ const P = [
   e:['Vitrine responsiva com carrinho','Pipeline de pedidos em Kanban','Carteira segmentada (fiel, em risco, sumido)','Campanhas de reativação no WhatsApp','Alertas de estoque mínimo','Financeiro e DRE do mês'],
   inc:['Cadastro inicial dos produtos','Pix e cartão configurados','Funil de pedidos pronto para usar','Treinamento da equipe'],
   ob:['“Já vendo pelo Instagram. Preciso de loja?”','O Instagram traz o cliente. A loja fecha o pedido sem depender de você estar online, e o CRM traz esse cliente de volta.'],
-  d:'demos/salesworks.html',x:['salesworks.lldworks.com.br','https://salesworks.lldworks.com.br'],xl:'Entrar com login',k:5,
+  d:'https://salesworks-demo.lldworks.com.br',dl:'Abrir demo (painel real)',x:['salesworks.lldworks.com.br','https://salesworks.lldworks.com.br'],xl:'Entrar com login',k:5,
   cap:['Login com senha e 2FA','Painel: faturamento, funil e ações','Pipeline de pedidos em Kanban','Carteira de clientes segmentada','Reativação pelo WhatsApp']},
  {s:'pageworks',n:'Page',c:'#2563EB',st:['live','Disponível agora'],f:'Site profissional para o seu negócio',impl:2490,mes:79,mn:'hospedagem, SSL e ajustes de texto e foto',il:'Criação do site',
   dor:'Quem procura meu serviço no Google acha o concorrente.',
@@ -387,7 +387,7 @@ const P = [
   e:['Editor com pré-visualização ao vivo','Temas da marca','Estatísticas de cliques e origem','Links verificados antes de publicar','Integração com vitrine e agenda','Endereço reservado'],
   inc:['Endereço reservado com o seu nome','Temas com as cores da sua marca','Estatísticas de cliques','Integração com vitrine e agenda'],
   ob:['“Já existe ferramenta gratuita para isso.”','Existe. A diferença é ter a sua marca, saber de onde vem cada clique e ligar direto na sua agenda e na sua loja.'],
-  d:'demos/linkworks.html',x:['linkworks.lldworks.com.br','https://linkworks.lldworks.com.br'],xl:'Entrar com login',k:4,
+  d:'https://linkworks-demo.lldworks.com.br',dl:'Abrir demo (painel real)',x:['linkworks.lldworks.com.br','https://linkworks.lldworks.com.br'],xl:'Entrar com login',k:4,
   cap:['Login com senha e 2FA','Editor com celular ao vivo','Estatísticas de cliques','Segurança do link público']},
  {s:'socialworks',n:'Social',c:'#DC2626',st:['pilot','Em piloto · previsão mar–abr/2027'],f:'Instagram organizado e automático',impl:390,mes:149,mn:'calendário, automações e caixa única',
   dor:'Não dá tempo de postar nem de responder comentário.',
@@ -453,7 +453,7 @@ const offer = p => `<div class="offer"><div class="ttl"><span class="ic">${ic('r
   <div><small>${p.impl ? (p.il||'Implantação')+' · paga uma vez' : 'Implantação'}</small>${p.impl ? `<b><i>12x de </i>${parc(p.impl)}</b><span>ou ${pix(p.impl)} no Pix (5% off)<br>Total no cartão: ${brl0(p.impl)}</span>` : `<b>Sem custo</b><span>Você monta a página no editor</span>`}</div>
   <div><small>Mensalidade</small><b>${brl0(p.mes)}<i> /mês</i></b><span>${p.mn}</span></div></div>
   <ul class="inc">${p.inc.map(t=>`<li><span class="ic">${ic('check')}</span>${t}</li>`).join('')}<li><span class="ic">${ic('check')}</span>Suporte no WhatsApp em até 1 dia útil</li><li><span class="ic">${ic('check')}</span>Hospedagem, backup e atualizações</li></ul>
-  <div class="cta"><a class="btn wa mag" href="${wa(waMsg(p))}" target="_blank" rel="noopener"><span class="ic">${ic('message-circle')}</span>${p.st[0]==='live'?`Quero o ${p.n}Works`:'Quero entrar no piloto'}</a>${p.d?`<a class="btn" href="${p.d}"${p.d.startsWith('http')?' target="_blank" rel="noopener"':''}>${p.dl||'Abrir demo interativo'}</a>`:(p.x?`<a class="btn" href="${p.x[1]}" target="_blank" rel="noopener">${p.xl}</a>`:'')}</div></div>`;
+  <div class="cta"><a class="btn wa mag" href="${wa(waMsg(p))}" target="_blank" rel="noopener"><span class="ic">${ic('message-circle')}</span>${p.st[0]==='live'?`Quero o ${p.n}Works`:'Quero entrar no piloto'}</a>${p.d?`<a class="btn" href="${p.d}"${p.d.startsWith('http')?' target="_blank" rel="noopener"':''}>${p.dl||'Abrir demo interativo'}</a>${p.d2?`<a class="btn" href="${p.d2}" target="_blank" rel="noopener">${p.d2l}</a>`:''}`:(p.x?`<a class="btn" href="${p.x[1]}" target="_blank" rel="noopener">${p.xl}</a>`:'')}</div></div>`;
 $('sistemas').innerHTML = P.map((p,i) => { const m0 = p.m0 ?? 1;
  return `<section class="band psec ${i%2?'alt':''}" id="${p.s}" style="--c:${p.c};--gx:${i%2?'10%':'90%'}"><div class="wrap prod ${i%2?'rev':''}"><div class="txt">
   <div class="hd rv">${I[p.s]||''}<div class="nm">${name(p)}<small>${p.f}</small></div><span class="st ${p.st[0]}">${p.st[1]}</span></div>
