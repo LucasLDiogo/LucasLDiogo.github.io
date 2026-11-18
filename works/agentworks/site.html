@@ -245,14 +245,14 @@ footer a{color:var(--p);font-weight:600}
       <span class="kicker" style="color:#7C3AED">Integração ServiceWorks</span>
       <h2>Já usa o ServiceWorks? O robô agenda direto na sua agenda</h2>
       <p class="lead">Barbearia, salão, clínica e pet shop: com a integração ligada, o AgentWorks consulta os horários livres de cada profissional no ServiceWorks e marca, remarca ou cancela lá mesmo. Sem agenda duplicada.</p>
-      <div class="acoes"><a class="btn b-ver" href="#plano">Incluído no Premium</a><a class="btn b-cla" href="https://produtos.lldworks.com.br/#serviceworks" target="_blank" rel="noopener">Conhecer o ServiceWorks</a></div>
+      <div class="acoes"><a class="btn b-ver" href="https://serviceworks.lldworks.com.br/#planos">Já vem no ServiceWorks Pro e Premium</a><a class="btn b-cla" href="https://serviceworks.lldworks.com.br/" target="_blank" rel="noopener">Conhecer o ServiceWorks</a></div>
     </div>
     <div class="caixa" aria-label="Exemplo de horários vindos do ServiceWorks">
       <b style="font:800 18px Montserrat,sans-serif">Horários livres · amanhã</b>
       <div class="linha">✂️ Corte · Zé <b>09:00</b></div>
       <div class="linha">✂️ Corte · Ana <b>10:30</b></div>
       <div class="linha">🧔 Barba · Zé <b>11:00</b></div>
-      <span style="font-size:13px;opacity:.85">Serviços, preços e profissionais sincronizados com um toque. Exige assinatura ativa dos dois produtos na mesma conta LLD Works.</span>
+      <span style="font-size:13px;opacity:.85">Serviços, preços e profissionais sincronizados com um toque. Vale para quem tem AgentWorks e ServiceWorks ativos na mesma conta LLD Works.</span>
     </div>
   </div>
 </section>
@@ -340,9 +340,9 @@ footer a{color:var(--p);font-weight:600}
 
   // ---------- planos ao vivo (LLD Works Hub) ----------
   const RECURSOS = {
-    essencial: ["Robô com IA e menu", "Conversas e atendimento humano", "Clientes (CRM)", "Agenda com lembretes", "Catálogo e combos"],
+    essencial: ["Robô com IA e menu", "Conversas e atendimento humano", "Clientes (CRM)", "Agenda com lembretes (própria ou do ServiceWorks)", "Catálogo e combos"],
     profissional: ["Tudo do Essencial", "Gestão da agenda (ocupação e alertas)", "Pedidos com aviso ao cliente", "Disparos para listas e grupos"],
-    premium: ["Tudo do Profissional", "Integração com o ServiceWorks", "Webhooks para os seus sistemas (pedidos e agendamentos)"],
+    premium: ["Tudo do Profissional", "Webhooks para os seus sistemas (pedidos e agendamentos)", "Integrações e conectores"],
   };
   const NOMES_LIMITE = { atendentes: "usuários no painel", conversas_mes: "conversas com IA por mês" };
   const chave = (n) => String(n || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
