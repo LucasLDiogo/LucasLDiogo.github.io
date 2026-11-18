@@ -13,9 +13,13 @@ const PRODUTOS = {
   "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "salesworks", entrada: "index.html", frase: "Loja online com pedidos no WhatsApp, estoque e CRM de clientes." },
   "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "serviceworks", entrada: "index.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
   "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "linkworks", entrada: "index.html", frase: "Link na bio com páginas, estatísticas e proteção." },
-  "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "socialworks", entrada: "index.html", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
-  "rhworks.lldworks.com.br": { slug: "rhworks", nome: "RHWorks", cor: "#A16207", dir: "rhworks", entrada: "index.html", frase: "Triagem de currículos com IA: ranking, parecer e roteiro de entrevista.", api: true },
+  "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "socialworks", entrada: "index.html", aposLogin: "/app", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
+  "rhworks.lldworks.com.br": { slug: "rhworks", nome: "RHWorks", cor: "#A16207", dir: "rhworks", entrada: "index.html", aposLogin: "/app", frase: "Triagem de currículos com IA: ranking, parecer e roteiro de entrevista.", api: true },
 };
+// RHWorks e SocialWorks: site de venda na raiz e painel em /app (como o ServiceWorks).
+const PAINEL_EM_APP = new Set(["rhworks", "socialworks"]);
+// RHWorks: página pública da vaga (link de candidatura); os leitores de PDF/Word dela ficam em /lib/.
+const RH_VAGA = /^\/vaga\/[a-z0-9]{8}\/?$/;
 // Rotas do antigo endereço do Crivo que continuam no Worker "crivo" (IA na nuvem, versão para instalar e vídeo).
 const CRIVO_ROTAS = /^\/(api\/|Crivo\.zip$|INICIAR-CRIVO\.bat$|CONECTAR-LLAMA\.bat$|video\/|lib\/|marca\/)/;
 const ICONES = __ICONES__;
@@ -57,7 +61,7 @@ function telaLogin(p, erro = "", email = "", acao = null, logado = null) {
   const ic = ICONES[p.slug] || "";
   const [pre] = p.nome.split("Works");
   const painel = p.aposLogin || (p.slug === "serviceworks" ? "/app" : "/");
-  const site = ["agentworks", "serviceworks", "linkworks"].includes(p.slug) ? "/" : `https://produtos.lldworks.com.br/#${p.slug}`;
+  const site = ["agentworks", "serviceworks", "linkworks", "rhworks", "socialworks"].includes(p.slug) ? "/" : `https://produtos.lldworks.com.br/#${p.slug}`;
   const formulario = logado ? `<div class="ja" role="status"><div class="av" aria-hidden="true">${esc((logado.e || "?").slice(0, 1).toUpperCase())}</div>
 <h2>Você já está conectado</h2><p class="mute">Entrou como <b>${esc(logado.e)}</b>${logado.cn ? ` · ${esc(logado.cn)}` : ""}.</p>
 <a class="btn" href="${esc(painel)}">Continuar para o painel →</a><a class="btn sec" href="/sair">Entrar com outra conta</a></div>`
@@ -68,7 +72,7 @@ function telaLogin(p, erro = "", email = "", acao = null, logado = null) {
 <p class="err" id="erro" role="alert" aria-live="assertive">${esc(erro)}${acao ? ` <a href="${esc(acao.href)}">${esc(acao.rot)}</a>` : ""}</p>
 <button type="submit" class="btn"><span>Entrar</span></button>
 <p class="links"><a href="/recuperar">Esqueci minha senha</a><a href="/recuperar?primeiro=1">Primeiro acesso</a></p>
-<p class="demo">Ainda não tem conta? <a href="${p.slug === "agentworks" ? "/#plano" : "/assinar"}"><b>Conheça os planos do ${esc(p.nome)}</b></a>${p.slug === "linkworks" ? `<br>Cliente do ServiceWorks Pro ou Premium? Use o <b>mesmo e-mail e senha</b>.` : ""}</p></form>`;
+<p class="demo">Ainda não tem conta? <a href="${p.slug === "agentworks" ? "/#plano" : PAINEL_EM_APP.has(p.slug) ? "/#planos" : "/assinar"}"><b>Conheça os planos do ${esc(p.nome)}</b></a>${p.slug === "linkworks" ? `<br>Cliente do ServiceWorks Pro ou Premium? Use o <b>mesmo e-mail e senha</b>.` : ""}</p></form>`;
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Entrar · ${p.nome}</title><meta name="theme-color" content="#070B16"><link rel="icon" href="data:image/svg+xml,${encodeURIComponent(ic)}"><style>
 :root{--p:${p.cor};--p2:color-mix(in oklab,var(--p) 55%,#fff);--noite:#070B16}*{box-sizing:border-box}
@@ -169,13 +173,14 @@ const DEMO_SESSAO = { e: "demo@lldworks.com.br", c: 1, cn: "LLD Works · Demonst
 // ServiceWorks tem duas demonstrações: barbearia (padrão) e pet shop; /pet e /barbearia trocam (cookie lw_demo, sem dado pessoal).
 const DEMO_PET = { e: "demo-pet@lldworks.com.br", c: 2, cn: "LLD Works · Demonstração Pet", cs: "demo-pet", r: "admin", demo: true, pet: true };
 const DEMO_EXEMPLOS = { pageworks: "https://clinica.lldworks.com.br/", proworks: "https://wellington.lldworks.com.br/" };
-const faixaDemo = (p, s = {}) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="https://produtos.lldworks.com.br/#${p.slug}" style="color:#fff">Quero o meu ${esc(p.nome)}</a>${p.slug === "serviceworks" ? ` · <a href="${s.pet ? "/barbearia" : "/pet"}" style="color:#fff">Ver ${s.pet ? "barbearia" : "pet shop"}</a>` : ""}</div>`;
+const faixaDemo = (p, s = {}) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="${PAINEL_EM_APP.has(p.slug) ? `https://${p.slug}.lldworks.com.br/#planos` : `https://produtos.lldworks.com.br/#${p.slug}`}" style="color:#fff">Quero o meu ${esc(p.nome)}</a>${p.slug === "serviceworks" ? ` · <a href="${s.pet ? "/barbearia" : "/pet"}" style="color:#fff">Ver ${s.pet ? "barbearia" : "pet shop"}</a>` : ""}</div>`;
 async function demo(req, env, url, p) {
   const path = url.pathname;
   if (CONTA_PAGINAS[path]) return Response.redirect(`https://${p.slug}.lldworks.com.br${path}${url.search}`, 302); // cadastro e senha só no endereço real
   if (path === "/entrar" || path === "/sair") return Response.redirect(url.origin + "/", 302);
   if (p.slug === "serviceworks" && (path === "/pet" || path === "/barbearia"))
     return new Response(null, { status: 302, headers: { Location: "/", "Cache-Control": "no-store", "Set-Cookie": `lw_demo=${path === "/pet" ? "pet" : "barbearia"}; Path=/; Secure; SameSite=Lax; Max-Age=86400` } });
+  if (p.slug === "rhworks") return rhDemo(req, url, p);
   if (!BACKENDS[p.slug]?.painel) {
     if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
     if (path.includes("..")) return new Response("Inválido", { status: 400 });
@@ -186,6 +191,20 @@ async function demo(req, env, url, p) {
   return produto(req, env, url, p, p.slug === "serviceworks" && cookie(req, "lw_demo") === "pet" ? DEMO_PET : DEMO_SESSAO);
 }
 
+// RHWorks demo: o próprio app (works/rhworks/index.html) sem login. Sem LW_AUTH ele guarda tudo no navegador do visitante
+// e tem o botão "Carregar demonstração" (2 vagas e 10 currículos fictícios). Nada é gravado no servidor e a IA fica desligada.
+async function rhDemo(req, url, p) {
+  const path = url.pathname;
+  if (req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Demonstração: envios desativados. Assine para usar de verdade.");
+  if (path.includes("..")) return new Response("Inválido", { status: 400 });
+  if (path.startsWith("/api/")) return jsonErro(403, "Demonstração: a IA na nuvem fica desligada aqui. Assine para usar a análise completa.");
+  if (path.startsWith("/lib/") || path.startsWith("/pub/")) return origem(req, "rhworks" + path, 300);
+  if (path !== "/" && path !== "/index.html" && path !== "/app" && path !== "/app/") return Response.redirect(url.origin + "/", 302);
+  const r = await origem(req, "rhworks/index.html", 0);
+  if (r.status !== 200) return r;
+  const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
+  return new Response((await r.text()).replace("</body>", faixaDemo(p) + "</body>"), { status: 200, headers: h });
+}
 // painel: true = tela própria nova (sem script embutido); corpoMax = maior envio aceito (RHWorks manda currículos).
 const BACKENDS = {
   serviceworks: { binding: "SERVICEWORKS", host: "sw.interno", painel: true, corpoMax: 1024 * 1024 },
@@ -281,6 +300,25 @@ async function produto(req, env, url, p, sessaoFixa = null) {
       const aviso = path.match(/^\/webhook\/mp\/(\d{1,9})$/);
       if (aviso) return req.method === "POST" ? backend(req, env, url, p, null, `/api/aviso-mp/${aviso[1]}`) : new Response("ok");
     }
+    // RHWorks e SocialWorks: a raiz é o site de venda (planos → /assinar); o painel fica em /app.
+    if (PAINEL_EM_APP.has(p.slug) && !sessaoFixa && (path === "/" || path === "/index.html") && (req.method === "GET" || req.method === "HEAD")) {
+      const r = await origem(req, `${p.dir}/site.html`, 0);
+      if (r.status === 200) {
+        const s = await sessao(req, env, p);
+        const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
+        return new Response(s ? (await r.text()).replace("</head>", '<meta name="lw-logado" content="1"></head>') : r.body, { status: 200, headers: h });
+      }
+    }
+    if (p.slug === "rhworks") {
+      const leitura = req.method === "GET" || req.method === "HEAD";
+      if (RH_VAGA.test(path)) return leitura ? origem(req, "rhworks/vaga.html", 60) : new Response("Método não permitido", { status: 405 });
+      if (path.startsWith("/lib/")) {
+        if (!leitura) return new Response("Método não permitido", { status: 405 });
+        if (path.includes("..")) return new Response("Inválido", { status: 400 });
+        return origem(req, "rhworks" + path, 3600);
+      }
+      if (path.startsWith("/api/publico/vaga/")) return backend(req, env, url, p, null);
+    }
     if (path.startsWith("/pub/")) {
       if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
       if (path.includes("..")) return new Response("Inválido", { status: 400 });
@@ -328,11 +366,13 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   if (BACKENDS[p.slug] && path.startsWith("/api/") && !p.api) return jsonErro(404, "Rota não encontrada");
   if (p.api && CRIVO_ROTAS.test(path) && !path.startsWith("/lib/")) {
     if (!env.CRIVO) return new Response("Serviço indisponível", { status: 503 });
-    return env.CRIVO.fetch(new Request("https://crivo.lldworks.com.br" + path + url.search, req));
+    // O Worker crivo só aceita a origem dele; o roteador já conferiu a sessão, então repassa como crivo (sem o cookie).
+    const hc = new Headers(req.headers); hc.set("Origin", "https://crivo.lldworks.com.br"); hc.delete("Cookie");
+    return env.CRIVO.fetch(new Request("https://crivo.lldworks.com.br" + path + url.search, { method: req.method, headers: hc, body: req.method === "GET" || req.method === "HEAD" ? undefined : await req.arrayBuffer() }));
   }
   if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
   if (path.includes("..")) return new Response("Inválido", { status: 400 });
-  const arq = path === "/" || path === "/index.html" || (p.slug === "serviceworks" && (path === "/app" || path === "/app/")) ? "/" + p.entrada : path;
+  const arq = path === "/" || path === "/index.html" || ((p.slug === "serviceworks" || PAINEL_EM_APP.has(p.slug)) && (path === "/app" || path === "/app/")) ? "/" + p.entrada : path;
   const r = await origem(req, p.dir + arq, arq === "/" + p.entrada ? 0 : 300);
   if (arq !== "/" + p.entrada || r.status !== 200) return r;
   if (BACKENDS[p.slug]?.painel) { // painel próprio: sem script embutido (CSP); na demonstração, só a faixa de aviso

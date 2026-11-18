@@ -1,0 +1,39 @@
+/* RHWorks · página pública da vaga (rhworks.lldworks.com.br/vaga/<codigo>) */
+.vaga-pg{min-height:100vh;display:flex;flex-direction:column}
+.vg{width:min(760px,100%);margin:0 auto;padding:28px 18px 40px;flex:1}
+.vg-carregando{display:flex;gap:12px;align-items:center;justify-content:center;color:var(--mute);padding:80px 0;font-weight:600}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--p);animation:gira .8s linear infinite;flex:none}
+@keyframes gira{to{transform:rotate(360deg)}}
+.vg-topo{border-radius:28px;padding:28px;background:linear-gradient(135deg,#9A3412,#7C2D12 60%,#431407);color:#fff;position:relative;overflow:hidden}
+.vg-topo::after{content:"";position:absolute;right:-90px;top:-110px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(251,191,36,.45),transparent 65%)}
+.vg-emp{font-weight:700;font-size:14px;opacity:.9;letter-spacing:.02em}
+.vg-topo h1{font-size:clamp(28px,6vw,40px);font-weight:900;margin:6px 0 14px;max-width:20ch}
+.vg-chips{display:flex;flex-wrap:wrap;gap:8px}.vg-chips span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:5px 11px;border-radius:99px;font-size:13.5px;font-weight:600}
+.vg-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;margin-top:16px}
+.vg-card h2{font-size:19px;margin-bottom:10px}.vg-card p{margin:0 0 10px;color:#3D3123;white-space:pre-line}
+.req{display:flex;flex-wrap:wrap;gap:8px}.req span{padding:6px 11px;border-radius:99px;background:var(--soft);border:1px solid var(--line);font-size:13.5px;font-weight:600}.req .obr{background:#FFF1DC;border-color:#F5C77E;color:#7C2D12}
+form.vg-form{display:grid;gap:14px}
+.vg-form h2{font-size:21px;margin:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.campo label{display:block;font-weight:700;font-size:14px;margin-bottom:6px}.campo small{display:block;color:var(--mute);font-size:12.5px;margin-top:5px}
+.campo input,.campo textarea{width:100%;min-height:50px;border:1.5px solid #DCCBB3;border-radius:14px;padding:12px 14px;font:16px Inter,sans-serif;background:#fff;color:var(--ink)}
+.campo textarea{min-height:110px;resize:vertical}
+.campo input:focus,.campo textarea:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px rgba(194,65,12,.18)}
+.campo [aria-invalid=true]{border-color:#B42318}
+.arq{position:relative;display:flex;gap:12px;align-items:center;border:2px dashed #E8B46A;border-radius:18px;padding:18px;background:#FFFAF2;cursor:pointer;transition:background .2s,border-color .2s}
+.arq:hover,.arq.sobre,.arq:focus-within{background:#FFF1DC;border-color:var(--p)}
+.arq input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.arq .ic{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--grad);color:#fff}
+.arq b{display:block}.arq span{color:var(--mute);font-size:13.5px}
+.arq.ok{border-style:solid;border-color:#16A34A;background:#F0FDF4}.arq.ok .ic{background:#16A34A}
+.dica{font-size:13.5px;color:#5B4A35;background:var(--soft);border-radius:12px;padding:10px 12px;margin:0}
+.ou{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}.ou::before,.ou::after{content:"";flex:1;height:1px;background:var(--line)}
+.aceite{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#3D3123}.aceite input{width:20px;height:20px;margin-top:2px;accent-color:#B45309;flex:none}
+.armadilha{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.erro{color:#B42318;font-weight:600;font-size:14.5px;margin:0;min-height:1.4em}
+.vg-form .b.pri{width:100%}
+.b[aria-busy=true]{opacity:.7;pointer-events:none}
+.fim{text-align:center;padding:36px 22px}.fim .ok{width:76px;height:76px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:#16A34A;color:#fff;font-size:38px;box-shadow:0 18px 40px -16px #16A34A}
+.fim h2{font-size:26px;margin-bottom:8px}.fim p{color:var(--mute)}
+.vg-rod{display:flex;gap:8px;align-items:center;justify-content:center;padding:18px;color:var(--mute);font-size:13px}.vg-rod a{color:var(--mute)}
+@media(max-width:600px){.grid2{grid-template-columns:1fr}.vg-topo{padding:22px;border-radius:22px}}

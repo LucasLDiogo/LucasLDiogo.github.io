@@ -13,12 +13,16 @@ const PRODUTOS = {
   "salesworks.lldworks.com.br": { slug: "salesworks", nome: "SalesWorks", cor: "#EA580C", dir: "salesworks", entrada: "index.html", frase: "Loja online com pedidos no WhatsApp, estoque e CRM de clientes." },
   "serviceworks.lldworks.com.br": { slug: "serviceworks", nome: "ServiceWorks", cor: "#7C3AED", dir: "serviceworks", entrada: "index.html", frase: "Agenda, vitrine de serviços, CRM e assistente para barbearia, salão, clínica e pet shop." },
   "linkworks.lldworks.com.br": { slug: "linkworks", nome: "LinkWorks", cor: "#DB2777", dir: "linkworks", entrada: "index.html", frase: "Link na bio com páginas, estatísticas e proteção." },
-  "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "socialworks", entrada: "index.html", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
-  "rhworks.lldworks.com.br": { slug: "rhworks", nome: "RHWorks", cor: "#A16207", dir: "rhworks", entrada: "index.html", frase: "Triagem de currículos com IA: ranking, parecer e roteiro de entrevista.", api: true },
+  "socialworks.lldworks.com.br": { slug: "socialworks", nome: "SocialWorks", cor: "#DC2626", dir: "socialworks", entrada: "index.html", aposLogin: "/app", frase: "Calendário de posts, automações e caixa de entrada do Instagram." },
+  "rhworks.lldworks.com.br": { slug: "rhworks", nome: "RHWorks", cor: "#A16207", dir: "rhworks", entrada: "index.html", aposLogin: "/app", frase: "Triagem de currículos com IA: ranking, parecer e roteiro de entrevista.", api: true },
 };
+// RHWorks e SocialWorks: site de venda na raiz e painel em /app (como o ServiceWorks).
+const PAINEL_EM_APP = new Set(["rhworks", "socialworks"]);
+// RHWorks: página pública da vaga (link de candidatura); os leitores de PDF/Word dela ficam em /lib/.
+const RH_VAGA = /^\/vaga\/[a-z0-9]{8}\/?$/;
 // Rotas do antigo endereço do Crivo que continuam no Worker "crivo" (IA na nuvem, versão para instalar e vídeo).
 const CRIVO_ROTAS = /^\/(api\/|Crivo\.zip$|INICIAR-CRIVO\.bat$|CONECTAR-LLAMA\.bat$|video\/|lib\/|marca\/)/;
-const ICONES = {"agentworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#0E9F6E\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M16 20h32a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H30l-9 7v-7h-5a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4z\"/><circle cx=\"24\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"32\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"40\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/></svg>", "salesworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#EA580C\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M17 24h30l-2.5 24a3 3 0 0 1-3 2.7H22.5a3 3 0 0 1-3-2.7z\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M25 28v-6a7 7 0 0 1 14 0v6\"/></svg>", "serviceworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#7C3AED\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><rect fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" x=\"14\" y=\"17\" width=\"36\" height=\"33\" rx=\"5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M14 27h36M23 13v8M41 13v8\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M25 38l5 5 9-10\"/></svg>", "linkworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#DB2777\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M29 35a8 8 0 0 0 11.3 0l6-6a8 8 0 0 0-11.3-11.3l-2.5 2.5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M35 29a8 8 0 0 0-11.3 0l-6 6a8 8 0 0 0 11.3 11.3l2.5-2.5\"/></svg>", "socialworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#DC2626\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><rect fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" x=\"14\" y=\"14\" width=\"36\" height=\"36\" rx=\"10\"/><path d=\"M28 24.5v15l12-7.5z\" fill=\"#fff\"/><circle cx=\"43.5\" cy=\"20.5\" r=\"2.2\" fill=\"#fff\"/></svg>", "rhworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#A16207\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><circle fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" cx=\"25\" cy=\"25\" r=\"6.5\"/><circle fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" cx=\"41\" cy=\"27\" r=\"5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13 48c1.5-7 6-10.5 12-10.5S35.5 41 37 48\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M38 38.5c5.5 0 9.5 3 11 9.5\"/></svg>"};
+const ICONES = {"agentworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#0E9F6E\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M16 20h32a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H30l-9 7v-7h-5a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4z\"/><circle cx=\"24\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"32\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"40\" cy=\"32\" r=\"2.6\" fill=\"#fff\"/></svg>", "salesworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#EA580C\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M17 24h30l-2.5 24a3 3 0 0 1-3 2.7H22.5a3 3 0 0 1-3-2.7z\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M25 28v-6a7 7 0 0 1 14 0v6\"/></svg>", "serviceworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#7C3AED\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><rect fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" x=\"14\" y=\"17\" width=\"36\" height=\"33\" rx=\"5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M14 27h36M23 13v8M41 13v8\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M25 38l5 5 9-10\"/></svg>", "linkworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#DB2777\"/><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\".18\" stroke-width=\"2\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M29 35a8 8 0 0 0 11.3 0l6-6a8 8 0 0 0-11.3-11.3l-2.5 2.5\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M35 29a8 8 0 0 0-11.3 0l-6 6a8 8 0 0 0 11.3 11.3l2.5-2.5\"/></svg>", "socialworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><defs><linearGradient id=\"lw-socialworks\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#E45656\"/><stop offset=\".55\" stop-color=\"#DC2626\"/><stop offset=\"1\" stop-color=\"#8A1A1C\"/></linearGradient><linearGradient id=\"lw-socialworksr\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".45\"/><stop offset=\".5\" stop-color=\"#fff\" stop-opacity=\".06\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\".18\"/></linearGradient></defs><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"url(#lw-socialworks)\"/><path d=\"M0 16A16 16 0 0 1 16 0h30L0 46z\" fill=\"#fff\" opacity=\".09\"/><rect x=\".75\" y=\".75\" width=\"62.5\" height=\"62.5\" rx=\"15.25\" fill=\"none\" stroke=\"url(#lw-socialworksr)\" stroke-width=\"1.5\"/><g filter=\"none\"><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M32 13c10.5 0 19 7.4 19 16.5S42.5 46 32 46c-2.3 0-4.5-.3-6.5-1L16 49.5l2.6-7.6C15.1 38.9 13 34.4 13 29.5 13 20.4 21.5 13 32 13z\"/><path d=\"M32 38.2s-8.6-5.1-8.6-10.6c0-2.8 2.1-4.8 4.6-4.8 1.7 0 3.1.9 4 2.3.9-1.4 2.3-2.3 4-2.3 2.5 0 4.6 2 4.6 4.8 0 5.5-8.6 10.6-8.6 10.6z\" fill=\"#fff\"/><path d=\"M50.5 8.5l1.4 3.6 3.6 1.4-3.6 1.4-1.4 3.6-1.4-3.6-3.6-1.4 3.6-1.4z\" fill=\"#fff\"/></g></svg>", "rhworks": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><defs><linearGradient id=\"lw-rhworks\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#B6853E\"/><stop offset=\".55\" stop-color=\"#A16207\"/><stop offset=\"1\" stop-color=\"#663F09\"/></linearGradient><linearGradient id=\"lw-rhworksr\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".45\"/><stop offset=\".5\" stop-color=\"#fff\" stop-opacity=\".06\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\".18\"/></linearGradient></defs><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"url(#lw-rhworks)\"/><path d=\"M0 16A16 16 0 0 1 16 0h30L0 46z\" fill=\"#fff\" opacity=\".09\"/><rect x=\".75\" y=\".75\" width=\"62.5\" height=\"62.5\" rx=\"15.25\" fill=\"none\" stroke=\"url(#lw-rhworksr)\" stroke-width=\"1.5\"/><g filter=\"none\"><circle fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" cx=\"28\" cy=\"28\" r=\"14\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M38.5 38.5 50 50\"/><circle cx=\"28\" cy=\"24.5\" r=\"4.2\" fill=\"#fff\"/><path d=\"M19.6 36.2c1.6-4.2 4.7-6.3 8.4-6.3s6.8 2.1 8.4 6.3a14 14 0 0 1-16.8 0z\" fill=\"#fff\"/><path d=\"M48 10.5l1.5 3.9 3.9 1.5-3.9 1.5L48 21.3l-1.5-3.9-3.9-1.5 3.9-1.5z\" fill=\"#fff\"/></g></svg>"};
 const SEG = {
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   "X-Content-Type-Options": "nosniff",
@@ -57,7 +61,7 @@ function telaLogin(p, erro = "", email = "", acao = null, logado = null) {
   const ic = ICONES[p.slug] || "";
   const [pre] = p.nome.split("Works");
   const painel = p.aposLogin || (p.slug === "serviceworks" ? "/app" : "/");
-  const site = ["agentworks", "serviceworks", "linkworks"].includes(p.slug) ? "/" : `https://produtos.lldworks.com.br/#${p.slug}`;
+  const site = ["agentworks", "serviceworks", "linkworks", "rhworks", "socialworks"].includes(p.slug) ? "/" : `https://produtos.lldworks.com.br/#${p.slug}`;
   const formulario = logado ? `<div class="ja" role="status"><div class="av" aria-hidden="true">${esc((logado.e || "?").slice(0, 1).toUpperCase())}</div>
 <h2>Você já está conectado</h2><p class="mute">Entrou como <b>${esc(logado.e)}</b>${logado.cn ? ` · ${esc(logado.cn)}` : ""}.</p>
 <a class="btn" href="${esc(painel)}">Continuar para o painel →</a><a class="btn sec" href="/sair">Entrar com outra conta</a></div>`
@@ -68,7 +72,7 @@ function telaLogin(p, erro = "", email = "", acao = null, logado = null) {
 <p class="err" id="erro" role="alert" aria-live="assertive">${esc(erro)}${acao ? ` <a href="${esc(acao.href)}">${esc(acao.rot)}</a>` : ""}</p>
 <button type="submit" class="btn"><span>Entrar</span></button>
 <p class="links"><a href="/recuperar">Esqueci minha senha</a><a href="/recuperar?primeiro=1">Primeiro acesso</a></p>
-<p class="demo">Ainda não tem conta? <a href="${p.slug === "agentworks" ? "/#plano" : "/assinar"}"><b>Conheça os planos do ${esc(p.nome)}</b></a>${p.slug === "linkworks" ? `<br>Cliente do ServiceWorks Pro ou Premium? Use o <b>mesmo e-mail e senha</b>.` : ""}</p></form>`;
+<p class="demo">Ainda não tem conta? <a href="${p.slug === "agentworks" ? "/#plano" : PAINEL_EM_APP.has(p.slug) ? "/#planos" : "/assinar"}"><b>Conheça os planos do ${esc(p.nome)}</b></a>${p.slug === "linkworks" ? `<br>Cliente do ServiceWorks Pro ou Premium? Use o <b>mesmo e-mail e senha</b>.` : ""}</p></form>`;
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Entrar · ${p.nome}</title><meta name="theme-color" content="#070B16"><link rel="icon" href="data:image/svg+xml,${encodeURIComponent(ic)}"><style>
 :root{--p:${p.cor};--p2:color-mix(in oklab,var(--p) 55%,#fff);--noite:#070B16}*{box-sizing:border-box}
@@ -169,13 +173,14 @@ const DEMO_SESSAO = { e: "demo@lldworks.com.br", c: 1, cn: "LLD Works · Demonst
 // ServiceWorks tem duas demonstrações: barbearia (padrão) e pet shop; /pet e /barbearia trocam (cookie lw_demo, sem dado pessoal).
 const DEMO_PET = { e: "demo-pet@lldworks.com.br", c: 2, cn: "LLD Works · Demonstração Pet", cs: "demo-pet", r: "admin", demo: true, pet: true };
 const DEMO_EXEMPLOS = { pageworks: "https://clinica.lldworks.com.br/", proworks: "https://wellington.lldworks.com.br/" };
-const faixaDemo = (p, s = {}) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="https://produtos.lldworks.com.br/#${p.slug}" style="color:#fff">Quero o meu ${esc(p.nome)}</a>${p.slug === "serviceworks" ? ` · <a href="${s.pet ? "/barbearia" : "/pet"}" style="color:#fff">Ver ${s.pet ? "barbearia" : "pet shop"}</a>` : ""}</div>`;
+const faixaDemo = (p, s = {}) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="${PAINEL_EM_APP.has(p.slug) ? `https://${p.slug}.lldworks.com.br/#planos` : `https://produtos.lldworks.com.br/#${p.slug}`}" style="color:#fff">Quero o meu ${esc(p.nome)}</a>${p.slug === "serviceworks" ? ` · <a href="${s.pet ? "/barbearia" : "/pet"}" style="color:#fff">Ver ${s.pet ? "barbearia" : "pet shop"}</a>` : ""}</div>`;
 async function demo(req, env, url, p) {
   const path = url.pathname;
   if (CONTA_PAGINAS[path]) return Response.redirect(`https://${p.slug}.lldworks.com.br${path}${url.search}`, 302); // cadastro e senha só no endereço real
   if (path === "/entrar" || path === "/sair") return Response.redirect(url.origin + "/", 302);
   if (p.slug === "serviceworks" && (path === "/pet" || path === "/barbearia"))
     return new Response(null, { status: 302, headers: { Location: "/", "Cache-Control": "no-store", "Set-Cookie": `lw_demo=${path === "/pet" ? "pet" : "barbearia"}; Path=/; Secure; SameSite=Lax; Max-Age=86400` } });
+  if (p.slug === "rhworks") return rhDemo(req, url, p);
   if (!BACKENDS[p.slug]?.painel) {
     if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
     if (path.includes("..")) return new Response("Inválido", { status: 400 });
@@ -186,6 +191,20 @@ async function demo(req, env, url, p) {
   return produto(req, env, url, p, p.slug === "serviceworks" && cookie(req, "lw_demo") === "pet" ? DEMO_PET : DEMO_SESSAO);
 }
 
+// RHWorks demo: o próprio app (works/rhworks/index.html) sem login. Sem LW_AUTH ele guarda tudo no navegador do visitante
+// e tem o botão "Carregar demonstração" (2 vagas e 10 currículos fictícios). Nada é gravado no servidor e a IA fica desligada.
+async function rhDemo(req, url, p) {
+  const path = url.pathname;
+  if (req.method !== "GET" && req.method !== "HEAD") return jsonErro(403, "Demonstração: envios desativados. Assine para usar de verdade.");
+  if (path.includes("..")) return new Response("Inválido", { status: 400 });
+  if (path.startsWith("/api/")) return jsonErro(403, "Demonstração: a IA na nuvem fica desligada aqui. Assine para usar a análise completa.");
+  if (path.startsWith("/lib/") || path.startsWith("/pub/")) return origem(req, "rhworks" + path, 300);
+  if (path !== "/" && path !== "/index.html" && path !== "/app" && path !== "/app/") return Response.redirect(url.origin + "/", 302);
+  const r = await origem(req, "rhworks/index.html", 0);
+  if (r.status !== 200) return r;
+  const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
+  return new Response((await r.text()).replace("</body>", faixaDemo(p) + "</body>"), { status: 200, headers: h });
+}
 // painel: true = tela própria nova (sem script embutido); corpoMax = maior envio aceito (RHWorks manda currículos).
 const BACKENDS = {
   serviceworks: { binding: "SERVICEWORKS", host: "sw.interno", painel: true, corpoMax: 1024 * 1024 },
@@ -281,6 +300,25 @@ async function produto(req, env, url, p, sessaoFixa = null) {
       const aviso = path.match(/^\/webhook\/mp\/(\d{1,9})$/);
       if (aviso) return req.method === "POST" ? backend(req, env, url, p, null, `/api/aviso-mp/${aviso[1]}`) : new Response("ok");
     }
+    // RHWorks e SocialWorks: a raiz é o site de venda (planos → /assinar); o painel fica em /app.
+    if (PAINEL_EM_APP.has(p.slug) && !sessaoFixa && (path === "/" || path === "/index.html") && (req.method === "GET" || req.method === "HEAD")) {
+      const r = await origem(req, `${p.dir}/site.html`, 0);
+      if (r.status === 200) {
+        const s = await sessao(req, env, p);
+        const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
+        return new Response(s ? (await r.text()).replace("</head>", '<meta name="lw-logado" content="1"></head>') : r.body, { status: 200, headers: h });
+      }
+    }
+    if (p.slug === "rhworks") {
+      const leitura = req.method === "GET" || req.method === "HEAD";
+      if (RH_VAGA.test(path)) return leitura ? origem(req, "rhworks/vaga.html", 60) : new Response("Método não permitido", { status: 405 });
+      if (path.startsWith("/lib/")) {
+        if (!leitura) return new Response("Método não permitido", { status: 405 });
+        if (path.includes("..")) return new Response("Inválido", { status: 400 });
+        return origem(req, "rhworks" + path, 3600);
+      }
+      if (path.startsWith("/api/publico/vaga/")) return backend(req, env, url, p, null);
+    }
     if (path.startsWith("/pub/")) {
       if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
       if (path.includes("..")) return new Response("Inválido", { status: 400 });
@@ -328,11 +366,13 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   if (BACKENDS[p.slug] && path.startsWith("/api/") && !p.api) return jsonErro(404, "Rota não encontrada");
   if (p.api && CRIVO_ROTAS.test(path) && !path.startsWith("/lib/")) {
     if (!env.CRIVO) return new Response("Serviço indisponível", { status: 503 });
-    return env.CRIVO.fetch(new Request("https://crivo.lldworks.com.br" + path + url.search, req));
+    // O Worker crivo só aceita a origem dele; o roteador já conferiu a sessão, então repassa como crivo (sem o cookie).
+    const hc = new Headers(req.headers); hc.set("Origin", "https://crivo.lldworks.com.br"); hc.delete("Cookie");
+    return env.CRIVO.fetch(new Request("https://crivo.lldworks.com.br" + path + url.search, { method: req.method, headers: hc, body: req.method === "GET" || req.method === "HEAD" ? undefined : await req.arrayBuffer() }));
   }
   if (req.method !== "GET" && req.method !== "HEAD") return new Response("Método não permitido", { status: 405 });
   if (path.includes("..")) return new Response("Inválido", { status: 400 });
-  const arq = path === "/" || path === "/index.html" || (p.slug === "serviceworks" && (path === "/app" || path === "/app/")) ? "/" + p.entrada : path;
+  const arq = path === "/" || path === "/index.html" || ((p.slug === "serviceworks" || PAINEL_EM_APP.has(p.slug)) && (path === "/app" || path === "/app/")) ? "/" + p.entrada : path;
   const r = await origem(req, p.dir + arq, arq === "/" + p.entrada ? 0 : 300);
   if (arq !== "/" + p.entrada || r.status !== 200) return r;
   if (BACKENDS[p.slug]?.painel) { // painel próprio: sem script embutido (CSP); na demonstração, só a faixa de aviso
