@@ -53,7 +53,7 @@ async function sessao(req, env, p) {
   if (s.p !== p.slug || s.x < Date.now() / 1000) return null;
   return s;
 }
-function telaLogin(p, erro = "", email = "") {
+function telaLogin(p, erro = "", email = "", acao = null) {
   const ic = ICONES[p.slug] || "";
   const [pre] = p.nome.split("Works");
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
@@ -68,6 +68,7 @@ h1{font:800 clamp(30px,3.4vw,44px)/1.1 Montserrat,Inter,sans-serif;margin:0 0 14
 label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}input{width:100%;min-height:50px;border:1.5px solid #D9DEE8;border-radius:12px;padding:12px 14px;font-size:16px;font-family:inherit;transition:border-color .15s,box-shadow .15s}
 input:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px color-mix(in srgb,var(--p) 18%,transparent)}button{margin-top:20px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--p);color:#fff;font:700 16px Inter,sans-serif;cursor:pointer;transition:filter .15s,transform .15s}
 button:hover{filter:brightness(1.08)}button:active{transform:translateY(1px)}.err{color:#C0262D;font-size:14px;min-height:21px;margin:10px 0 0}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.links{display:flex;justify-content:space-between;gap:10px;margin:14px 0 0;font-size:14.5px;font-weight:600}.links a,.demo a,.err a{color:var(--p)}
 .chips span{font-size:12.5px;background:#F2F4F8;color:#475069;border-radius:99px;padding:4px 10px}.demo{margin-top:18px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--p) 8%,#fff);border:1px solid color-mix(in srgb,var(--p) 25%,#fff);font-size:13.5px;color:#334}
 @media(max-width:860px){body{grid-template-columns:1fr}.art{padding:32px 24px;gap:22px}.art:after{display:none}}
 @media(prefers-reduced-motion:no-preference){.frm form,.art>*{animation:sobe .6s cubic-bezier(.2,.7,.2,1) both}.art>*:nth-child(2){animation-delay:.08s}.art>*:nth-child(3){animation-delay:.16s}@keyframes sobe{from{opacity:0;transform:translateY(14px)}}}
@@ -75,12 +76,13 @@ button:hover{filter:brightness(1.08)}button:active{transform:translateY(1px)}.er
 <section class="art"><div class="brand">${ic}<span>${pre}<b>Works</b></span></div>
 <div><h1>Entrar no ${esc(p.nome)}</h1><p>${esc(p.frase)}</p></div><p class="lld">Uma solução LLD Works · lldworks.com.br</p></section>
 <main class="frm"><form method="post" action="/entrar" autocomplete="on">
-<h2>Acesse sua conta</h2><p class="mute">Use o e-mail e a senha que a LLD Works enviou para você.</p>
+<h2>Acesse sua conta</h2><p class="mute">Use o e-mail e a senha da sua conta.</p>
 <label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="username" required value="${esc(email)}" autofocus>
 <label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="current-password" required minlength="8">
-<p class="err" role="alert">${esc(erro)}</p><button type="submit">Entrar</button>
+<p class="err" role="alert">${esc(erro)}${acao ? ` <a href="${esc(acao.href)}">${esc(acao.rot)}</a>` : ""}</p><button type="submit">Entrar</button>
+<p class="links"><a href="/recuperar">Esqueci minha senha</a><a href="/recuperar?primeiro=1">Primeiro acesso</a></p>
 <div class="chips"><span>Senha conferida no servidor</span><span>Sessão de ${SESSAO_H} h</span><span>Conexão protegida (HTTPS)</span></div>
-<p class="demo">Ambiente de demonstração com dados fictícios.</p></form></main></body></html>`;
+<p class="demo">Ainda não tem conta? <a href="/assinar"><b>Assine o ${esc(p.nome)}</b></a> · <a href="/termos">Termos</a> · <a href="/privacidade">Privacidade</a></p></form></main></body></html>`;
 }
 async function entrar(req, env, url, p) {
   if (req.headers.get("Origin") && req.headers.get("Origin") !== url.origin) return new Response("Origem inválida", { status: 403 });
@@ -101,8 +103,14 @@ async function entrar(req, env, url, p) {
   if (!r.ok) {
     t.n++; TENTATIVAS.set(ip, t);
     await new Promise((res) => setTimeout(res, 400));
-    const msg = r.motivo === "assinatura" ? "Sua assinatura está inativa. Fale com a LLD Works para regularizar o acesso." : "E-mail ou senha incorretos.";
-    return html(telaLogin(p, msg, email), r.motivo === "assinatura" ? 403 : 401);
+    if (r.motivo === "sem_senha") return html(telaLogin(p, "Você ainda não criou a sua senha.", email, { href: "/recuperar?primeiro=1", rot: "Criar minha senha" }), 403);
+    if (r.motivo === "assinatura") {
+      if (r.retomar) return new Response(null, { status: 303, headers: { Location: "/assinar#t=" + encodeURIComponent(r.retomar), "Cache-Control": "no-store", ...SEG } }); // cadastro esperando pagamento
+      const ate = r.vence_em ? ` em ${r.vence_em.slice(8, 10)}/${r.vence_em.slice(5, 7)}/${r.vence_em.slice(0, 4)}` : "";
+      const msg = r.origem === "gratis" ? `O seu período grátis terminou${ate}. Seus dados estão guardados: assine para continuar.` : "Seu acesso está suspenso. Seus dados estão guardados: regularize a assinatura para voltar.";
+      return html(telaLogin(p, msg, email, { href: "/assinar", rot: "Assinar agora" }), 403);
+    }
+    return html(telaLogin(p, "E-mail ou senha incorretos.", email, { href: "/recuperar", rot: "Esqueci minha senha" }), 401);
   }
   TENTATIVAS.delete(ip);
   const dados = b64u(enc.encode(JSON.stringify({ e: email, p: p.slug, c: r.cliente.id, cn: r.cliente.nome, cs: r.cliente.slug, r: r.usuario.papel, x: Math.floor(Date.now() / 1000) + SESSAO_H * 3600 })));
@@ -124,6 +132,7 @@ const DEMO_EXEMPLOS = { pageworks: "https://clinica.lldworks.com.br/", proworks:
 const faixaDemo = (p, s = {}) => `<div role="note" style="position:fixed;left:14px;bottom:14px;z-index:60;background:#17142A;color:#fff;padding:9px 14px;border-radius:999px;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 28px)">Demonstração · somente leitura · <a href="https://produtos.lldworks.com.br/#${p.slug}" style="color:#fff">Quero o meu ${esc(p.nome)}</a>${p.slug === "serviceworks" ? ` · <a href="${s.pet ? "/barbearia" : "/pet"}" style="color:#fff">Ver ${s.pet ? "barbearia" : "pet shop"}</a>` : ""}</div>`;
 async function demo(req, env, url, p) {
   const path = url.pathname;
+  if (CONTA_PAGINAS[path]) return Response.redirect(`https://${p.slug}.lldworks.com.br${path}${url.search}`, 302); // cadastro e senha só no endereço real
   if (path === "/entrar" || path === "/sair") return Response.redirect(url.origin + "/", 302);
   if (p.slug === "serviceworks" && (path === "/pet" || path === "/barbearia"))
     return new Response(null, { status: 302, headers: { Location: "/", "Cache-Control": "no-store", "Set-Cookie": `lw_demo=${path === "/pet" ? "pet" : "barbearia"}; Path=/; Secure; SameSite=Lax; Max-Age=86400` } });
@@ -147,10 +156,10 @@ const BACKENDS = {
 };
 // LinkWorks: linkworks.lldworks.com.br/<endereço> é a página pública; /<endereço>/l/<id> conta o clique.
 const LW_PUBLICA = /^\/([a-z0-9][a-z0-9_.-]{2,29})(\/l\/\d{1,9})?\/?$/;
-const LW_RESERVADO = /^(entrar|sair|api|pub|index\.html|favicon\.ico|robots\.txt)$/;
+const LW_RESERVADO = /^(entrar|sair|api|pub|conta|assinar|recuperar|termos|privacidade|index\.html|favicon\.ico|robots\.txt)$/;
 // SalesWorks: salesworks.lldworks.com.br/<endereço> é a loja online pública.
 const SL_LOJA = /^\/([a-z0-9][a-z0-9-]{2,39})\/?$/;
-const SL_RESERVADO = /^(entrar|sair|api|pub|index|admin|painel|loja|lojas|favicon|robots|salesworks|lldworks)$/;
+const SL_RESERVADO = /^(entrar|sair|api|pub|conta|assinar|recuperar|termos|privacidade|index|admin|painel|loja|lojas|favicon|robots|salesworks|lldworks)$/;
 // A loja/vitrine "demo" é pública e o painel dela também (modo leitura): pedido ou agendamento de verdade ali
 // exporia nome e WhatsApp do visitante. Nela o fluxo inteiro funciona, menos o envio final.
 const DEMO_PUBLICO = /^\/api\/publico\/demo(-pet)?(\/|$)/;
@@ -197,6 +206,7 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   const path = url.pathname;
   if (path === "/entrar") return req.method === "POST" ? entrar(req, env, url, p) : html(telaLogin(p));
   if (path === "/sair") return sair();
+  if (BACKENDS[p.slug]) { const c = await conta(req, env, url, p); if (c) return c; }
   // Vitrine: rotas públicas, sem login, para quem vai comprar ou agendar.
   if (BACKENDS[p.slug]) {
     // Partes públicas dos produtos com backend próprio: arquivos /pub/, vitrine do ServiceWorks e páginas do LinkWorks.
@@ -234,7 +244,11 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   }
   const s = sessaoFixa || (await sessao(req, env, p));
   if (!s) return path.startsWith("/api/") ? new Response('{"erro":"login"}', { status: 401, headers: { "Content-Type": "application/json" } }) : Response.redirect(url.origin + "/entrar", 302);
-  if (path === "/assinar" && BACKENDS[p.slug]) return assinar(env, p, s);
+  // Acesso vencido (fim da liberação grátis ou assinatura suspensa): trava na hora, mesmo com sessão aberta. Os dados ficam guardados.
+  if (!s.demo && !(await liberado(env, p, s.c))) {
+    if (path.startsWith("/api/")) return jsonErro(402, "Seu acesso venceu. Seus dados estão guardados: assine para continuar.");
+    return html(telaBloqueio(p), 402);
+  }
   if (BACKENDS[p.slug] && path.startsWith("/api/admin/")) return backend(req, env, url, p, s);
   if (BACKENDS[p.slug] && path.startsWith("/api/") && !p.api) return jsonErro(404, "Rota não encontrada");
   if (p.api && CRIVO_ROTAS.test(path) && !path.startsWith("/lib/")) {
@@ -256,6 +270,49 @@ async function produto(req, env, url, p, sessaoFixa = null) {
   const corpo = (await r.text()).replace("</head>", marca + "</head>").replace("</body>", barra + "</body>");
   const h = new Headers(r.headers); h.set("Cache-Control", "no-store"); h.delete("Content-Length");
   return new Response(corpo, { status: 200, headers: h });
+}
+
+// ---------- Contas: cadastro (/assinar), senha (/recuperar), Termos e Privacidade ----------
+// Páginas comuns em works/conta/; /api/conta/* vai para o LLD Works Hub (binding HUB), que guarda clientes, códigos e e-mails.
+const CONTA_PAGINAS = { "/assinar": "conta/assinar.html", "/recuperar": "conta/recuperar.html", "/termos": "conta/termos.html", "/privacidade": "conta/privacidade.html" };
+async function conta(req, env, url, p) {
+  const path = url.pathname, leitura = req.method === "GET" || req.method === "HEAD";
+  // Cliente já logado em /assinar ("Pagar ou trocar de plano" no painel): vai para o link de pagamento dele, mesmo com o acesso vencido.
+  if (path === "/assinar" && leitura) { const s = await sessao(req, env, p); if (s && !s.demo) return assinar(env, p, s); }
+  if (CONTA_PAGINAS[path] || /^\/conta\/conta\.(css|js)$/.test(path)) {
+    if (!leitura) return new Response("Método não permitido", { status: 405 });
+    const r = await origem(req, CONTA_PAGINAS[path] || path.slice(1), CONTA_PAGINAS[path] ? 60 : 300), h = new Headers(r.headers);
+    h.set("X-Frame-Options", "DENY");
+    return new Response(r.body, { status: r.status, headers: h });
+  }
+  const m = path.match(/^\/api\/conta\/([a-z/-]{3,40})$/);
+  if (!m) return null;
+  if (!env.HUB) return jsonErro(503, "Serviço indisponível. Tente em alguns minutos.");
+  if (!leitura && req.method !== "POST") return jsonErro(405, "Método não permitido");
+  if (!leitura && req.headers.get("Origin") && req.headers.get("Origin") !== url.origin) return jsonErro(403, "Origem inválida");
+  const corpo = leitura ? undefined : await req.arrayBuffer();
+  if (corpo && corpo.byteLength > 16 * 1024) return jsonErro(413, "Envio grande demais.");
+  const q = new URLSearchParams(url.search); q.set("produto", p.slug);
+  const r = await env.HUB.fetch(new Request(`https://hub.interno/interno/conta/${m[1]}?${q}`, { method: leitura ? "GET" : "POST", headers: { "Content-Type": "application/json", "x-lw-ip": req.headers.get("CF-Connecting-IP") || "?" }, body: corpo }));
+  const h = new Headers(r.headers); for (const [k, v] of Object.entries(SEG)) h.set(k, v); h.set("Cache-Control", "no-store");
+  return new Response(r.body, { status: r.status, headers: h });
+}
+// Assinatura liberada? (cache de 60 s; se o Hub falhar, libera e o login segue valendo)
+const LIBERADO = new Map();
+async function liberado(env, p, cliente) {
+  if (!env.HUB || !cliente) return true;
+  const k = `${p.slug}:${cliente}`, c = LIBERADO.get(k);
+  if (c && c.ate > Date.now()) return c.v;
+  let v = true;
+  try { const r = await env.HUB.fetch(`https://hub.interno/interno/assinatura?produto=${p.slug}&cliente=${cliente}`); if (r.ok) v = !!(await r.json()).liberada; } catch {}
+  LIBERADO.set(k, { v, ate: Date.now() + 60e3 }); if (LIBERADO.size > 5000) LIBERADO.clear();
+  return v;
+}
+function telaBloqueio(p) {
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Acesso suspenso · ${esc(p.nome)}</title>
+<style>:root{--p:${p.cor}}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#F4F3F8;font:16px/1.55 Inter,system-ui,sans-serif;color:#17142A;padding:20px}.c{background:#fff;border-radius:18px;padding:32px;max-width:460px;box-shadow:0 20px 50px -25px rgba(0,0,0,.35)}h1{font-size:24px;margin:0 0 10px}p{color:#4B4858}a.b{display:inline-block;margin:16px 10px 0 0;padding:12px 18px;border-radius:12px;background:var(--p);color:#fff;font-weight:700;text-decoration:none}a.s{color:var(--p);font-weight:600}</style></head>
+<body><div class="c"><h1>Seu acesso ao ${esc(p.nome)} venceu</h1><p>O período liberado terminou ou a assinatura está suspensa. <b>Seus dados estão guardados</b> e voltam assim que o acesso for renovado.</p>
+<a class="b" href="/assinar">Assinar agora</a><a class="s" href="/sair">Sair</a></div></body></html>`;
 }
 
 // ---------- Conteúdo estático (GitHub Pages em /works/) ----------

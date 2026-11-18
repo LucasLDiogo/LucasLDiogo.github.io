@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; form-action 'self'; base-uri 'none'">
+<title>Assinar o {produto} · LLD Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap">
+<link rel="stylesheet" href="/conta/conta.css">
+<script src="/conta/conta.js" defer></script>
+</head><body data-pagina="assinar">
+<header class="topo"><a class="marca" href="/entrar"><i></i><span data-produto>…</span></a><span class="sp"></span><a class="lk" href="/entrar">Já tenho conta · Entrar</a></header>
+<main>
+ <h1>Assine o <span data-produto>…</span></h1>
+ <p class="sub">Leva 2 minutos. Você confirma o seu e-mail antes de pagar, para garantir que o acesso chegue certo.</p>
+ <ol class="passos" aria-label="Etapas"><li>1. Plano</li><li>2. Seus dados</li><li>3. Confirmar e-mail</li><li>4. Pagamento</li></ol>
+
+ <section data-etapa="plano" class="oculto">
+  <div class="planos" id="planos" role="group" aria-label="Planos"></div>
+  <div class="acoes"><button class="btn pri" id="irDados" disabled>Continuar</button></div>
+ </section>
+
+ <section data-etapa="dados" class="oculto"><form class="card" id="fDados" novalidate>
+  <div class="resumo" id="resumoPlano"></div>
+  <div class="dois"><div><label for="cNome">Seu nome</label><input id="cNome" name="nome" autocomplete="name" required maxlength="100"></div>
+   <div><label for="cEmp">Empresa</label><input id="cEmp" name="empresa" autocomplete="organization" maxlength="120"></div></div>
+  <div class="dois"><div><label for="cTel">WhatsApp com DDD</label><input id="cTel" name="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(54) 99999-9999" required></div>
+   <div><label for="cDoc">CPF ou CNPJ <span style="font-weight:400;color:var(--mute)">(opcional)</span></label><input id="cDoc" name="documento" inputmode="numeric" maxlength="18"></div></div>
+  <div class="dois"><div><label for="cEmail">E-mail</label><input id="cEmail" name="email" type="email" autocomplete="email" required maxlength="200"></div>
+   <div><label for="cEmail2">Repita o e-mail</label><input id="cEmail2" name="email_confirma" type="email" autocomplete="off" required maxlength="200"></div></div>
+  <p class="ajuda">É para este e-mail que vai o código de confirmação e o aviso de acesso liberado.</p>
+  <label for="cSenha">Crie uma senha</label>
+  <div style="position:relative"><input id="cSenha" name="senha" type="password" autocomplete="new-password" required minlength="10" maxlength="128" style="padding-right:96px"><button type="button" class="btn link" id="verSenha" style="position:absolute;right:8px;top:8px">mostrar</button></div>
+  <p class="ajuda">10 ou mais caracteres, com letras e números.</p>
+  <label class="check"><input type="checkbox" name="termos" required> <span>Li e aceito os <a href="/termos" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>, inclusive o contato da LLD Works pelo e-mail e pelo WhatsApp informados sobre este cadastro e a minha conta.</span></label>
+  <label class="check"><input type="checkbox" name="novidades"> <span>Quero receber novidades e dicas da LLD Works (opcional; dá para cancelar quando quiser).</span></label>
+  <p class="erro" id="erroDados" role="alert"></p>
+  <div class="acoes"><button type="button" class="btn" data-trocar-plano>Voltar</button><button type="submit" class="btn pri">Continuar</button></div>
+ </form></section>
+
+ <section data-etapa="codigo" class="oculto"><form class="card" id="fCodigo" style="max-width:520px">
+  <h2 style="margin-top:0">Confirme o seu e-mail</h2>
+  <p>Enviamos um código de 6 dígitos para <b id="emailMostra"></b>. Olhe também a caixa de spam e promoções.</p>
+  <label for="cCodigo">Código</label><input id="cCodigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required>
+  <p class="ajuda" id="infoCodigo">O código vale por 15 minutos.</p>
+  <p class="erro" id="erroCodigo" role="alert"></p>
+  <div class="acoes"><button type="submit" class="btn pri">Confirmar</button><button type="button" class="btn link" id="reenviar">Reenviar código</button><button type="button" class="btn link" id="corrigir">O e-mail está errado</button></div>
+  <div id="boxCorrigir" class="oculto aviso"><label for="novoEmail" style="margin-top:0">E-mail correto</label><input id="novoEmail" type="email" autocomplete="email"><div class="acoes" style="margin-top:10px"><button type="button" class="btn pri" id="salvarEmail">Corrigir e enviar novo código</button></div></div>
+ </form></section>
+
+ <section data-etapa="pagamento" class="oculto"><div class="card" style="max-width:600px">
+  <h2 style="margin-top:0">E-mail confirmado ✅ Agora o pagamento</h2>
+  <div class="resumo" id="resumoPag"></div>
+  <div id="pagMP" class="oculto"><p>Pague com cartão, Pix ou boleto pelo Mercado Pago. A confirmação é automática e o acesso é liberado na hora.</p><button class="btn pri" id="pagarMP">Pagar com Mercado Pago</button></div>
+  <div id="pagPix" class="oculto"><p>Pague por Pix e clique em <b>Já paguei</b>. A LLD Works confere e libera o seu acesso; você recebe um e-mail.</p>
+   <div class="pix"><span id="pixChave"></span><button class="btn" id="copiarPix" type="button">Copiar chave</button></div>
+   <p class="ajuda">Favorecido: <b id="pixTitular"></b> · Valor: <b id="pixValor"></b></p>
+   <div class="acoes"><button class="btn pri" id="jaPaguei">Já paguei</button><a class="btn oculto" data-zap target="_blank" rel="noopener">Enviar o comprovante no WhatsApp</a></div>
+   <div class="okbox oculto" id="avisouOk"><b>Recebemos o seu aviso.</b> Assim que o pagamento for conferido, você recebe o e-mail de acesso liberado. Se quiser agilizar, mande o comprovante pelo WhatsApp.</div></div>
+  <div id="pagNada" class="oculto"><p>Fale com a LLD Works para concluir o pagamento.</p><a class="btn pri oculto" data-zap target="_blank" rel="noopener">Falar no WhatsApp</a></div>
+  <p class="erro" id="erroPag" role="alert"></p>
+  <p class="ajuda">Você já pode fechar esta página: o seu cadastro fica guardado. Para voltar ao pagamento, entre com o seu e-mail e senha em <a href="/entrar">Entrar</a>.</p>
+  <button class="btn link" id="atualizar" type="button">Já paguei pelo Mercado Pago: atualizar</button>
+ </div></section>
+
+ <section data-etapa="pronto" class="oculto"><div class="card" style="max-width:520px">
+  <h2 style="margin-top:0">Acesso liberado 🎉</h2><p>Tudo certo. Entre com o seu e-mail e a senha que você criou.</p>
+  <div class="acoes"><a class="btn pri" id="linkEntrar" href="/entrar">Entrar no <span data-produto>…</span></a></div>
+ </div></section>
+
+ <section data-etapa="existente" class="oculto"><div class="card" style="max-width:520px">
+  <h2 style="margin-top:0">Você já tem conta</h2><p>Este e-mail já tem acesso ao <span data-produto>…</span>. Entre com a sua senha ou crie uma nova.</p>
+  <div class="acoes"><a class="btn pri" href="/entrar">Entrar</a><a class="btn" href="/recuperar">Esqueci minha senha</a></div>
+ </div></section>
+
+ <p class="rodape"><a href="/termos">Termos de Uso</a>·<a href="/privacidade">Política de Privacidade</a>· LLD Works</p>
+</main>
+</body></html>

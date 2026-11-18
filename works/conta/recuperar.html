@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; form-action 'self'; base-uri 'none'">
+<title>Senha · {produto}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap">
+<link rel="stylesheet" href="/conta/conta.css">
+<script src="/conta/conta.js" defer></script>
+</head><body data-pagina="recuperar">
+<header class="topo"><a class="marca" href="/entrar"><i></i><span data-produto>…</span></a><span class="sp"></span><a class="lk" href="/entrar">Voltar para Entrar</a></header>
+<main class="estreito">
+ <h1><span data-esqueci>Criar uma nova senha</span><span data-primeiro class="oculto">Primeiro acesso</span></h1>
+ <p class="sub"><span data-esqueci>Enviamos um código para o seu e-mail de acesso. Com ele você cria uma senha nova.</span><span data-primeiro class="oculto">Sua conta foi criada pela LLD Works. Confirme o seu e-mail com um código e crie a sua senha.</span></p>
+
+ <form class="card" id="fPedir"><div id="passo1">
+  <label for="rEmail" style="margin-top:0">E-mail de acesso</label><input id="rEmail" type="email" autocomplete="email" required maxlength="200">
+  <p class="erro" id="erroPedir" role="alert"></p>
+  <div class="acoes"><button type="submit" class="btn pri">Enviar código</button></div>
+ </div></form>
+
+ <form class="card oculto" id="passo2"><div>
+  <p style="margin-top:0">Se <b id="rEmailMostra"></b> tiver acesso ao <span data-produto>…</span>, o código chega em instantes. Olhe também o spam.</p>
+  <label for="rCodigo">Código de 6 dígitos</label><input id="rCodigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required>
+  <label for="rSenha">Nova senha</label><input id="rSenha" type="password" autocomplete="new-password" minlength="10" maxlength="128" required>
+  <label for="rSenha2">Repita a nova senha</label><input id="rSenha2" type="password" autocomplete="new-password" minlength="10" maxlength="128" required>
+  <p class="ajuda">10 ou mais caracteres, com letras e números.</p>
+  <p class="erro" id="erroTrocar" role="alert"></p>
+  <div class="acoes"><button type="submit" class="btn pri">Salvar senha</button><button type="button" class="btn link" id="rVoltar">Pedir outro código</button></div>
+ </div></form>
+
+ <div class="card oculto" id="passo3"><h2 style="margin-top:0">Senha criada ✅</h2><p>Agora é só entrar com o seu e-mail e a senha nova.</p><div class="acoes"><a class="btn pri" href="/entrar">Entrar</a></div></div>
+
+ <p class="rodape">Ainda não tem conta? <a href="/assinar">Assine o <span data-produto>…</span></a><br><a href="/termos">Termos de Uso</a>·<a href="/privacidade">Política de Privacidade</a></p>
+</main>
+</body></html>
