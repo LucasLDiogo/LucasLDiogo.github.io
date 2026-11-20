@@ -131,7 +131,7 @@ return { async fetch(req, env, ctx) {
   }
   try {
     const ct = r.headers.get("Content-Type") || "", aceitaHtml = (req.headers.get("Accept") || "").includes("text/html");
-    if (leitura && aceitaHtml && (r.status === 404 || r.status >= 500) && !ct.includes("json") && !url.pathname.startsWith("/api/")) return __lwErro(r.status === 404 ? 404 : r.status, info);
+    if (leitura && aceitaHtml && (r.status === 404 || r.status >= 500) && !ct.includes("json") && !ct.includes("text/html") && !url.pathname.startsWith("/api/")) return __lwErro(r.status === 404 ? 404 : r.status, info);
     r = __lwCabecalhos(r, info);
     if (info.demo && leitura && r.status === 200 && ct.includes("text/html")) r = new HTMLRewriter().on("body", new __LwInjeta()).transform(r);
   } catch (e) { console.error("borda resp", e && e.message); }
