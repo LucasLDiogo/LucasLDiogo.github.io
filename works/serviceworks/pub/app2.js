@@ -416,6 +416,11 @@
           <div class="grid g2"><label>Comissão padrão da equipe (%)<input name="comissao_padrao" type="number" min="0" max="100" value="${e.comissao_padrao || 0}"></label></div>
           <label>Política de cancelamento (aparece no agendamento)<textarea name="politica" rows="2" maxlength="600" placeholder="Ex.: cancele com 2 horas de antecedência.">${esc(e.politica || "")}</textarea></label>
           <p class="err" role="alert"></p><div class="acts"><button class="btn pri">Salvar</button></div></form>
+        ${e.segmento === "petshop" ? `<form class="card" id="fBusca"><h2>Buscar e entregar (táxi dog)</h2>
+          <p class="small mute">Ligado, o cliente escolhe na vitrine "Buscar e entregar" e é obrigado a informar o endereço completo. A taxa soma ao valor do agendamento e o endereço aparece no pedido, com o link do Google Maps para mandar ao motorista.</p>
+          <label class="row" style="gap:8px;align-items:center"><input type="checkbox" name="ativa" style="width:auto"> <b>Oferecer busca e entrega na vitrine</b></label>
+          <div class="grid g2"><label>Valor da busca (R$)<input name="valor" inputmode="decimal" placeholder="Ex.: 15,00"></label><label>Aviso para o cliente <span class="tiny mute">(opcional)</span><input name="obs" maxlength="200" placeholder="Ex.: atendemos até 5 km da loja"></label></div>
+          <p class="err" role="alert"></p><div class="acts"><button class="btn pri">Salvar busca e entrega</button></div></form>` : ""}
       </div>`;
     $$("[data-img]", s).forEach((inp) => (inp.onchange = async () => {
       const f = inp.files[0]; if (!f) return; const t = inp.dataset.img;
@@ -428,6 +433,17 @@
     ["endereco", "numero", "bairro", "cidade", "uf", "maps_url"].forEach((n) => f.elements[n].addEventListener("input", atualizaMapa));
     $("#hor", f).addEventListener("change", (ev) => { const l = ev.target.closest(".hor-l"); if (l && ev.target.dataset.h === "aberto") { const ab = ev.target.checked; $$("input[type=time]", l).forEach((i) => (i.disabled = !ab)); $(".fechado", l).textContent = ab ? "" : "fechado"; } });
     atualizaMapa();
+    const fb = $("#fBusca", s);
+    if (fb) {
+      try { const b = await api("GET", "v3/busca"); fb.elements.ativa.checked = !!b.ativa; fb.elements.valor.value = b.centavos ? (b.centavos / 100).toFixed(2).replace(".", ",") : ""; fb.elements.obs.value = b.obs || ""; } catch {}
+      if (!admin()) $$("input,button", fb).forEach((i) => (i.disabled = true));
+      fb.onsubmit = async (ev) => {
+        ev.preventDefault(); const er = $(".err", fb); er.textContent = "";
+        const v = String(fb.elements.valor.value || "0").replace(/\./g, "").replace(",", "."), c = Math.round((+v || 0) * 100);
+        if (c < 0 || c > 100000) { er.textContent = "Valor inválido."; return; }
+        try { await api("PUT", "v3/busca", { ativa: fb.elements.ativa.checked, centavos: c, obs: fb.elements.obs.value.trim() }); toast(fb.elements.ativa.checked ? "Busca e entrega ligada na vitrine." : "Busca e entrega desligada."); } catch (x) { er.textContent = x.message; }
+      };
+    }
     if (!admin()) $$("input,select,textarea,button", f).forEach((i) => (i.disabled = true));
     f.onsubmit = async (ev) => {
       ev.preventDefault(); const er = $(".err", f); er.textContent = "";
@@ -452,7 +468,9 @@
       <div class="card" style="margin-top:14px"><div class="row sb"><h2>Receber online com o seu Mercado Pago</h2>${mp.conectado ? `<span class="chip ok">conectado · ${esc(mp.conta || "")}</span>` : ""}</div>
         ${!mp.disponivel ? `<p class="mute">Pagamento online (Pix e cartão pelo link, sinal no agendamento) faz parte dos planos Pro e Premium. <a href="/assinar">Ver planos</a></p>` : mp.conectado ? `
           <p class="small">O dinheiro cai direto na sua conta Mercado Pago. Use o botão <b>Link de pagamento</b> na comanda ou cobre um sinal no agendamento pela vitrine.</p>
-          <form class="row" id="fSinal" style="margin-top:10px"><label class="small">Sinal no agendamento online (% do serviço)<input name="sinal_pct" type="number" min="0" max="100" value="${mp.sinal_pct}" style="width:90px"></label><button class="btn sm">Salvar</button><span class="tiny mute">0 = sem sinal. O sinal reduz faltas.</span></form>
+          <form id="fSinal" style="margin-top:10px"><p class="small" style="margin:0 0 6px"><b>Quanto o cliente paga online ao agendar pela vitrine</b></p>
+          <div class="row" style="gap:6px;flex-wrap:wrap">${[[0, "Nada (paga no local)"], [30, "Sinal 30%"], [50, "Sinal 50%"], [100, "Tudo antecipado"]].map(([v, t]) => `<button type="button" class="btn sm ${+mp.sinal_pct === v ? "pri" : ""}" data-sinal="${v}">${t}</button>`).join("")}<label class="small row" style="gap:6px">outro %<input name="sinal_pct" type="number" min="0" max="100" value="${mp.sinal_pct}" style="width:80px"></label><button class="btn sm">Salvar</button></div>
+          <p class="tiny mute" style="margin:8px 0 0">Com o Mercado Pago conectado, a vitrine mostra Pix (QR Code e copia e cola) e cartão logo após o agendamento, e o sistema marca sozinho quem pagou. O que faltar aparece em "A receber" na agenda e você recebe na comanda. Sem Mercado Pago conectado, tudo é recebido no local e marcado à mão na comanda.</p></form>
           ${admin() ? '<button class="btn sm bad" data-a2="mpDesconectar" style="margin-top:12px">Desconectar</button>' : ""}` : `
           <ol class="tuto"><li>Tenha uma conta no <b>Mercado Pago</b> (pode ser a mesma do celular) com CPF ou CNPJ da loja.</li>
             <li>No computador, entre em <b>mercadopago.com.br/developers/panel/app</b> e clique em <b>Criar aplicação</b>: nome “Minha loja”, tipo <b>Pagamentos online</b>, produto <b>Checkout Pro</b>.</li>
@@ -461,7 +479,11 @@
           <form class="row" id="fMp" style="margin-top:10px"><input name="access_token" placeholder="APP_USR-…" autocomplete="off" style="flex:1;min-width:260px" required><button class="btn pri">Conectar</button></form>`}
         <p class="err" id="mpErr" role="alert"></p></div>`;
     const fm = $("#fMp", s); if (fm) fm.onsubmit = async (ev) => { ev.preventDefault(); try { const r = await api("PUT", "mercadopago", { access_token: fm.access_token.value.trim() }); toast(`Mercado Pago conectado: ${r.conta}.`); await integracoes(); } catch (x) { $("#mpErr", s).textContent = x.message; } };
-    const fs = $("#fSinal", s); if (fs) fs.onsubmit = async (ev) => { ev.preventDefault(); try { await api("PUT", "perfil", { sinal_pct: +fs.sinal_pct.value || 0 }); toast("Sinal salvo."); } catch (x) { $("#mpErr", s).textContent = x.message; } };
+    const fs = $("#fSinal", s); if (fs) {
+      const salvaSinal = async (v) => { try { await api("PUT", "perfil", { sinal_pct: Math.max(0, Math.min(100, +v || 0)) }); toast(+v ? `Pagamento online de ${+v}% ao agendar.` : "Sem pagamento online: o cliente paga no local."); await integracoes(); } catch (x) { $("#mpErr", s).textContent = x.message; } };
+      fs.onsubmit = (ev) => { ev.preventDefault(); salvaSinal(fs.sinal_pct.value); };
+      $$("[data-sinal]", fs).forEach((b) => (b.onclick = () => salvaSinal(b.dataset.sinal)));
+    }
   }
 
   // ========== SITE ==========

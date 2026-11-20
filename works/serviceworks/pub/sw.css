@@ -199,3 +199,5 @@ dialog label{display:block;font-weight:600;font-size:13.5px}dialog label input,d
 .hor-l{display:grid;grid-template-columns:130px 110px auto 110px 1fr;align-items:center;gap:8px}
 .hor-l .chk{margin:0}.hor-l input[type=time]{min-height:38px;padding:6px 8px}.hor-l input[type=time]:disabled{opacity:.4}
 @media(max-width:560px){.hor-l{grid-template-columns:1fr 1fr auto 1fr}.hor-l .chk{grid-column:1/-1}.hor-l .fechado{display:none}}
+
+.busca-ev{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:color-mix(in oklab,var(--p,#7C3AED) 6%,#fff);display:grid;gap:6px}.busca-ev p{margin:0;font-size:14px}

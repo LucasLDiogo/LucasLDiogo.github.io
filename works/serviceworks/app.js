@@ -241,6 +241,19 @@
     const pet = a.pet ? `<br>Pet: <b>${esc(a.pet)}</b> · ${ESP[a.pet_especie] || ""} · porte ${PORTE[a.pet_porte]?.toLowerCase() || ""}` : "";
     $("#evInfo").innerHTML = `${esc(a.servico)} com ${esc(a.profissional)} · ${a.pacote ? `pacote “${esc(a.pacote)}”` : brl(a.valor_centavos)}${pet}<br>WhatsApp ${esc(fmtWhats(a.whatsapp))} · código ${esc(a.codigo)} · marcado ${a.origem === "vitrine" ? "pela vitrine" : "no painel"}${a.serie ? " · faz parte de uma série" : ""}`;
     $("#evPet").hidden = !a.pet_obs; $("#evPet").textContent = a.pet_obs ? `Cuidados com ${a.pet}: ${a.pet_obs}` : "";
+    // pagamento e busca em casa (táxi dog)
+    const [vSt, vTipo] = String(a.venda_info || "").split(":");
+    const pago = vSt === "paga" && vTipo !== "sinal" ? "Pago" : a.sinal_status === "pago" ? (vTipo === "sinal" ? "Sinal pago" : "Pago") : a.sinal_status === "pendente" ? "Sinal pendente" : "A receber";
+    $("#evSt").innerHTML += ` <span class="chip ${pago === "A receber" || pago === "Sinal pendente" ? "" : "ok"}">${pago}</span>${a.busca ? ' <span class="chip">🚗 busca</span>' : ""}`;
+    const bx = $("#evBusca"); bx.hidden = !a.busca; bx.innerHTML = "";
+    if (a.busca) {
+      let en = {}; try { en = JSON.parse(a.busca_endereco || "{}"); } catch {}
+      const txt = en.texto || [[en.rua, en.numero].filter(Boolean).join(", "), en.complemento, en.bairro, [en.cidade, en.uf].filter(Boolean).join("/"), en.cep].filter(Boolean).join(" - ");
+      const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(txt)}`;
+      const msgEnd = `Busca${a.pet ? ` do ${a.pet}` : ""} (${a.cliente}) em ${fmtDia(a.inicio.slice(0, 10), false)} às ${a.inicio.slice(11, 16)}:\n${txt}${en.referencia ? `\nReferência: ${en.referencia}` : ""}\nWhatsApp do tutor: ${fmtWhats(a.whatsapp)}\nMapa: ${maps}`;
+      bx.innerHTML = `<b>🚗 Buscar e entregar${a.busca_centavos ? ` · taxa ${brl(a.busca_centavos)}` : ""}</b><p>${esc(txt)}${en.referencia ? `<br><span class="tiny mute">Referência: ${esc(en.referencia)}</span>` : ""}</p><div class="row"><a class="btn sm pri" href="${maps}" target="_blank" rel="noopener">Abrir no Maps</a><a class="btn sm" href="https://wa.me/?text=${encodeURIComponent(msgEnd)}" target="_blank" rel="noopener">Enviar pelo WhatsApp</a><button type="button" class="btn sm ghost" data-copia-end>Copiar endereço</button></div>`;
+      $("[data-copia-end]", bx).onclick = () => copiar(msgEnd, "Endereço e link do mapa copiados.");
+    }
     const msg = `Olá, ${a.cliente.split(" ")[0]}! Confirmando ${a.servico}${a.pet ? ` para ${a.pet}` : ""} com ${a.profissional} em ${fmtDia(a.inicio.slice(0, 10), false)} às ${a.inicio.slice(11, 16)}. ${S.emp.nome}`;
     $("#evWhats").href = waLink(a.whatsapp, msg);
     $("#evData").value = a.inicio.slice(0, 10); $("#evHora").value = a.inicio.slice(11, 16);
