@@ -5,6 +5,8 @@
 // 3) demonstração automática: /_lw/tour.js e tour.css + injeção do script nas páginas *-demo;
 // 4) cabeçalhos de segurança que faltavam (CSP mínima, nosniff, HSTS) e Cloudflare Web Analytics liberado na CSP;
 // 5) sessão revogada na hora quando o usuário é desativado no console (pergunta ao Hub, cache de 60 s).
+// Tudo dentro de uma função: nenhum nome colide com os do roteador (ex.: __lwB64 já existe na camada de SSO).
+var __lwEdge = (() => {
 var __LW_ORIGEM = "https://lucasldiogo.lldworks.com.br/works/";
 var __LW_PROD = {
   serviceworks: { n: "ServiceWorks", c: "#7C3AED" },
@@ -110,7 +112,7 @@ async function __lwUsuarioAtivo(env, req, info) {
   return v;
 }
 class __LwInjeta { element(el) { el.append('<link rel="stylesheet" href="/_lw/tour.css"><script src="/_lw/tour.js" defer></script>', { html: true }); } }
-var __lwEdge = { async fetch(req, env, ctx) {
+return { async fetch(req, env, ctx) {
   const url = new URL(req.url), info = __lwHost(url), leitura = req.method === "GET" || req.method === "HEAD";
   info.ray = req.headers.get("cf-ray") || "";
   try {
@@ -135,3 +137,4 @@ var __lwEdge = { async fetch(req, env, ctx) {
   } catch (e) { console.error("borda resp", e && e.message); }
   return r;
 } };
+})();
