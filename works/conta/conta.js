@@ -44,65 +44,137 @@
   const semAcento = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const ETAPAS = ["plano", "dados", "codigo", "pagamento"];
   function mostra(etapa) {
+    S.etapa = etapa;
     $$("[data-etapa]").forEach((s) => s.classList.toggle("oculto", s.dataset.etapa !== etapa));
+    $("#boxRecomecar")?.classList.add("oculto");
     const i = ETAPAS.indexOf(etapa);
     $$(".passos li").forEach((li, k) => { li.classList.toggle("on", k === i); li.classList.toggle("feito", i > k || etapa === "pronto"); });
     window.scrollTo(0, 0);
+    if (etapa === "pagamento") esperaPagamento(); else paraEspera();
     const f = $(`[data-etapa="${etapa}"] input:not([type=checkbox])`);
     if (f && etapa !== "plano") setTimeout(() => { if (!document.activeElement || !document.activeElement.matches("input,textarea,select")) f.focus(); }, 50);
   }
-  const guarda = (t) => { S.token = t; try { sessionStorage.setItem("lw_cad_" + P.produto.slug, t); } catch {} history.replaceState(null, "", "#t=" + t); };
-  function desenhaPlanos() {
+  const chaveCad = () => "lw_cad_" + P.produto.slug;
+  const guarda = (t) => { S.token = t; try { sessionStorage.setItem(chaveCad(), t); } catch {} history.replaceState(null, "", location.pathname + location.search + "#t=" + t); };
+  const esquece = () => { S.token = null; try { sessionStorage.removeItem(chaveCad()); } catch {} history.replaceState(null, "", location.pathname + location.search); };
+  const periodo = (p) => (p && p.ciclo === "anual" ? "ano" : "mês");
+  function cardPlano(p, marcado) {
+    const itens = (P.produto && P.produto.slug === "serviceworks" ? ["Agenda, vitrine, CRM, caixa, estoque, promoções e indicadores"] : []).concat(itensDoPlano(p.limites));
+    return `<button type="button" class="plano" data-plano="${p.id}" aria-pressed="${marcado ? "true" : "false"}"><b>${esc(p.nome)}</b><span class="preco">${reais(p.preco_centavos)}<small>/${periodo(p)}</small></span>
+      <ul>${itens.length ? itens.map((t) => `<li>${esc(t)}</li>`).join("") : "<li>tudo incluso</li>"}</ul></button>`;
+  }
+  // Desenha versões e planos. "inicial" aplica o plano e a versão vindos do link do site (?versao=&plano=).
+  function desenhaPlanos(inicial) {
     const q = new URLSearchParams(location.search), pre = q.get("plano"), pv = q.get("versao");
     if (P.versoes && P.versoes.length) {
       $("#versoes").classList.remove("oculto");
-      $("#versoesLista").innerHTML = P.versoes.map((v) => `<button type="button" class="versao" role="radio" aria-checked="false" data-ver="${v}"><b>${esc((VERSOES[v] || [v])[0])}</b><span>${esc((VERSOES[v] || ["", ""])[1])}</span></button>`).join("");
-      if (pv && P.versoes.includes(pv)) escolheVersao(pv);
+      $("#versoesLista").innerHTML = P.versoes.map((v) => `<button type="button" class="versao" role="radio" aria-checked="${S.versao === v}" data-ver="${v}"><b>${esc((VERSOES[v] || [v])[0])}</b><span>${esc((VERSOES[v] || ["", ""])[1])}</span></button>`).join("");
+      if (inicial && pv && P.versoes.includes(pv)) escolheVersao(pv);
     }
-    $("#planos").innerHTML = P.planos.map((p) => { const itens = (P.produto && P.produto.slug === "serviceworks" ? ["Agenda, vitrine, CRM, caixa, estoque, promoções e indicadores"] : []).concat(itensDoPlano(p.limites)); return `<button type="button" class="plano" data-plano="${p.id}" aria-pressed="false"><b>${esc(p.nome)}</b><span class="preco">${reais(p.preco_centavos)}<small>/${p.ciclo === "anual" ? "ano" : "mês"}</small></span>
-      <ul>${itens.length ? itens.map((t) => `<li>${esc(t)}</li>`).join("") : "<li>tudo incluso</li>"}</ul></button>`; }).join("") || '<p class="aviso">Nenhum plano à venda neste momento. Fale com a LLD Works.</p>';
-    const alvo = pre && P.planos.find((p) => String(p.id) === pre || semAcento(p.nome) === semAcento(pre));
+    $("#planos").innerHTML = P.planos.map((p) => cardPlano(p, S.plano && S.plano.id === p.id)).join("") || '<p class="aviso">Nenhum plano à venda neste momento. Fale com a LLD Works.</p>';
+    if (S.plano) { const atual = P.planos.find((p) => p.id === S.plano.id); if (atual) escolhe(atual.id); else { S.plano = null; $("#irDados").disabled = true; } }
+    const alvo = inicial && pre && P.planos.find((p) => String(p.id) === pre || semAcento(p.nome) === semAcento(pre));
     if (alvo) escolhe(alvo.id);
+    return !!alvo;
   }
   function escolheVersao(v) {
     S.versao = v;
     $$("[data-ver]").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.ver === v)));
     $("#irDados").disabled = !S.plano || !S.versao;
+    if (S.plano) escolhe(S.plano.id);
   }
   function escolhe(id) {
     S.plano = P.planos.find((p) => p.id === id);
-    $$(".plano").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.plano === id)));
+    if (!S.plano) return;
+    $$("#planos .plano").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.plano === id)));
     $("#irDados").disabled = !S.plano || (P.versoes && P.versoes.length && !S.versao);
-    $("#resumoPlano").innerHTML = `<span>Plano <b>${esc(S.plano.nome)}</b></span><span><b>${reais(S.plano.preco_centavos)}</b>/${S.plano.ciclo === "anual" ? "ano" : "mês"} · <button type="button" class="btn link" data-trocar-plano>trocar</button></span>`;
+    const ver = S.versao && VERSOES[S.versao] ? ` · ${esc(VERSOES[S.versao][0])}` : "";
+    $("#resumoPlano").innerHTML = `<span>Plano <b>${esc(S.plano.nome)}</b>${ver}</span><span><b>${reais(S.plano.preco_centavos)}</b>/${periodo(S.plano)} · <button type="button" class="btn link" data-trocar-plano>trocar</button></span>`;
+  }
+  function resumoPagamento(sit) {
+    const troca = ["email", "pagamento"].includes(sit.etapa) && P.planos.length > 1 ? ` · <button type="button" class="btn link" data-troca-pag>trocar plano</button>` : "";
+    $("#resumoPag").innerHTML = `<span>${esc(P.produto.nome)} · plano <b>${esc(sit.plano?.nome || "")}</b></span><span><b>${reais(sit.plano?.preco_centavos)}</b>/${periodo(sit.plano)}${troca}</span>`;
   }
   function telaPagamento(sit) {
     S.sit = sit;
     if (sit.etapa === "ativo") return pronto();
     if (sit.etapa === "existente") return existente();
+    if (sit.etapa === "cancelado") return recomeca(false);
     if (sit.etapa === "email") { S.email = sit.email; $("#emailMostra").textContent = sit.email; return mostra("codigo"); }
-    $("#resumoPag").innerHTML = `<span>${esc(P.produto.nome)} · plano <b>${esc(sit.plano?.nome || "")}</b></span><span><b>${reais(sit.plano?.preco_centavos)}</b>/${sit.plano?.ciclo === "anual" ? "ano" : "mês"}</span>`;
-    $("#pagMP").classList.toggle("oculto", !sit.pagamento.mercadopago);
-    $("#atualizar").classList.toggle("oculto", !sit.pagamento.mercadopago);
-    const pix = sit.pagamento.pix;
-    $("#pagPix").classList.toggle("oculto", !pix);
+    resumoPagamento(sit);
+    $("#trocaPlano").classList.add("oculto");
+    const online = !!sit.pagamento.mercadopago, pix = sit.pagamento.pix;
+    $("#pagMP").classList.toggle("oculto", !online);
+    // Chave Pix manual só aparece quando o pagamento online não está ligado (o Pix com QR Code já confirma sozinho).
+    $("#pagPix").classList.toggle("oculto", !pix || online);
     if (pix) { $("#pixChave").textContent = pix.chave; $("#pixTitular").textContent = pix.titular; $("#pixValor").textContent = reais(sit.plano?.preco_centavos); }
     const z = zap(sit.whatsapp, `Olá! Fiz o cadastro no ${P.produto.nome} (${sit.email}) e quero concluir o pagamento.`);
-    $("#pagNada").classList.toggle("oculto", !!(pix || sit.pagamento.mercadopago));
+    $("#pagNada").classList.toggle("oculto", !!(pix || online));
     $$("[data-zap]").forEach((a) => { a.classList.toggle("oculto", !z); if (z) a.href = z; });
     $("#avisouOk").classList.toggle("oculto", !sit.avisou_pagamento);
     $("#jaPaguei").classList.toggle("oculto", !!sit.avisou_pagamento);
-    mostra("pagamento");
+    if (S.etapa !== "pagamento") mostra("pagamento");
   }
-  function pronto() { $("#linkEntrar").href = S.sit?.entrar || "/entrar"; mostra("pronto"); }
+  function pronto() { paraEspera(); $("#linkEntrar").href = S.sit?.entrar || "/entrar"; mostra("pronto"); }
   function existente() { mostra("existente"); }
 
+  // Começar de novo: cancela o cadastro em andamento (nada foi cobrado) e volta para a escolha do plano.
+  async function recomeca(cancelar) {
+    paraEspera();
+    if (cancelar && S.token) await api("cadastro/cancelar", { token: S.token });
+    esquece();
+    S = { plano: null, versao: null, token: null, email: null, sit: null, etapa: null };
+    $("#fDados")?.reset(); const c = $("#cCodigo"); if (c) c.value = "";
+    $("#pixBox")?.classList.add("oculto"); const g = $("#gerarPix"); if (g) { g.classList.remove("oculto"); g.textContent = "Gerar QR Code Pix"; }
+    ["#erroPag", "#erroDados", "#erroCodigo"].forEach((s) => { const e = $(s); if (e) e.textContent = ""; });
+    desenhaPlanos(true); // mantém o tipo do negócio e o plano que vieram do site, se houver
+    mostra("plano");
+  }
+
+  // Enquanto a tela de pagamento estiver aberta, confere a cada 4 s se o pagamento caiu (o webhook libera o acesso).
+  let timerEspera = null;
+  function paraEspera() { if (timerEspera) { clearInterval(timerEspera); timerEspera = null; } }
+  function esperaPagamento() {
+    paraEspera();
+    timerEspera = setInterval(async () => {
+      if (document.hidden || !S.token || S.etapa !== "pagamento") return;
+      try {
+        const sit = await api("cadastro", null, `?token=${encodeURIComponent(S.token)}`);
+        if (sit.etapa === "ativo") { S.sit = sit; return pronto(); }
+        if (sit.etapa !== "pagamento") return telaPagamento(sit);
+        if (sit.plano?.preco_centavos !== S.sit?.plano?.preco_centavos || sit.plano?.nome !== S.sit?.plano?.nome) { S.sit = sit; resumoPagamento(sit); }
+      } catch (x) { if (/não encontrado/i.test(x.message)) recomeca(false); }
+    }, 4000);
+  }
+
+  // Preços e planos ao vivo: o que for salvo no console aparece aqui sem recarregar a página.
+  let assinaturaP = "";
+  async function atualizaProduto() {
+    try {
+      const novo = await api("produto"), ass = JSON.stringify([novo.planos, novo.pagamento, novo.versoes]);
+      if (ass === assinaturaP) return;
+      assinaturaP = ass; P = novo;
+      if (pagina !== "assinar") return;
+      if (S.etapa === "plano" || S.etapa === "dados") desenhaPlanos(false);
+      if (!$("#trocaPlano").classList.contains("oculto")) desenhaTroca();
+      if (S.etapa === "pagamento" && S.token) telaPagamento(await api("cadastro", null, `?token=${encodeURIComponent(S.token)}`));
+    } catch {}
+  }
+  function desenhaTroca() {
+    const atual = S.sit?.plano?.id;
+    $("#planosTroca").innerHTML = P.planos.map((p) => cardPlano(p, p.id === atual).replace("data-plano=", "data-plano-troca=")).join("");
+  }
+
   async function iniciaAssinar() {
-    desenhaPlanos();
-    const t = (location.hash.match(/t=([\w-]{20,})/) || [])[1] || (() => { try { return sessionStorage.getItem("lw_cad_" + P.produto.slug); } catch { return null; } })();
+    assinaturaP = JSON.stringify([P.planos, P.pagamento, P.versoes]);
+    const veioDoSite = desenhaPlanos(true);
+    const t = (location.hash.match(/t=([\w-]{20,})/) || [])[1] || (() => { try { return sessionStorage.getItem(chaveCad()); } catch { return null; } })();
     if (t) {
       try { S.token = t; const sit = await api("cadastro", null, `?token=${encodeURIComponent(t)}`); return telaPagamento(sit); }
-      catch { try { sessionStorage.removeItem("lw_cad_" + P.produto.slug); } catch {} history.replaceState(null, "", location.pathname + location.search); }
+      catch { esquece(); }
     }
+    // Plano (e tipo do negócio) já escolhidos no site de venda: vai direto para os dados, sem pedir o plano de novo.
+    if (veioDoSite && S.plano && (!P.versoes || !P.versoes.length || S.versao)) return mostra("dados");
     mostra("plano");
   }
   document.addEventListener("click", async (e) => {
@@ -134,7 +206,46 @@
       try { await ocupado(b, () => api("cadastro/avisar-pix", { token: S.token })); b.classList.add("oculto"); $("#avisouOk").classList.remove("oculto"); } catch (x) { $("#erroPag").textContent = x.message; }
       return;
     }
-    if (e.target.closest("#atualizar")) { try { telaPagamento(await api("cadastro", null, `?token=${encodeURIComponent(S.token)}`)); } catch (x) { $("#erroPag").textContent = x.message; } }
+    if (e.target.closest("#atualizar")) { try { telaPagamento(await api("cadastro", null, `?token=${encodeURIComponent(S.token)}`)); } catch (x) { $("#erroPag").textContent = x.message; } return; }
+    // Começar de novo (código, pagamento ou "já tem conta"): pede confirmação na própria página.
+    if (e.target.closest("[data-recomecar]")) { const box = $("#boxRecomecar"); $("#erroRecomecar").textContent = ""; box.classList.remove("oculto"); box.scrollIntoView({ behavior: "smooth", block: "center" }); $("#simRecomecar").focus(); return; }
+    if (e.target.closest("#naoRecomecar")) { $("#boxRecomecar").classList.add("oculto"); return; }
+    if (e.target.closest("#simRecomecar")) {
+      const b = e.target.closest("#simRecomecar"); $("#erroRecomecar").textContent = "";
+      try { await ocupado(b, () => recomeca(true)); } catch (x) { $("#erroRecomecar").textContent = x.message; }
+      return;
+    }
+    // Trocar o plano antes de pagar.
+    if (e.target.closest("[data-troca-pag]")) { const t = $("#trocaPlano"); t.classList.toggle("oculto"); if (!t.classList.contains("oculto")) desenhaTroca(); $("#erroTroca").textContent = ""; return; }
+    const pt = e.target.closest("[data-plano-troca]");
+    if (pt) {
+      $("#erroTroca").textContent = "";
+      try {
+        const sit = await api("cadastro/plano", { token: S.token, plano_id: +pt.dataset.planoTroca });
+        $("#pixBox").classList.add("oculto"); $("#gerarPix").classList.remove("oculto"); $("#gerarPix").textContent = "Gerar QR Code Pix";
+        telaPagamento(sit);
+      } catch (x) { $("#erroTroca").textContent = x.message; }
+      return;
+    }
+    // Pix com QR Code na tela: o acesso é liberado sozinho quando o pagamento cai.
+    if (e.target.closest("#gerarPix")) {
+      const b = e.target.closest("#gerarPix"); $("#erroPag").textContent = "";
+      try {
+        const r = await ocupado(b, () => api("cadastro/pix", { token: S.token }));
+        if (!r.qr && !r.copia_cola) throw new Error("O Mercado Pago não devolveu o QR Code. Tente de novo ou pague com cartão.");
+        if (r.qr) $("#pixQr").src = "data:image/png;base64," + r.qr; $("#pixQr").classList.toggle("oculto", !r.qr);
+        $("#pixCopia").value = r.copia_cola || "";
+        const ate = r.expira_em ? new Date(r.expira_em) : null;
+        $("#pixValidade").textContent = ate && !isNaN(ate) ? `Válido até ${ate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}. Depois disso, gere um novo.` : "";
+        $("#pixBox").classList.remove("oculto"); b.classList.add("oculto");
+        $("#copiarCopia").textContent = "Copiar código Pix";
+      } catch (x) { $("#erroPag").textContent = x.message; }
+      return;
+    }
+    if (e.target.closest("#copiarCopia")) {
+      const b = e.target.closest("#copiarCopia"), t = $("#pixCopia");
+      navigator.clipboard.writeText(t.value).then(() => (b.textContent = "Copiado ✓")).catch(() => { t.select(); document.execCommand && document.execCommand("copy"); b.textContent = "Copiado ✓"; });
+    }
   });
   document.addEventListener("submit", async (e) => {
     const f = e.target;
@@ -168,7 +279,11 @@
   document.addEventListener("click", (e) => { if (e.target.closest("#rVoltar")) { $("#passo2").classList.add("oculto"); $("#fPedir").classList.remove("oculto"); } });
 
   marca().then(() => {
-    if (pagina === "assinar") iniciaAssinar();
+    if (pagina === "assinar") {
+      iniciaAssinar();
+      setInterval(() => { if (!document.hidden) atualizaProduto(); }, 30000);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) atualizaProduto(); });
+    }
     if (pagina === "recuperar" && new URLSearchParams(location.search).get("primeiro")) { $$("[data-primeiro]").forEach((x) => x.classList.remove("oculto")); $$("[data-esqueci]").forEach((x) => x.classList.add("oculto")); }
   }).catch((x) => { const m = $("main"); if (m) m.insertAdjacentHTML("afterbegin", `<p class="aviso">${esc(x.message)}</p>`); });
 })();

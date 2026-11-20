@@ -52,3 +52,19 @@ input:focus{outline:3px solid color-mix(in oklab,var(--p) 30%,transparent);borde
 .versao span{font-size:13px;color:var(--mute,#5B6478)}
 .versao:hover{border-color:color-mix(in srgb,var(--p,#2A5BFF) 50%,var(--line))}
 .versao[aria-checked=true]{border-color:var(--p,#2A5BFF);box-shadow:0 0 0 4px color-mix(in srgb,var(--p,#2A5BFF) 15%,transparent)}
+/* Pagamento: Pix com QR Code na tela e cartão (19/11/2026) */
+.opcao{border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:14px;background:#fff}
+.op-topo{display:flex;align-items:center;gap:10px;margin-bottom:6px}.op-topo b{font-size:17px}
+.selo{font-size:12px;font-weight:700;color:var(--ok);background:color-mix(in oklab,var(--ok) 10%,#fff);border-radius:99px;padding:3px 10px}
+.selo.neutro{color:var(--mute);background:var(--bg)}
+.pixbox{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:14px}
+.pixbox img{width:200px;height:200px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:6px;flex:none}
+.pixdir{flex:1;min-width:min(240px,100%)}
+textarea{width:100%;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);color:var(--ink);resize:none;word-break:break-all}
+.esperando{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--p);margin:10px 0 0}
+.esperando i{width:10px;height:10px;border-radius:50%;background:var(--p);animation:pulsa 1.2s ease-in-out infinite}
+@keyframes pulsa{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@media(prefers-reduced-motion:reduce){.esperando i{animation:none}}
+#trocaPlano{margin-bottom:6px}#trocaPlano .plano{padding:14px}#trocaPlano .plano .preco{font-size:22px}
+#boxRecomecar{margin-top:16px}
+@media(max-width:560px){.pixbox{justify-content:center}.pixdir{min-width:100%}}

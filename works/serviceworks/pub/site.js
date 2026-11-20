@@ -63,7 +63,7 @@
     if (l.site) out.push("Site profissional feito pela LLD Works");
     return out;
   }
-  function desenhaPlanos() {
+  function desenhaPlanos(animar = true) {
     const v = VERSOES[V];
     $("#planosVer").textContent = v.nome;
     if (!P) return;
@@ -73,7 +73,7 @@
         <div class="preco">${brl(p.preco_centavos)}<small>/${p.ciclo === "anual" ? "ano" : "mês"}</small></div>
         <ul>${itens(p).map((t, k) => `<li class="${k && (t.includes("WhatsApp") || t.includes("Site") || t.includes("Instagram")) ? "mais" : ""}">${esc(t)}</li>`).join("")}</ul>
         <a class="b ${d ? "pri" : ""} grande" href="/assinar?versao=${V}&plano=${p.id}">Assinar ${esc(p.nome)}</a></article>`; }).join("") || '<p class="carregando">Nenhum plano à venda agora. Fale com a gente no WhatsApp.</p>';
-    if (window.gsap && !calmo) gsap.from(".plano", { y: 20, opacity: 0, duration: 0.5, stagger: 0.08, ease: "power2.out" });
+    if (animar && window.gsap && !calmo) gsap.from(".plano", { y: 20, opacity: 0, duration: 0.5, stagger: 0.08, ease: "power2.out" });
   }
   function aplica(v, animar = true) {
     V = v; const d = VERSOES[v];
@@ -82,6 +82,7 @@
     $("#heroLead").textContent = d.lead;
     $("#ctaHero").textContent = `Ver planos para ${d.nome.toLowerCase()}`;
     $("#demoHero").href = d.demo;
+    const ca = $("#ctaAssinar"); if (ca) ca.href = `/assinar?versao=${v}`;
     $("#mkNome").textContent = `${{ pet: "Pet Feliz", beleza: "Studio Bella", barber: "Barbearia Navalha", clinica: "Clínica Viva" }[v]} · Painel`;
     $("#mkAg").innerHTML = '<span></span><span class="t">Ana</span><span class="t">Bia</span><span class="t">Caio</span>' + d.ag.map(([h, t, s], i) => `<span class="h">${h}</span>${[0, 1, 2].map((c) => (c === i % 3 ? `<span class="e">${esc(t)}<small>${esc(s)}</small></span>` : `<span class="v"></span>`)).join("")}`).join("");
     $("#verTitulo").textContent = `Versão ${d.nome}`;
@@ -98,8 +99,16 @@
   addEventListener("scroll", () => $(".topo").classList.toggle("rolou", scrollY > 10), { passive: true });
   aplica(V, false);
 
-  fetch("/api/conta/produto").then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => {
-    P = d; desenhaPlanos();
+  // Planos e preços ao vivo: o que for salvo no console aparece aqui sem recarregar (a cada 30 s e ao voltar para a aba).
+  let assP = "";
+  const recarregaPlanos = () => fetch("/api/conta/produto", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d) => {
+    if (!d) return; const a = JSON.stringify(d.planos); if (a === assP) return; assP = a; P = d; desenhaPlanos(false);
+  }).catch(() => {});
+  setInterval(() => { if (!document.hidden) recarregaPlanos(); }, 30000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) recarregaPlanos(); });
+
+  fetch("/api/conta/produto", { cache: "no-store" }).then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => {
+    P = d; assP = JSON.stringify(d.planos); desenhaPlanos();
     if (d.whatsapp) $("#ctaZap").href = `https://wa.me/${d.whatsapp.startsWith("55") ? d.whatsapp : "55" + d.whatsapp}?text=${encodeURIComponent("Olá! Quero conhecer o ServiceWorks.")}`;
     else $("#ctaZap").remove();
   }).catch(() => { $("#cardsPlanos").innerHTML = '<p class="carregando">Não consegui carregar os planos agora. <a href="/assinar">Ver na página de assinatura</a>.</p>'; $("#ctaZap").remove(); });

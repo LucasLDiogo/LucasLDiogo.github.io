@@ -44,14 +44,36 @@
   <label for="cCodigo">Código</label><input id="cCodigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required>
   <p class="ajuda" id="infoCodigo">O código vale por 15 minutos.</p>
   <p class="erro" id="erroCodigo" role="alert"></p>
-  <div class="acoes"><button type="submit" class="btn pri">Confirmar</button><button type="button" class="btn link" id="reenviar">Reenviar código</button><button type="button" class="btn link" id="corrigir">O e-mail está errado</button></div>
+  <div class="acoes"><button type="submit" class="btn pri">Confirmar</button><button type="button" class="btn link" id="reenviar">Reenviar código</button><button type="button" class="btn link" id="corrigir">O e-mail está errado</button><button type="button" class="btn link" data-recomecar>Começar de novo</button></div>
   <div id="boxCorrigir" class="oculto aviso"><label for="novoEmail" style="margin-top:0">E-mail correto</label><input id="novoEmail" type="email" autocomplete="email"><div class="acoes" style="margin-top:10px"><button type="button" class="btn pri" id="salvarEmail">Corrigir e enviar novo código</button></div></div>
  </form></section>
 
- <section data-etapa="pagamento" class="oculto"><div class="card" style="max-width:600px">
+ <section data-etapa="pagamento" class="oculto"><div class="card" style="max-width:640px">
   <h2 style="margin-top:0">E-mail confirmado ✅ Agora o pagamento</h2>
   <div class="resumo" id="resumoPag"></div>
-  <div id="pagMP" class="oculto"><p>Pague com cartão, Pix ou boleto pelo Mercado Pago. A confirmação é automática e o acesso é liberado na hora.</p><button class="btn pri" id="pagarMP">Pagar com Mercado Pago</button></div>
+  <div id="trocaPlano" class="oculto"><p class="h2">Escolha o plano</p><div class="planos" id="planosTroca" role="group" aria-label="Planos"></div><p class="erro" id="erroTroca" role="alert"></p></div>
+  <div id="pagMP" class="oculto">
+   <div class="opcao">
+    <div class="op-topo"><b>Pix</b><span class="selo">aprovação na hora</span></div>
+    <p class="ajuda" style="margin-top:0">Gere o QR Code e pague pelo app do seu banco. O acesso é liberado sozinho assim que o pagamento cair.</p>
+    <button class="btn pri" id="gerarPix" type="button">Gerar QR Code Pix</button>
+    <div id="pixBox" class="oculto pixbox">
+     <img id="pixQr" alt="QR Code Pix para pagar a assinatura" width="200" height="200">
+     <div class="pixdir">
+      <label for="pixCopia" style="margin-top:0">Pix copia e cola</label>
+      <textarea id="pixCopia" readonly rows="3" spellcheck="false"></textarea>
+      <div class="acoes" style="margin-top:10px"><button class="btn" id="copiarCopia" type="button">Copiar código Pix</button></div>
+      <p class="ajuda" id="pixValidade"></p>
+      <p class="esperando" role="status"><i aria-hidden="true"></i>Aguardando o pagamento…</p>
+     </div>
+    </div>
+   </div>
+   <div class="opcao">
+    <div class="op-topo"><b>Cartão de crédito</b><span class="selo neutro">em até 12x</span></div>
+    <p class="ajuda" style="margin-top:0">Você paga na página segura do Mercado Pago e volta para cá com o acesso liberado.</p>
+    <button class="btn" id="pagarMP" type="button">Pagar com cartão</button>
+   </div>
+  </div>
   <div id="pagPix" class="oculto"><p>Pague por Pix e clique em <b>Já paguei</b>. A LLD Works confere e libera o seu acesso; você recebe um e-mail.</p>
    <div class="pix"><span id="pixChave"></span><button class="btn" id="copiarPix" type="button">Copiar chave</button></div>
    <p class="ajuda">Favorecido: <b id="pixTitular"></b> · Valor: <b id="pixValor"></b></p>
@@ -60,7 +82,7 @@
   <div id="pagNada" class="oculto"><p>Fale com a LLD Works para concluir o pagamento.</p><a class="btn pri oculto" data-zap target="_blank" rel="noopener">Falar no WhatsApp</a></div>
   <p class="erro" id="erroPag" role="alert"></p>
   <p class="ajuda">Você já pode fechar esta página: o seu cadastro fica guardado. Para voltar ao pagamento, entre com o seu e-mail e senha em <a href="/entrar">Entrar</a>.</p>
-  <button class="btn link" id="atualizar" type="button">Já paguei pelo Mercado Pago: atualizar</button>
+  <div class="acoes" style="margin-top:8px"><button class="btn link" id="atualizar" type="button">Já paguei: atualizar</button><button class="btn link" data-recomecar type="button">Usar outro e-mail ou começar de novo</button></div>
  </div></section>
 
  <section data-etapa="pronto" class="oculto"><div class="card" style="max-width:520px">
@@ -70,8 +92,15 @@
 
  <section data-etapa="existente" class="oculto"><div class="card" style="max-width:520px">
   <h2 style="margin-top:0">Você já tem conta</h2><p>Este e-mail já tem acesso ao <span data-produto>…</span>. Entre com a sua senha ou crie uma nova.</p>
-  <div class="acoes"><a class="btn pri" href="/entrar">Entrar</a><a class="btn" href="/recuperar">Esqueci minha senha</a></div>
+  <div class="acoes"><a class="btn pri" href="/entrar">Entrar</a><a class="btn" href="/recuperar">Esqueci minha senha</a><button type="button" class="btn link" data-recomecar>Assinar com outro e-mail</button></div>
  </div></section>
+
+ <div id="boxRecomecar" class="oculto aviso" role="dialog" aria-labelledby="tRecomecar" style="max-width:640px">
+  <b id="tRecomecar">Começar de novo?</b>
+  <p style="margin:6px 0 0">Este cadastro será cancelado. Nada foi cobrado. Você escolhe o plano de novo e pode usar outro e-mail.</p>
+  <div class="acoes" style="margin-top:12px"><button type="button" class="btn pri" id="simRecomecar">Sim, começar de novo</button><button type="button" class="btn" id="naoRecomecar">Continuar este cadastro</button></div>
+  <p class="erro" id="erroRecomecar" role="alert"></p>
+ </div>
 
  <p class="rodape"><a href="/termos">Termos de Uso</a>·<a href="/privacidade">Política de Privacidade</a>· LLD Works</p>
 </main>
