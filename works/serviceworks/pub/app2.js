@@ -461,7 +461,7 @@
     const app = (nome, txt, url, incluso, icone) => `<div class="card app"><div class="row">${ic(icone)}<h3>${nome}</h3>${incluso ? '<span class="chip ok">incluído no seu plano</span>' : '<span class="chip">plano Pro ou Premium</span>'}</div><p class="small mute">${txt}</p>${incluso ? `<a class="btn sm pri" href="${url}" target="_blank" rel="noopener">Abrir ${ic("ext")}</a> <span class="tiny mute">entra já conectado</span>` : `<a class="btn sm" href="/assinar">Ver planos</a>`}</div>`;
     s.innerHTML = `<div class="head"><div><h1>WhatsApp e pagamentos</h1><p>Os outros apps do seu plano entram com o mesmo e-mail e senha.</p></div></div>
       <div class="grid g3">
-        ${app("Agente de WhatsApp", "Responde seus clientes 24h com IA pela sua base de perguntas, mostra os serviços e chama a equipe quando precisa. Cadastre ali o número do WhatsApp da loja.", "/ir/agentworks", pl.pagamento_online, "wa")}
+        ${app("Agente de WhatsApp", "Atende seus clientes 24h com IA e já entra com a sua marca, logo, horários, serviços, produtos, promoções e pagamento daqui — é só conectar o WhatsApp. O que ele agenda cai direto na sua agenda.", "/ir/agentworks", pl.pagamento_online, "wa")}
         ${app("Link na bio", "Uma página com todos os seus links (vitrine, WhatsApp, Instagram, mapa) para colocar na bio do Instagram.", "/ir/linkworks", pl.pagamento_online, "integracoes")}
         ${app("Instagram", "Calendário de posts, legendas com IA e respostas automáticas em comentários e directs.", "/ir/socialworks", pl.site, "marca")}
       </div>
@@ -477,7 +477,24 @@
             <li>Abra a aplicação → <b>Credenciais de produção</b> → copie o <b>Access Token</b> (começa com <code>APP_USR-</code>).</li>
             <li>Cole abaixo. A chave fica guardada criptografada e só é usada para criar os seus links de pagamento.</li></ol>
           <form class="row" id="fMp" style="margin-top:10px"><input name="access_token" placeholder="APP_USR-…" autocomplete="off" style="flex:1;min-width:260px" required><button class="btn pri">Conectar</button></form>`}
-        <p class="err" id="mpErr" role="alert"></p></div>`;
+        <p class="err" id="mpErr" role="alert"></p></div>
+      <div class="card" style="margin-top:14px"><div class="row sb"><h2>Chave Pix da loja</h2><span class="chip" id="pixChip">…</span></div>
+        <p class="small">O agente de WhatsApp usa esta chave quando o Mercado Pago não está conectado: manda a chave para o cliente pagar e pede o comprovante. ${mp.conectado ? "Com o Mercado Pago conectado, ele manda o Pix gerado na sua conta (copia e cola) e confirma sozinho quando cai." : ""}</p>
+        <form id="fPix" class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">
+          <label class="small">Tipo<select name="tipo"><option value="">Escolha</option><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="email">E-mail</option><option value="telefone">Celular</option><option value="aleatoria">Chave aleatória</option></select></label>
+          <label class="small" style="flex:1;min-width:200px">Chave<input name="chave" autocomplete="off" placeholder="Ex.: 54999990000"></label>
+          <label class="small" style="flex:1;min-width:200px">Nome do titular<input name="titular" autocomplete="off" placeholder="Como aparece no app do banco"></label>
+          ${admin() ? '<button class="btn sm pri">Salvar chave</button> <button type="button" class="btn sm" id="pixLimpar">Remover</button>' : ""}
+        </form><p class="err" id="pixErr" role="alert"></p></div>`;
+    const fp = $("#fPix", s);
+    try {
+      const px = await api("GET", "v4/pix");
+      fp.tipo.value = px.tipo || ""; fp.chave.value = px.chave || ""; fp.titular.value = px.titular || "";
+      $("#pixChip", s).textContent = px.chave ? "cadastrada" : "não cadastrada"; $("#pixChip", s).classList.toggle("ok", !!px.chave);
+    } catch (x) { $("#pixChip", s).textContent = "indisponível"; }
+    if (!admin()) [...fp.elements].forEach((x) => (x.disabled = true));
+    fp.onsubmit = async (ev) => { ev.preventDefault(); try { const r = await api("PUT", "v4/pix", { tipo: fp.tipo.value, chave: fp.chave.value.trim(), titular: fp.titular.value.trim() }); fp.chave.value = r.chave; toast("Chave Pix salva. O agente de WhatsApp já usa."); $("#pixErr", s).textContent = ""; $("#pixChip", s).textContent = "cadastrada"; $("#pixChip", s).classList.add("ok"); } catch (x) { $("#pixErr", s).textContent = x.message; } };
+    const lp = $("#pixLimpar", s); if (lp) lp.onclick = async () => { if (!confirm("Remover a chave Pix da loja?")) return; try { await api("PUT", "v4/pix", { chave: "" }); await integracoes(); } catch (x) { $("#pixErr", s).textContent = x.message; } };
     const fm = $("#fMp", s); if (fm) fm.onsubmit = async (ev) => { ev.preventDefault(); try { const r = await api("PUT", "mercadopago", { access_token: fm.access_token.value.trim() }); toast(`Mercado Pago conectado: ${r.conta}.`); await integracoes(); } catch (x) { $("#mpErr", s).textContent = x.message; } };
     const fs = $("#fSinal", s); if (fs) {
       const salvaSinal = async (v) => { try { await api("PUT", "perfil", { sinal_pct: Math.max(0, Math.min(100, +v || 0)) }); toast(+v ? `Pagamento online de ${+v}% ao agendar.` : "Sem pagamento online: o cliente paga no local."); await integracoes(); } catch (x) { $("#mpErr", s).textContent = x.message; } };
