@@ -1,0 +1,39 @@
+/* SocialWorks · painel3 (conexão oficial, envio de mídia, opções do Instagram, automações com botão, ServiceWorks) */
+.igcon{display:grid;gap:12px;margin-bottom:16px}
+.igcon .lista{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))}
+.igp{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card)}
+.igp .ft{width:52px;height:52px;border-radius:50%;flex:none;object-fit:cover;background:var(--soft);display:grid;place-items:center;font:800 20px Montserrat,sans-serif;color:#fff}
+.igp .cx{flex:1;display:grid;gap:4px}
+.igp .acoes{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.btn.ig{background:linear-gradient(135deg,#F58529,#DD2A7B 45%,#8134AF 75%,#515BD4);border:0;color:#fff}
+.btn.ig svg{width:18px;height:18px}
+.req{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--mute)}
+.req span::before{content:"✓ ";color:var(--ok);font-weight:800}
+.up{border:2px dashed color-mix(in oklab,var(--p) 35%,var(--line));border-radius:12px;padding:14px;text-align:center;background:color-mix(in oklab,var(--p) 4%,var(--card));cursor:pointer;transition:background .15s,border-color .15s}
+.up.sobre{background:color-mix(in oklab,var(--p) 12%,var(--card));border-color:var(--p)}
+.up b{color:var(--p)}
+.up .tiny{margin-top:4px}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.th{position:relative;width:86px;height:86px;border-radius:10px;overflow:hidden;background:var(--soft);border:1px solid var(--line)}
+.th img,.th video{width:100%;height:100%;object-fit:cover;display:block}
+.th .n{position:absolute;left:4px;top:4px;background:rgba(0,0,0,.6);color:#fff;font:700 11px Inter,sans-serif;border-radius:6px;padding:1px 6px}
+.th .bt{position:absolute;right:3px;bottom:3px;display:flex;gap:2px}
+.th .bt button{width:24px;height:24px;border-radius:6px;border:0;background:rgba(0,0,0,.62);color:#fff;cursor:pointer;font-size:12px;line-height:1;padding:0}
+.th .vd{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:26px;background:linear-gradient(transparent,rgba(0,0,0,.35))}
+.prog{font-size:13px;color:var(--mute);margin-top:6px;min-height:18px}
+details.igop{border:1px solid var(--line);border-radius:12px;padding:0 12px;margin-top:12px;background:var(--card)}
+details.igop>summary{cursor:pointer;font-weight:700;padding:12px 0;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px}
+details.igop>summary::-webkit-details-marker{display:none}
+details.igop>summary::after{content:"+";font:700 18px/1 Inter,sans-serif;color:var(--mute)}
+details.igop[open]>summary::after{content:"–"}
+details.igop>div{padding-bottom:12px}
+.marcar{position:relative;display:inline-block;max-width:100%;margin-top:6px;cursor:crosshair;border-radius:10px;overflow:hidden}
+.marcar img{display:block;max-width:100%;max-height:260px}
+.marcar .pt{position:absolute;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);color:#fff;font:600 11.5px Inter,sans-serif;padding:3px 7px;border-radius:7px;white-space:nowrap;pointer-events:auto;cursor:pointer}
+.marcar .pt::before{content:"";position:absolute;left:50%;top:-5px;transform:translateX(-50%);border:5px solid transparent;border-top:0;border-bottom-color:rgba(0,0,0,.75)}
+.linhabt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:8px;margin-top:6px}
+.atalhos{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.sw{border-left:4px solid #7C3AED}
+.sw .promo{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid var(--line);padding:10px 0}
+.sw .promo:first-of-type{border-top:0}
+body.igoauth #perfis .aviso{display:none}
