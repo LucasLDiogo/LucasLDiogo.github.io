@@ -365,6 +365,7 @@
       if (r.bairro) $("#eBairro").value = r.bairro;
       if (r.localidade) $("#eCid").value = r.localidade;
       if (r.uf) $("#eUf").value = r.uf;
+      $$("#boxEnd input").forEach((i) => i.value && i.classList.remove("inval"));
       $("#eNum").focus();
     } catch { /* sem acesso ao serviço de CEP: o cliente digita */ }
   });
@@ -429,7 +430,7 @@
       `DTSTART;TZID=America/Sao_Paulo:${t(r.inicio)}`, `DTEND;TZID=America/Sao_Paulo:${t(r.fim)}`, `SUMMARY:${r.servico} · ${em.nome}`,
       `DESCRIPTION:Com ${r.profissional}. Código ${r.codigo}.`, enderecoLoja(em) ? `LOCATION:${enderecoLoja(em).replace(/[,;]/g, " ")}` : "", "BEGIN:VALARM", "TRIGGER:-PT2H", "ACTION:DISPLAY", "DESCRIPTION:Lembrete do seu horário", "END:VALARM", "END:VEVENT", "END:VCALENDAR"].filter(Boolean).join("\r\n");
     $("#okIcs").href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
-    if (window.gsap && !calmo()) window.gsap.from(".codigo", { scale: 0.9, opacity: 0, duration: 0.5, delay: 0.5, ease: "back.out(1.6)" });
+    if (window.gsap && !calmo()) window.gsap.fromTo(".codigo", { scale: 0.9 }, { scale: 1, duration: 0.5, delay: 0.4, ease: "back.out(1.6)" });
   }
   $("#okPix").addEventListener("click", async () => {
     const b = $("#okPix"), er = $("#okPagErr"); er.textContent = ""; b.disabled = true; b.textContent = "Gerando Pix…";
