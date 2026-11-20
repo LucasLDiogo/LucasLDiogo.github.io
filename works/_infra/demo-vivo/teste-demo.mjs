@@ -1,0 +1,37 @@
+import { Miniflare } from "miniflare";
+import fs from "node:fs";
+const src = fs.readFileSync("./worker.js","utf8");
+const mf = new Miniflare({ modules: true, script: src, compatibilityDate: "2026-08-01", d1Databases: ["DB"] });
+const db = await mf.getD1Database("DB");
+const schema = `CREATE TABLE contatos (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente_id INTEGER, nome TEXT, whatsapp TEXT, observacoes TEXT, extra TEXT, criado_em TEXT, nascimento TEXT, email TEXT, aceita_promocoes INTEGER, origem TEXT, UNIQUE(cliente_id, whatsapp));
+CREATE TABLE servicos (id INTEGER PRIMARY KEY, cliente_id INTEGER, nome TEXT, duracao_min INTEGER, preco_centavos INTEGER, promo_centavos INTEGER, ativo INTEGER DEFAULT 1);
+CREATE TABLE profissionais (id INTEGER PRIMARY KEY, cliente_id INTEGER, nome TEXT, ativo INTEGER DEFAULT 1);
+CREATE TABLE expedientes (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente_id INTEGER, profissional_id INTEGER, dia_semana INTEGER, inicio TEXT, fim TEXT);
+CREATE TABLE produtos (id INTEGER PRIMARY KEY, cliente_id INTEGER, nome TEXT, preco_centavos INTEGER, custo_centavos INTEGER, ativo INTEGER DEFAULT 1);
+CREATE TABLE pets (id INTEGER PRIMARY KEY, cliente_id INTEGER, contato_id INTEGER REFERENCES contatos(id), ativo INTEGER DEFAULT 1);
+CREATE TABLE agendamentos (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente_id INTEGER, profissional_id INTEGER REFERENCES profissionais(id), servico_id INTEGER REFERENCES servicos(id), contato_id INTEGER REFERENCES contatos(id), inicio TEXT, fim TEXT, status TEXT, valor_centavos INTEGER, origem TEXT, codigo TEXT UNIQUE, observacoes TEXT, criado_em TEXT, pet_id INTEGER REFERENCES pets(id), venda_id INTEGER);
+CREATE TABLE vendas (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente_id INTEGER, codigo TEXT UNIQUE, contato_id INTEGER REFERENCES contatos(id), agendamento_id INTEGER, status TEXT, tipo TEXT, subtotal_centavos INTEGER, desconto_centavos INTEGER, total_centavos INTEGER, forma TEXT, pago_em TEXT, criado_em TEXT, obs TEXT);
+CREATE TABLE venda_itens (id INTEGER PRIMARY KEY AUTOINCREMENT, venda_id INTEGER REFERENCES vendas(id), tipo TEXT, ref_id INTEGER, nome TEXT, qtd INTEGER, unit_centavos INTEGER, custo_centavos INTEGER, total_centavos INTEGER, profissional_id INTEGER, comissao_centavos INTEGER);`;
+for (const s of schema.split(";").map(x=>x.trim()).filter(Boolean)) await db.prepare(s).run();
+const ins = (sql, ...a) => db.prepare(sql).bind(...a).run();
+for (const [id,n,d,p,pr] of [[1,"Corte",30,4500,null],[2,"Corte + barba",60,7500,6500],[3,"Sobrancelha",15,1500,null],[4,"Pigmentação",45,6000,null],[5,"Barba",30,3500,null]]) await ins("INSERT INTO servicos VALUES (?,1,?,?,?,?,1)",id,n,d,p,pr);
+for (const id of [1,2,3]) { await ins("INSERT INTO profissionais VALUES (?,1,?,1)", id, "P"+id); for (const w of [2,3,4,5,6]) { await ins("INSERT INTO expedientes (cliente_id,profissional_id,dia_semana,inicio,fim) VALUES (1,?,?,'09:00','12:00')",id,w); await ins("INSERT INTO expedientes (cliente_id,profissional_id,dia_semana,inicio,fim) VALUES (1,?,?,'13:00','19:00')",id,w);} }
+for (const [id,n,p,c] of [[1,"Pomada",4500,1900],[2,"Óleo",3900,1500]]) await ins("INSERT INTO produtos VALUES (?,1,?,?,?,1)",id,n,p,c);
+// cliente 2: 1 serviço, 1 prof, contatos e pet + 1 agendamento "semente" num dia
+await ins("INSERT INTO servicos VALUES (502001,2,'Banho',60,5500,null,1)"); await ins("INSERT INTO profissionais VALUES (502100,2,'Carla',1)");
+for (const w of [2,3,4,5,6]) await ins("INSERT INTO expedientes (cliente_id,profissional_id,dia_semana,inicio,fim) VALUES (2,502100,?,'08:30','18:00')",w);
+await ins("INSERT INTO contatos (id,cliente_id,nome,whatsapp) VALUES (502200,2,'Ana','5554990000010')"); await ins("INSERT INTO pets VALUES (502300,2,502200,1)");
+await ins("INSERT INTO agendamentos (id,cliente_id,profissional_id,servico_id,contato_id,inicio,fim,status,valor_centavos,codigo) VALUES (503000,2,502100,502001,502200,'2026-11-18T08:30','2026-11-18T09:30','concluido',5500,'SEED1')");
+const { gerar } = await import("data:text/javascript;base64," + Buffer.from(src).toString("base64"));
+const env = { DB: db };
+const agora = Date.parse("2026-11-20T04:30:00Z");
+console.log(JSON.stringify(await gerar(env, agora)));
+console.log(JSON.stringify(await gerar(env, agora)), "(2ª vez: idempotente)");
+const q = async (s) => (await db.prepare(s).all()).results;
+console.log(await q("SELECT cliente_id, status, count(*) n FROM agendamentos GROUP BY 1,2"));
+console.log(await q("SELECT count(*) n FROM agendamentos WHERE id=503000"), "semente intacta");
+console.log(await q("SELECT count(*) n, min(inicio) mi, max(inicio) ma FROM agendamentos WHERE cliente_id=1"));
+console.log(await q("SELECT substr(inicio,1,10) d, count(*) n FROM agendamentos WHERE cliente_id=1 AND inicio>='2026-11-20' GROUP BY d LIMIT 6"));
+console.log(await q("SELECT count(*) n, sum(total_centavos) t FROM vendas"), await q("SELECT count(*) FROM venda_itens"));
+console.log(await q("SELECT count(*) n FROM agendamentos WHERE cliente_id=2 AND substr(inicio,1,10)='2026-11-18'"), "dia com semente não recebe gerados");
+await mf.dispose();
