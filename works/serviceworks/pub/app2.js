@@ -81,10 +81,11 @@
   // ---------- imagem: reduz no navegador antes de enviar ----------
   function reduzir(file, maxW, maxH, maxBytes) {
     return new Promise((ok, erro) => {
-      if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return erro(new Error("Use uma imagem PNG, JPG ou WEBP."));
-      const img = new Image(), url = URL.createObjectURL(file);
+      if (!/^image\/(png|jpeg|jpg|webp)$/.test(file.type) && !/\.(png|jpe?g|webp)$/i.test(file.name || "")) return erro(new Error("Use uma imagem PNG, JPG ou WEBP."));
+      // Lê como data: (a política de segurança do painel não aceita blob:). Antes, PNG/JPG falhavam com "Não consegui ler a imagem".
+      if (file.size > 15e6) return erro(new Error("Imagem muito grande (mais de 15 MB). Use uma foto menor."));
+      const img = new Image(), leitor = new FileReader();
       img.onload = () => {
-        URL.revokeObjectURL(url);
         let w = img.width, h = img.height; const k = Math.min(1, maxW / w, maxH / h); w = Math.round(w * k); h = Math.round(h * k);
         const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d"); x.drawImage(img, 0, 0, w, h);
         for (const q of [0.9, 0.8, 0.7, 0.6, 0.5]) {
@@ -93,8 +94,10 @@
         }
         erro(new Error("Imagem pesada demais. Tente outra menor."));
       };
-      img.onerror = () => { URL.revokeObjectURL(url); erro(new Error("Não consegui ler a imagem.")); };
-      img.src = url;
+      img.onerror = () => erro(new Error("Não consegui ler a imagem. Tente salvar como PNG ou JPG e envie de novo."));
+      leitor.onerror = () => erro(new Error("Não consegui abrir o arquivo."));
+      leitor.onload = () => { img.src = leitor.result; };
+      leitor.readAsDataURL(file);
     });
   }
 
@@ -106,7 +109,7 @@
       api("GET", "fichas?vencendo=1").catch(() => []), api("GET", "clientes?filtro=aniversariantes").catch(() => [])]);
     await perfil();
     const [t1, tN] = TERMO(), primeiro = (S.emp.nome || "").split(" ")[0];
-    const passos = g.passos.map((p) => `<li class="${p.feito ? "ok" : ""}">${p.feito ? ic("check") : `<i class="pt"></i>`}<span>${esc(p.titulo)}</span>${p.feito ? "" : p.externo ? `<a class="btn sm" href="${p.externo}" target="_blank" rel="noopener">Abrir ${ic("ext")}</a>` : `<button class="btn sm" data-ir="${p.ir.split("/")[0]}">Fazer agora</button>`}</li>`).join("");
+    const passos = g.passos.map((p) => `<li class="${p.feito ? "ok" : ""}">${p.feito ? ic("check") : `<i class="pt"></i>`}<span>${esc(p.titulo)}</span>${p.feito ? "" : p.externo ? `<a class="btn sm" href="${/\/\/(agentworks|linkworks|socialworks)\./.test(p.externo) ? "/ir/" + p.externo.match(/\/\/([a-z]+)\./)[1] : p.externo}" target="_blank" rel="noopener">Abrir ${ic("ext")}</a>` : `<button class="btn sm" data-ir="${p.ir.split("/")[0]}">Fazer agora</button>`}</li>`).join("");
     const dia = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("pt-BR", { timeZone: "UTC", weekday: "short", day: "2-digit" }).replace(".", "");
     s.innerHTML = `
       <div class="hero2"><div><p class="mute small">${new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}</p><h1>Olá! Aqui está o ${esc(S.emp.nome)} hoje.</h1></div>
@@ -202,7 +205,7 @@
       const lk = $("[data-link]", d); if (lk) lk.onclick = () => roda(async () => {
         const r = await api("POST", `vendas/${v.id}/link`);
         $("#vLink", d).innerHTML = `<div class="note2">${ic("ext")}<div><b>Link de pagamento pronto</b> (Pix ou cartão). Quando o cliente pagar, a comanda fecha sozinha.<div class="row" style="margin-top:8px"><input readonly value="${esc(r.link)}" style="flex:1"><button type="button" class="btn sm" data-cp>Copiar</button>${r.whatsapp ? `<a class="btn sm pri" href="${r.whatsapp}" target="_blank" rel="noopener">${ic("wa")}Enviar no WhatsApp</a>` : ""}</div></div></div>`;
-        $("[data-cp]", d).onclick = () => navigator.clipboard.writeText(r.link).then(() => toast("Link copiado."));
+        $("[data-cp]", d).onclick = () => SW.copiar(r.link, "Link copiado.");
       });
     }
     const cn = $("[data-cancelar]", d); if (cn) cn.onclick = () => roda(async () => { if (!confirm(v.status === "paga" ? "Estornar esta venda? O estoque volta e ela sai do faturamento." : "Cancelar esta comanda?")) return; await api("PUT", `vendas/${v.id}`, { acao: "cancelar" }); toast("Comanda cancelada."); d.close(); if ($("#v-caixa.on")) caixa(); });
@@ -357,6 +360,32 @@
 
   // ========== MARCA E VITRINE ==========
   const SEG = { petshop: "Pet shop", salao: "Salão e estética", barbearia: "Barbearia", clinica: "Clínica", outro: "Outro" };
+  // ----- endereço e horário (Marca e vitrine) -----
+  const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+  function horariosHTML(json) {
+    let h = null; try { h = typeof json === "string" ? JSON.parse(json) : json; } catch {}
+    if (!Array.isArray(h) || h.length !== 7) h = DIAS.map((_, d) => (d === 0 ? { d, aberto: false } : { d, aberto: true, ini: "09:00", fim: d === 6 ? "13:00" : "18:00" }));
+    return h.map((x, d) => `<div class="hor-l" data-d="${d}"><label class="chk"><input type="checkbox" data-h="aberto" ${x.aberto ? "checked" : ""}> ${DIAS[d]}</label>
+      <input type="time" data-h="ini" value="${esc(x.ini || "09:00")}" ${x.aberto ? "" : "disabled"} aria-label="${DIAS[d]}: abre"><span class="mute">às</span><input type="time" data-h="fim" value="${esc(x.fim || "18:00")}" ${x.aberto ? "" : "disabled"} aria-label="${DIAS[d]}: fecha"><span class="tiny mute fechado">${x.aberto ? "" : "fechado"}</span></div>`).join("");
+  }
+  const lerHorarios = (f) => $$(".hor-l", f).map((l) => { const ab = $("[data-h=aberto]", l).checked; return ab ? { aberto: true, ini: $("[data-h=ini]", l).value, fim: $("[data-h=fim]", l).value } : { aberto: false }; });
+  const enderecoTexto = (f) => { const v = (n) => (f.elements[n]?.value || "").trim(); return [[v("endereco"), v("numero")].filter(Boolean).join(", "), v("bairro"), v("cidade"), v("uf").toUpperCase(), v("cep")].filter(Boolean).join(" - "); };
+  const linkMaps = (f) => { const t = enderecoTexto(f); return t ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(t) : ""; };
+  async function buscaCep(f) {
+    const cep = (f.elements.cep.value || "").replace(/\D/g, ""), info = $("#cepInfo", f);
+    if (cep.length !== 8) return;
+    info.textContent = "buscando…";
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const d = await r.json();
+      if (!r.ok || d.erro) { info.textContent = "CEP não encontrado"; return; }
+      if (d.logradouro) f.elements.endereco.value = d.logradouro;
+      if (d.bairro) f.elements.bairro.value = d.bairro;
+      if (d.localidade) f.elements.cidade.value = d.localidade;
+      if (d.uf) f.elements.uf.value = d.uf;
+      info.textContent = "endereço preenchido ✓"; f.elements.numero.focus();
+    } catch { info.textContent = "não consegui buscar: preencha à mão"; }
+  }
+
   async function marca() {
     const e = await perfil(), s = secao("marca"), ver = Date.now();
     s.innerHTML = `<div class="head"><div><h1>Marca e vitrine</h1><p>Como a sua loja aparece em <b>${esc(e.vitrine_url.replace("https://", ""))}</b>: logo, banner, cores, contatos e redes.</p></div><div class="row"><a class="btn" href="${e.vitrine_url}" target="_blank" rel="noopener">${ic("ext")}Abrir vitrine</a><button class="btn" data-a2="copiarVitrine">${ic("copiar")}Copiar link</button></div></div>
@@ -371,10 +400,18 @@
           <label>Endereço da vitrine<div class="suf"><input name="slug" required maxlength="40" value="${esc(e.slug)}" pattern="[a-z0-9-]{3,40}"><span>.lldworks.com.br</span></div></label><label>Cor principal<input name="cor" type="color" value="${esc(e.cor)}"></label></div>
           <label>Sobre (aparece na vitrine)<textarea name="sobre" rows="3" maxlength="800">${esc(e.sobre || "")}</textarea></label>
           <h3 style="margin-top:12px">Contato e endereço</h3>
-          <div class="grid g2"><label>WhatsApp<input name="whatsapp" inputmode="tel" value="${e.whatsapp ? fmtWhats(e.whatsapp) : ""}"></label><label>Rua e número<input name="endereco" maxlength="200" value="${esc(e.endereco || "")}"></label>
-          <label>Cidade<input name="cidade" maxlength="80" value="${esc(e.cidade || "")}"></label><label>UF<input name="uf" maxlength="2" value="${esc(e.uf || "")}" style="text-transform:uppercase"></label>
-          <label>CEP<input name="cep" inputmode="numeric" maxlength="9" value="${esc(e.cep || "")}"></label><label>Link do Google Maps<input name="maps_url" placeholder="https://maps.app.goo.gl/…" value="${esc(e.maps_url || "")}"></label>
-          <label>Instagram<input name="instagram" placeholder="@sualoja" value="${esc(e.instagram || "")}"></label><label>Facebook<input name="facebook" placeholder="facebook.com/sualoja" value="${esc(e.facebook || "")}"></label></div>
+          <div class="grid g2"><label>WhatsApp<input name="whatsapp" inputmode="tel" value="${e.whatsapp ? fmtWhats(e.whatsapp) : ""}"></label>
+          <label>CEP <span class="tiny mute" id="cepInfo">preenche o endereço sozinho</span><input name="cep" inputmode="numeric" maxlength="9" placeholder="00000-000" value="${esc(e.cep ? String(e.cep).replace(/^(\d{5})(\d{3})$/, "$1-$2") : "")}"></label>
+          <label>Rua / avenida<input name="endereco" maxlength="200" value="${esc(e.endereco || "")}"></label><label>Número<input name="numero" maxlength="20" value="${esc(e.numero || "")}"></label>
+          <label>Complemento<input name="complemento" maxlength="80" placeholder="Sala, loja, bloco…" value="${esc(e.complemento || "")}"></label><label>Bairro<input name="bairro" maxlength="80" value="${esc(e.bairro || "")}"></label>
+          <label>Cidade<input name="cidade" maxlength="80" value="${esc(e.cidade || "")}"></label><label>UF<input name="uf" maxlength="2" value="${esc(e.uf || "")}" style="text-transform:uppercase"></label></div>
+          <div class="mapa-box"><div><b>Google Maps</b><p class="tiny mute" style="margin:2px 0 0">O botão "Como chegar" da vitrine usa este link. Se deixar em branco, ele é montado sozinho pelo endereço.</p></div>
+            <div class="row"><input name="maps_url" placeholder="Gerado pelo endereço" value="${esc(e.maps_url || "")}" style="flex:1;min-width:200px"><button type="button" class="btn sm" data-a2="gerarMaps">Gerar pelo endereço</button><a class="btn sm" id="verMapa" target="_blank" rel="noopener">${ic("ext")}Ver no mapa</a></div></div>
+          <div class="grid g2"><label>Instagram<input name="instagram" placeholder="@sualoja" value="${esc(e.instagram || "")}"></label><label>Facebook<input name="facebook" placeholder="facebook.com/sualoja" value="${esc(e.facebook || "")}"></label></div>
+          <h3 style="margin-top:12px">Horário de funcionamento</h3>
+          <p class="tiny mute" style="margin:0 0 6px">Aparece na vitrine. Os horários livres para agendar continuam vindo da escala de cada profissional.</p>
+          <div class="horarios" id="hor">${horariosHTML(e.horarios)}</div>
+          <button type="button" class="btn sm ghost" data-a2="copiarSegunda" style="margin-top:6px">Repetir o horário de segunda nos dias úteis</button>
           <h3 style="margin-top:12px">Regras</h3>
           <div class="grid g2"><label>Comissão padrão da equipe (%)<input name="comissao_padrao" type="number" min="0" max="100" value="${e.comissao_padrao || 0}"></label></div>
           <label>Política de cancelamento (aparece no agendamento)<textarea name="politica" rows="2" maxlength="600" placeholder="Ex.: cancele com 2 horas de antecedência.">${esc(e.politica || "")}</textarea></label>
@@ -386,10 +423,18 @@
       catch (x) { toast(x.message, true); }
     }));
     const f = $("#fMarca", s);
+    const atualizaMapa = () => { const u = f.elements.maps_url.value.trim() || linkMaps(f); const a = $("#verMapa", f); a.href = u || "#"; a.toggleAttribute("hidden", !u); };
+    f.elements.cep.oninput = (ev) => { let v = ev.target.value.replace(/\D/g, "").slice(0, 8); ev.target.value = v.length > 5 ? v.slice(0, 5) + "-" + v.slice(5) : v; if (v.length === 8) buscaCep(f).then(atualizaMapa); };
+    ["endereco", "numero", "bairro", "cidade", "uf", "maps_url"].forEach((n) => f.elements[n].addEventListener("input", atualizaMapa));
+    $("#hor", f).addEventListener("change", (ev) => { const l = ev.target.closest(".hor-l"); if (l && ev.target.dataset.h === "aberto") { const ab = ev.target.checked; $$("input[type=time]", l).forEach((i) => (i.disabled = !ab)); $(".fechado", l).textContent = ab ? "" : "fechado"; } });
+    atualizaMapa();
     if (!admin()) $$("input,select,textarea,button", f).forEach((i) => (i.disabled = true));
     f.onsubmit = async (ev) => {
       ev.preventDefault(); const er = $(".err", f); er.textContent = "";
       const d = Object.fromEntries(new FormData(f)); d.comissao_padrao = +d.comissao_padrao || 0;
+      ["aberto", "ini", "fim"].forEach((k) => delete d[k]);
+      d.horarios = lerHorarios(f); d.cep = (d.cep || "").replace(/\D/g, ""); d.uf = (d.uf || "").toUpperCase();
+      if (!d.maps_url) d.maps_url = linkMaps(f);
       try { await api("PUT", "perfil", d); S.emp = await api("GET", "empresa"); $("#empNome").textContent = S.emp.nome; toast("Marca salva."); await marca(); } catch (x) { er.textContent = x.message; }
     };
   }
@@ -397,12 +442,12 @@
   // ========== INTEGRAÇÕES ==========
   async function integracoes() {
     const e = await perfil(), s = secao("integracoes"), mp = await api("GET", "mercadopago"), pl = e.plano;
-    const app = (nome, txt, url, incluso, icone) => `<div class="card app"><div class="row">${ic(icone)}<h3>${nome}</h3>${incluso ? '<span class="chip ok">incluído no seu plano</span>' : '<span class="chip">plano Pro ou Premium</span>'}</div><p class="small mute">${txt}</p>${incluso ? `<a class="btn sm pri" href="${url}" target="_blank" rel="noopener">Abrir ${ic("ext")}</a> <span class="tiny mute">mesmo e-mail e senha</span>` : `<a class="btn sm" href="/assinar">Ver planos</a>`}</div>`;
+    const app = (nome, txt, url, incluso, icone) => `<div class="card app"><div class="row">${ic(icone)}<h3>${nome}</h3>${incluso ? '<span class="chip ok">incluído no seu plano</span>' : '<span class="chip">plano Pro ou Premium</span>'}</div><p class="small mute">${txt}</p>${incluso ? `<a class="btn sm pri" href="${url}" target="_blank" rel="noopener">Abrir ${ic("ext")}</a> <span class="tiny mute">entra já conectado</span>` : `<a class="btn sm" href="/assinar">Ver planos</a>`}</div>`;
     s.innerHTML = `<div class="head"><div><h1>WhatsApp e pagamentos</h1><p>Os outros apps do seu plano entram com o mesmo e-mail e senha.</p></div></div>
       <div class="grid g3">
-        ${app("Agente de WhatsApp", "Responde seus clientes 24h com IA pela sua base de perguntas, mostra os serviços e chama a equipe quando precisa. Cadastre ali o número do WhatsApp da loja.", "https://agentworks.lldworks.com.br/", pl.pagamento_online, "wa")}
-        ${app("Link na bio", "Uma página com todos os seus links (vitrine, WhatsApp, Instagram, mapa) para colocar na bio do Instagram.", "https://linkworks.lldworks.com.br/", pl.pagamento_online, "integracoes")}
-        ${app("Instagram", "Calendário de posts, legendas com IA e respostas automáticas em comentários e directs.", "https://socialworks.lldworks.com.br/", pl.site, "marca")}
+        ${app("Agente de WhatsApp", "Responde seus clientes 24h com IA pela sua base de perguntas, mostra os serviços e chama a equipe quando precisa. Cadastre ali o número do WhatsApp da loja.", "/ir/agentworks", pl.pagamento_online, "wa")}
+        ${app("Link na bio", "Uma página com todos os seus links (vitrine, WhatsApp, Instagram, mapa) para colocar na bio do Instagram.", "/ir/linkworks", pl.pagamento_online, "integracoes")}
+        ${app("Instagram", "Calendário de posts, legendas com IA e respostas automáticas em comentários e directs.", "/ir/socialworks", pl.site, "marca")}
       </div>
       <div class="card" style="margin-top:14px"><div class="row sb"><h2>Receber online com o seu Mercado Pago</h2>${mp.conectado ? `<span class="chip ok">conectado · ${esc(mp.conta || "")}</span>` : ""}</div>
         ${!mp.disponivel ? `<p class="mute">Pagamento online (Pix e cartão pelo link, sinal no agendamento) faz parte dos planos Pro e Premium. <a href="/assinar">Ver planos</a></p>` : mp.conectado ? `
@@ -500,7 +545,9 @@
       else if (a === "esperaNova") abrirEspera();
       else if (a === "esperaSt") { await api("PUT", `espera/${id}`, { status: b.dataset.st }); await espera(); }
       else if (a === "fichas") await fichas(id, b.dataset.nome);
-      else if (a === "copiarVitrine") { await navigator.clipboard.writeText(SW.linkVitrine()); toast("Link da vitrine copiado."); }
+      else if (a === "gerarMaps") { const f = $("#fMarca"); const u = linkMaps(f); if (!u) return toast("Preencha o endereço primeiro.", true); f.elements.maps_url.value = u; f.elements.maps_url.dispatchEvent(new Event("input")); toast("Link do Maps gerado. Clique em Salvar."); }
+      else if (a === "copiarSegunda") { const ls = $$("#hor .hor-l"), seg = ls[1]; const ab = $("[data-h=aberto]", seg).checked, i = $("[data-h=ini]", seg).value, fm = $("[data-h=fim]", seg).value; ls.slice(2, 6).forEach((l) => { $("[data-h=aberto]", l).checked = ab; $("[data-h=ini]", l).value = i; $("[data-h=fim]", l).value = fm; $$("input[type=time]", l).forEach((x) => (x.disabled = !ab)); $(".fechado", l).textContent = ab ? "" : "fechado"; }); toast("Horário de segunda copiado para terça a sexta."); }
+      else if (a === "copiarVitrine") { await SW.copiar(SW.linkVitrine(), "Link da vitrine copiado."); }
       else if (a === "dispensarGuia") { await api("PUT", "perfil", { guia_dispensado: true }); await inicio(); }
       else if (a === "tirarImg") { if (!confirm("Remover a imagem?")) return; await api("DELETE", `imagem/${b.dataset.t}`); await marca(); }
       else if (a === "mpDesconectar") { if (!confirm("Desconectar o Mercado Pago? Os links já enviados deixam de confirmar sozinhos.")) return; await api("DELETE", "mercadopago"); await integracoes(); }

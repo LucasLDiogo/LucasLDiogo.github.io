@@ -28,6 +28,14 @@
   const saldo = (v) => `<span class="saldo" aria-label="${v.usadas} de ${v.sessoes} sessões usadas">${Array.from({ length: Math.min(v.sessoes, 12) }, (_, i) => `<i class="${i < v.usadas ? "u" : ""}"></i>`).join("")}</span>`;
 
   let tt;
+  // Copiar que funciona em qualquer navegador (alguns, como o do app do Claude, negam a área de transferência).
+  async function copiar(texto, ok = "Copiado.") {
+    try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(texto); return toast(ok); } } catch {}
+    const t = document.createElement("textarea"); t.value = texto; t.setAttribute("readonly", ""); t.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+    document.body.appendChild(t); t.select(); t.setSelectionRange(0, texto.length); let feito = false; try { feito = document.execCommand("copy"); } catch {} t.remove();
+    if (feito) return toast(ok);
+    window.prompt("Copie o link abaixo (Ctrl+C):", texto);
+  }
   function toast(m, erro = false, ms = 3200) { const t = $("#toast"); t.textContent = m; t.classList.toggle("err", erro); t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), ms); }
 
   async function api(metodo, caminho, corpo) {
@@ -576,7 +584,7 @@
       else if (ac === "profDel") { if (!confirm("Desativar este profissional? Ele sai da vitrine; os agendamentos já marcados continuam.")) return; await api("DELETE", `profissionais/${id}`); toast("Profissional desativado."); await equipe(); }
       else if (ac === "blqNovo") { if (!S.profs.length) S.profs = await api("GET", "profissionais"); abrirBlq(); }
       else if (ac === "blqDel") { if (!confirm("Remover este bloqueio? Os horários voltam a ficar livres.")) return; await api("DELETE", `bloqueios/${id}`); toast("Bloqueio removido."); await folgas(); }
-      else if (ac === "copiarLink") { await navigator.clipboard.writeText(linkVitrine()); toast("Link da vitrine copiado."); }
+      else if (ac === "copiarLink") { await copiar(linkVitrine(), "Link da vitrine copiado."); }
       else if (ac === "petNovo") abrirPet(cliId, null);
       else if (ac === "pet") abrirPet(cliId, id);
       else if (ac === "venderCli") await abrirVender(cliId);
@@ -590,7 +598,7 @@
   });
 
   // ---------- extensões (app2.js: início, caixa, produtos, promoções, espera, integrações...) ----------
-  window.SW = { api, toast, aba, S, esc, brl, reais, centsTxt, hojeBR, somaDias, fmtD, fmtDH, fmtDia, fmtWhats, waLink, abrirCli, CARREGA, admin, agenda, aoEnviar, linkVitrine, evAtual: () => evAtual };
+  window.SW = { api, toast, copiar, aba, S, esc, brl, reais, centsTxt, hojeBR, somaDias, fmtD, fmtDH, fmtDia, fmtWhats, waLink, abrirCli, CARREGA, admin, agenda, aoEnviar, linkVitrine, evAtual: () => evAtual };
 
   // ---------- início ----------
   base().then(() => { const v = location.hash.slice(1); aba(CARREGA[v] ? v : CARREGA.inicio ? "inicio" : "agenda"); }).catch((e) => { $("#empNome").textContent = "Erro ao carregar"; toast(e.message, true); });

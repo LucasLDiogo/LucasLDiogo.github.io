@@ -192,3 +192,10 @@ b.baixo{color:var(--bad)}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin-top:6px}.kv dt{color:var(--mute)}
 label.chk{display:inline-flex;align-items:center;gap:6px;font-weight:500}label.chk input{width:auto;min-height:0}
 dialog label{display:block;font-weight:600;font-size:13.5px}dialog label input,dialog label select,dialog label textarea{margin-top:4px}
+.nota-marca{background:color-mix(in oklab,var(--p,#7C3AED) 10%,transparent);border:1px solid color-mix(in oklab,var(--p,#7C3AED) 35%,transparent);border-radius:12px;padding:12px 14px;margin:6px 0 12px;font-size:14px;line-height:1.45}
+/* Marca e vitrine: mapa e horário de funcionamento */
+.mapa-box{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;display:grid;gap:8px}
+.horarios{display:grid;gap:6px}
+.hor-l{display:grid;grid-template-columns:130px 110px auto 110px 1fr;align-items:center;gap:8px}
+.hor-l .chk{margin:0}.hor-l input[type=time]{min-height:38px;padding:6px 8px}.hor-l input[type=time]:disabled{opacity:.4}
+@media(max-width:560px){.hor-l{grid-template-columns:1fr 1fr auto 1fr}.hor-l .chk{grid-column:1/-1}.hor-l .fechado{display:none}}

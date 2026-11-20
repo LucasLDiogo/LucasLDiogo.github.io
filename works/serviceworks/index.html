@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cloudflareinsights.com https://viacep.com.br https://brasilapi.com.br; form-action 'self'; base-uri 'none'">
 <title>ServiceWorks · Painel</title>
 <link rel="icon" href="/pub/icone.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -88,6 +88,7 @@
   <div class="head"><div><h1>Configurações</h1><p>Dados da empresa, link da vitrine e regras do agendamento online.</p></div></div>
   <form class="grid g2" id="cfgForm">
    <div class="card"><h2>Empresa</h2>
+    <div class="nota-marca"><b>Logo, banner, endereço completo, horário de funcionamento e redes</b> ficam em <b>Marca e vitrine</b>.<br><button type="button" class="btn sm pri" data-ir="marca" style="margin-top:8px">Abrir Marca e vitrine</button></div>
     <label for="cNome">Nome que aparece na vitrine</label><input id="cNome" required maxlength="120">
     <div class="f2"><div><label for="cSeg">Segmento</label><select id="cSeg"><option value="barbearia">Barbearia</option><option value="salao">Salão de beleza</option><option value="clinica">Clínica</option><option value="petshop">Pet shop</option><option value="outro">Outro</option></select></div>
      <div><label for="cWhats">WhatsApp da empresa</label><input id="cWhats" inputmode="tel" placeholder="(54) 99999-0000"></div></div>
@@ -97,7 +98,7 @@
    </div>
    <div class="card"><h2>Agendamento online</h2>
     <label for="cSlug">Endereço da vitrine</label>
-    <div class="row" style="flex-wrap:nowrap"><span class="mute small" style="white-space:nowrap;flex:none">serviceworks.lldworks.com.br/v/</span><input id="cSlug" required minlength="3" maxlength="40" pattern="[a-z0-9\-]+"></div>
+    <div class="row" style="flex-wrap:nowrap"><input id="cSlug" required minlength="3" maxlength="40" pattern="[a-z0-9\-]+"><span class="mute small" style="white-space:nowrap;flex:none">.lldworks.com.br</span></div>
     <p class="help">Só letras minúsculas, números e hífen. Mudar o endereço quebra links já divulgados.</p>
     <div class="row" style="margin-top:8px"><button type="button" class="btn sm" data-act="copiarLink">Copiar link</button><a class="btn sm" id="cfgAbrir" target="_blank" rel="noopener">Abrir vitrine ↗</a></div>
     <div class="f2"><div><label for="cAnt">Antecedência mínima (min)</label><input id="cAnt" type="number" min="0" max="2880" step="15"></div>
