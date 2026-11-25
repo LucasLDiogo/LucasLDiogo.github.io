@@ -7,7 +7,6 @@ Site oficial publicado em **https://lucasldiogo.lldworks.com.br/** (GitHub Pages
 | Caminho | Conteúdo |
 |---|---|
 | `index.html` | Home institucional: hero, problema, solução, projetos, soluções e módulos, história, método, simulador, formatos e contato |
-| `stok/` | Proposta dedicada à direção do Stok Center (fora do índice de busca) |
 | `privacidade/` | Política de privacidade e segurança dos dados |
 | `assets/` | Retrato, vídeo noir, imagem de compartilhamento (`og-lld.jpg`) e PDF da proposta |
 | `robots.txt`, `sitemap.xml` | SEO técnico |
